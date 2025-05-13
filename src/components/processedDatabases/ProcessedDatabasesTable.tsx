@@ -1,7 +1,6 @@
 import React from 'react';
 import type { ProcessedDatabase } from '../../types/api';
 import { escapeHTML } from '../../utils/helpers';
-import { FiTrash2 } from 'react-icons/fi'; // Ícone para Descartar
 
 interface ProcessedDatabasesTableProps {
   databases: ProcessedDatabase[];

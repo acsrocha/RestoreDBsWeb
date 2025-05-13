@@ -9,7 +9,7 @@ export default defineConfig({
       // Qualquer requisição que comece com '/api'
       // será redirecionada para o seu backend Go
       '/api': {
-        target: 'http://localhost:8080', // Certifique-se que esta é a porta do seu backend Go
+        target: 'http://localhost:8558', // Certifique-se que esta é a porta do seu backend Go
         changeOrigin: true, // Necessário para o backend aceitar a requisição da origem diferente
         secure: false,      // Se o seu backend Go não estiver usando HTTPS (comum localmente)
         // Se o seu backend Go espera as rotas sem o prefixo /api (por exemplo, /status em vez de /api/status),

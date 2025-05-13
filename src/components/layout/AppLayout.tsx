@@ -34,10 +34,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
     return (
         <div className="app-layout"> {/* Classe de global.css */}
-            <Sidebar collapsed={sidebarCollapsed} setViewTitle={setViewTitle} />
+            {/* CORREÇÃO APLICADA ABAIXO */}
+            <Sidebar collapsed={sidebarCollapsed} setCurrentViewTitle={setViewTitle} />
             <div className="main-content-wrapper" style={mainContentStyle}> {/* Classe de global.css */}
+                {/* CORREÇÃO APLICADA ABAIXO */}
                 <Header
-                    sidebarToggleBtn={toggleSidebar}
+                    toggleSidebar={toggleSidebar}
                     viewTitle={viewTitle}
                 />
                 <main className="content-area"> {/* Classe de global.css */}
