@@ -1,5 +1,5 @@
 // src/pages/ProcessedDatabasesPage.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react'; // Adicionado useRef
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ProcessedDatabasesTable from '../components/processedDatabases/ProcessedDatabasesTable';
 import { fetchProcessedDatabases, markDatabaseForDiscard } from '../services/api';
 import type { ProcessedDatabase } from '../types/api';
@@ -11,18 +11,18 @@ const REFRESH_PROCESSED_INTERVAL = 15000;
 
 const ProcessedDatabasesPage: React.FC = () => {
   const [databases, setDatabases] = useState<ProcessedDatabase[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Para carga inicial E refresh manual
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Estado para carga inicial E refresh manual/operações
   const [isPollingLoading, setIsPollingLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const { signalUpdate } = useLastUpdated();
 
-  //isLoading é controlado externamente (pelo useEffect de montagem ou pelo handleRefreshManual)
-  const loadDatabases = useCallback(async (isPollOperation = false) => {
+  const loadDatabases = useCallback(async (isPollOperation = false, isTriggeredByManualAction = false) => {
+    // isLoading é setado para true ANTES desta função ser chamada para carga inicial ou manual.
+    // isPollingLoading é setado para true se for uma operação de polling.
     if (isPollOperation) {
       setIsPollingLoading(true);
     }
-    // Não seta setIsLoading(true) aqui, pois é controlado pelo chamador
 
     try {
       const data = await fetchProcessedDatabases();
@@ -33,32 +33,34 @@ const ProcessedDatabasesPage: React.FC = () => {
       console.error('Falha ao buscar bancos processados:', err);
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar bancos processados.';
       setError(errorMessage);
-      // Só limpa databases se for erro na carga inicial/manual, não no polling
-      if (!isPollOperation && isLoading) setDatabases([]);
+      // Limpa databases se for erro na carga inicial ou refresh manual (quando isLoading era true), não no polling.
+      if (!isPollOperation && (isLoading || isTriggeredByManualAction)) {
+        setDatabases([]);
+      }
     } finally {
-      // isLoading só é setado para false se foi um carregamento principal (não polling)
-      // e se ele estava true.
-      if (isLoading && !isPollOperation) {
-          setIsLoading(false);
+      // Desativa o loading principal se foi uma carga inicial ou uma ação manual que o ativou.
+      if ((isLoading && !isPollOperation) || isTriggeredByManualAction) {
+        setIsLoading(false);
       }
       if (isPollOperation) {
         setIsPollingLoading(false);
       }
     }
-  }, [signalUpdate, isLoading]); // Manter isLoading como dependência para o finally funcionar corretamente
+  }, [signalUpdate, isLoading]); // Manter isLoading aqui é importante para que o `finally`
+                                 // tenha o valor correto de isLoading que foi setado *antes* da chamada.
 
   const firstLoadProcessedRef = useRef(true);
   useEffect(() => {
     if (firstLoadProcessedRef.current) {
-      setIsLoading(true); // Ativa loading para a primeira carga
-      loadDatabases();
+      // setIsLoading(true); // Já é o estado inicial padrão do useState
+      loadDatabases(); // Chama sem flags (isPollOperation=false, isTriggeredByManualAction=false)
       firstLoadProcessedRef.current = false;
     }
-  }, [loadDatabases]); // loadDatabases agora depende de isLoading e signalUpdate, mas o ref previne o loop
+  }, [loadDatabases]); // loadDatabases depende de isLoading, mas o ref previne loop de montagem.
 
   useInterval(() => {
-    if (!isLoading && !isPollingLoading) { // Evita polling se já estiver carregando (inicial/manual ou outro polling)
-        loadDatabases(true);
+    if (!isLoading && !isPollingLoading) {
+        loadDatabases(true, false); // isPollOperation=true, isTriggeredByManualAction=false
     }
   }, REFRESH_PROCESSED_INTERVAL);
 
@@ -66,26 +68,27 @@ const ProcessedDatabasesPage: React.FC = () => {
     if (!window.confirm(`Tem certeza que deseja marcar o banco de dados com ID '${dbId}' para descarte? Esta ação é irreversível.`)) {
       return;
     }
-    setIsLoading(true); // Mostra loading durante a operação
+    setIsLoading(true); // Ativa o loading principal para esta operação
     setError(null);
     try {
       const message = await markDatabaseForDiscard(dbId);
       alert(message || `Banco ${dbId} processado para descarte.`);
-      await loadDatabases(); // Recarrega a lista (e implicitamente chama signalUpdate)
+      // Chama loadDatabases como uma ação manual para recarregar e resetar isLoading
+      await loadDatabases(false, true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro crítico ao marcar para descarte.';
       alert(errorMessage);
       console.error('Falha crítica ao marcar para descarte:', err);
       setError(errorMessage);
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Garante que o loading desative se o descarte falhar antes de loadDatabases
     }
+    // Se o descarte for bem-sucedido, o setIsLoading(false) principal é feito no finally de loadDatabases
   };
 
   const handleRefreshManual = () => {
     setIsLoading(true); // Ativa o loading principal
-    setError(null); // Limpa erros anteriores
-    loadDatabases(false); // Chama loadDatabases indicando que não é polling
+    setError(null);     // Limpa erros anteriores
+    loadDatabases(false, true); // Chama loadDatabases indicando que é refresh manual
   };
 
   return (
@@ -104,6 +107,8 @@ const ProcessedDatabasesPage: React.FC = () => {
             disabled={isLoading || isPollingLoading}
           >
             <FiRefreshCw />
+            {/* O texto do botão agora usa apenas isLoading para "Carregando..."
+                e isPollingLoading para "Atualizando...", como antes. */}
             {isLoading ? 'Carregando...' : (isPollingLoading ? 'Atualizando...' : 'Atualizar Lista')}
           </button>
         </div>
@@ -114,7 +119,8 @@ const ProcessedDatabasesPage: React.FC = () => {
         )}
         <ProcessedDatabasesTable
           databases={databases}
-          isLoading={isLoading && databases.length === 0} // Mostra loading na tabela só na carga inicial E sem dados
+          // Mostra loading na tabela se for carga inicial/manual E ainda não houver dados
+          isLoading={isLoading && databases.length === 0}
           onMarkForDiscard={handleMarkForDiscard}
         />
       </section>
