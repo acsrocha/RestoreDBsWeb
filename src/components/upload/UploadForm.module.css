@@ -1,0 +1,156 @@
+/* RestoreDBs-client/src/components/upload/UploadForm.module.css */
+.uploadCard {
+    background-color: var(--card-bg-color);
+    padding: 25px; /* Um pouco mais de padding */
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    max-width: 700px; /* Largura máxima para o formulário */
+    margin: 20px auto; /* Centraliza o card */
+}
+
+.uploadCard h2 {
+    color: var(--text-color); /* Título mais proeminente */
+    font-size: 1.3em;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.uploadCard h2 .icon {
+    margin-right: 10px;
+    color: var(--primary-accent-color);
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500; /* Um pouco menos pesado que o original */
+    color: var(--text-secondary-color);
+    font-size: 0.9em;
+}
+
+.formGroup input[type='file'],
+.formGroup input[type='text'],
+.formGroup textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-color); /* Fundo sutilmente diferente do card */
+    color: var(--text-color);
+    font-size: 0.95em;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+html[data-theme='dark'] .formGroup input[type='file'],
+html[data-theme='dark'] .formGroup input[type='text'],
+html[data-theme='dark'] .formGroup textarea {
+    background-color: var(--bg-color); /* Garante consistência no tema escuro */
+}
+
+
+.formGroup input[type='file'] {
+    padding: 8px 10px; /* Ajuste para o input de arquivo */
+    /* Estilização customizada para input file é complexa, mas o básico: */
+}
+.formGroup input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.formGroup input[type="file"]::file-selector-button:hover {
+    background-color: var(--border-color);
+}
+
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: var(--primary-accent-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-accent-color-rgb), 0.25); /* Sombra de foco */
+}
+
+.submitButton {
+    background-color: var(--primary-accent-color);
+    color: var(--white-color);
+    border: none;
+    padding: 12px 25px; /* Botão um pouco maior */
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Espaço entre ícone e texto */
+    width: 100%; /* Botão ocupa largura total */
+    justify-content: center;
+}
+
+.submitButton:hover {
+    background-color: #01a87a; /* Um pouco mais escuro no hover */
+}
+
+.submitButton:active {
+    transform: translateY(1px);
+}
+
+.submitButton:disabled {
+    background-color: var(--text-secondary-color);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.uploadStatus {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.uploadStatusPending {
+    background-color: rgba(var(--warning-color-rgb, 255, 193, 7), 0.15); /* Definir --warning-color-rgb */
+    color: var(--warning-color);
+    border-color: var(--warning-color);
+}
+
+.uploadStatusSuccess {
+    background-color: rgba(var(--success-color-rgb, 25, 135, 84), 0.15); /* Definir --success-color-rgb */
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.uploadStatusError {
+    background-color: var(--error-bg-color); /* Já definido */
+    color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+/* Adicione no seu global.css ou theme.css as vars RGB se não existirem */
+/*
+:root {
+    --warning-color-rgb: 255, 193, 7;
+    --success-color-rgb: 25, 135, 84;
+}
+html[data-theme='dark'] {
+    --warning-color-rgb: 236, 201, 75; // Exemplo para tema escuro
+    --success-color-rgb: 72, 187, 120; // Exemplo para tema escuro
+}
+*/

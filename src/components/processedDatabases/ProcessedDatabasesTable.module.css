@@ -1,0 +1,142 @@
+/* RestoreDBs-client/src/components/processed/ProcessedDatabasesTable.module.css */
+.processedCard {
+    background-color: var(--card-bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    margin-top: 20px; /* Espaçamento se houver outros elementos na página */
+}
+
+.processedCard h2 {
+    color: var(--text-color);
+    font-size: 1.3em;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+.processedCard h2 .icon {
+    margin-right: 10px;
+    color: var(--primary-accent-color);
+}
+
+
+.tableActions {
+    margin-bottom: 15px;
+    text-align: right;
+}
+
+.buttonRefresh {
+    background-color: #6c757d; /* Cinza padrão Bootstrap */
+    color: var(--white-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.buttonRefresh:hover {
+    background-color: #5a6268; /* Mais escuro no hover */
+}
+.buttonRefresh:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+
+.tableWrapper {
+    overflow-x: auto; /* Para responsividade da tabela */
+}
+
+.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.dataTable th,
+.dataTable td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle; /* Alinhamento vertical */
+}
+
+.dataTable th {
+    background-color: var(--card-bg-color); /* Fundo do header da tabela */
+    color: var(--text-color);
+    font-weight: 600;
+    white-space: nowrap; /* Evita quebra de linha nos cabeçalhos */
+    border-bottom-width: 2px; /* Borda inferior mais grossa para o header */
+    border-bottom-color: var(--primary-accent-color);
+}
+html[data-theme='dark'] .dataTable th {
+    background-color: #232e42; /* Fundo sutilmente diferente para tema escuro */
+}
+
+
+.dataTable tbody tr:hover {
+    background-color: rgba(128, 128, 128, 0.04);
+}
+html[data-theme='dark'] .dataTable tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.notesColumn {
+    min-width: 200px; /* Para dar espaço às notas */
+    max-width: 350px;
+}
+.notesCellContent {
+    max-height: 60px; /* Altura máxima para o conteúdo das notas */
+    overflow-y: auto; /* Scroll se o conteúdo for maior */
+    font-size: 0.9em;
+    white-space: pre-wrap; /* Mantém quebras de linha e espaços das notas */
+    word-break: break-word; /* Quebra palavras longas */
+}
+
+.actionButton {
+    background-color: var(--info-color);
+    color: var(--white-color);
+    border: none;
+    padding: 6px 12px; /* Botão um pouco menor */
+    font-size: 0.85em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.actionButton:hover {
+    filter: brightness(90%);
+}
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.discardButton {
+    background-color: var(--error-color);
+}
+.discardButton:hover {
+    background-color: #c82333; /* Um vermelho mais escuro no hover */
+}
+
+.statusAtivo { color: var(--success-color); font-weight: 500; }
+.statusMarcadoparadescarte { color: var(--warning-color); font-weight: 500; }
+.statusDesconhecido { color: var(--text-secondary-color); }
+
+.noDataRow td {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary-color);
+    font-style: italic;
+}

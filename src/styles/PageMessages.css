@@ -1,0 +1,61 @@
+/* RestoreDBs-client/src/styles/PageMessages.css */
+
+/* Para mensagens gerais de página (como 'Carregando...', 'Nenhum dado encontrado') */
+.page-message {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.1em;
+    color: var(--text-secondary-color);
+    border-radius: 4px;
+    margin: 20px 15px; /* Adiciona margem superior/inferior e laterais */
+    background-color: var(--card-bg-color); /* Fundo sutil */
+    border: 1px solid var(--border-color); /* Borda sutil */
+}
+
+.page-message.error-message {
+    color: var(--error-color);
+    background-color: var(--error-bg-color);
+    border: 1px solid var(--error-color);
+}
+
+/* Para banners de feedback de ação (upload, descarte, etc.) */
+.action-message {
+    padding: 10px 15px;
+    margin: 15px auto; /* Centraliza e adiciona margem */
+    max-width: 700px; /* Limita a largura */
+    border-radius: 4px;
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    font-size: 0.95em;
+    display: flex; /* Para alinhar ícone e texto se adicionado */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-success {
+    /* Verifique se --success-color-rgb está definido no seu global.css para os temas */
+    background-color: rgba(var(--success-color-rgb, 25, 135, 84), 0.15);
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.action-error {
+    background-color: var(--error-bg-color);
+    color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+/* Adicione estas variáveis RGB ao seu global.css se ainda não estiverem lá,
+   para que o rgba() funcione corretamente com os temas. */
+/*
+:root {
+    --success-color-rgb: 25, 135, 84;
+    --warning-color-rgb: 255, 193, 7;
+}
+html[data-theme='dark'] {
+    --success-color-rgb: 72, 187, 120; // Exemplo para tema escuro
+    --warning-color-rgb: 236, 201, 75; // Exemplo para tema escuro
+}
+*/
