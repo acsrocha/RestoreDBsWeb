@@ -1,25 +1,25 @@
 // src/components/monitoring/FailedRestoresList.tsx
 import React, { useState } from 'react';
-import type { FailedRestoreItem } from '../../types/api'; // Ou FailedRestore, conforme seu tipo
-import { escapeHTML } from '../../utils/helpers';
-import { FiAlertOctagon } from 'react-icons/fi'; // <<< Adicionar importação do ícone
+import type { FailedRestoreItem } from '../../types/api';
+// import { escapeHTML } from '../../utils/helpers'; // React já escapa
+import { FiAlertOctagon } from 'react-icons/fi';
 
 interface FailedRestoresListProps {
-  errors: FailedRestoreItem[]; // Ou FailedRestore
+  errors: FailedRestoreItem[];
   isLoading: boolean;
 }
 
 const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoading }) => {
-  const [visibleErrorDetail, setVisibleErrorDetail] = useState<number | null>(null);
+  const [visibleErrorDetail, setVisibleErrorDetail] = useState<string | null>(null); // Usar uma chave única, como fullFilePath ou id
 
-  const toggleErrorDetail = (index: number) => {
-    setVisibleErrorDetail(visibleErrorDetail === index ? null : index);
+  const toggleErrorDetail = (errorKey: string) => {
+    setVisibleErrorDetail(visibleErrorDetail === errorKey ? null : errorKey);
   };
 
   if (isLoading) {
     return (
       <div className="list-card errors-list-card" id="failedRestoresSection">
-        <h2><span className="icon"><FiAlertOctagon /></span>Detalhes das Falhas</h2> {/* Ícone adicionado */}
+        <h2><span className="icon"><FiAlertOctagon /></span>Detalhes das Falhas</h2>
         <ul id="failedRestoresList" aria-live="polite">
           <li className="empty-list"><em>Carregando falhas...</em></li>
         </ul>
@@ -29,35 +29,38 @@ const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoadi
 
   return (
     <div className="list-card errors-list-card" id="failedRestoresSection">
-      <h2><span className="icon"><FiAlertOctagon /></span>Detalhes das Falhas</h2> {/* Ícone adicionado */}
+      <h2><span className="icon"><FiAlertOctagon /></span>Detalhes das Falhas</h2>
       <ul id="failedRestoresList" aria-live="polite">
-        {errors.length > 0 ? (
-          errors.map((errorItem, index) => {
-            const errorTimestamp = new Date(errorItem.timestamp).toLocaleString('pt-BR', {
-              dateStyle: 'short',
-              timeStyle: 'medium',
-            });
+        {errors && errors.length > 0 ? (
+          errors.map((errorItem, index) => { // Adicionado index para o caso de não haver chave melhor
+            const errorKey = errorItem.fullFilePath || errorItem.fileName || `error-${index}`;
+            const errorTimestamp = errorItem.timestamp ? 
+                                   new Date(errorItem.timestamp).toLocaleString('pt-BR', {
+                                      dateStyle: 'short',
+                                      timeStyle: 'medium',
+                                    }) : 'N/A';
             return (
               <li
-                key={errorItem.fullFilePath || index} // Usar uma chave mais estável se possível
+                key={errorKey} 
                 className="failed-restore-item"
-                title={`Clique para ver detalhes. Arquivo: ${escapeHTML(errorItem.fileName)}`}
-                onClick={() => toggleErrorDetail(index)}
+                title={`Clique para ver detalhes. Arquivo: ${errorItem.fileName}`}
+                onClick={() => toggleErrorDetail(errorKey)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleErrorDetail(index);}}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleErrorDetail(errorKey);}}
               >
                 <div className="error-summary">
-                  <span className="error-filename">{escapeHTML(errorItem.fileName)}</span>
+                  <span className="error-filename">{errorItem.fileName}</span>
                   <span className="error-timestamp">{errorTimestamp}</span>
                 </div>
-                {visibleErrorDetail === index && (
-                  <div className="error-details visible" id={`error-detail-${index}`}>
-                    <strong>Arquivo Original:</strong> {escapeHTML(errorItem.fileName)}<br />
-                    <strong>Caminho Completo:</strong> {escapeHTML(errorItem.fullFilePath)}<br />
+                {visibleErrorDetail === errorKey && (
+                  // ID deve ser único e válido para HTML
+                  <div className="error-details visible" id={`error-detail-${errorKey.replace(/[^a-zA-Z0-9_-]/g, '')}`}> 
+                    <strong>Arquivo Original:</strong> {errorItem.fileName}<br />
+                    <strong>Caminho Completo:</strong> {errorItem.fullFilePath}<br />
                     <strong>Ocorrência:</strong> {errorTimestamp}<br />
                     <strong>Mensagem:</strong><br />
-                    <pre>{escapeHTML(errorItem.errorMessage)}</pre>
+                    <pre>{errorItem.errorMessage}</pre>
                   </div>
                 )}
               </li>

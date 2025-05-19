@@ -1,6 +1,7 @@
+// src/components/processedDatabases/ProcessedDatabasesTable.tsx
 import React from 'react';
 import type { ProcessedDatabase } from '../../types/api';
-import { escapeHTML } from '../../utils/helpers';
+import { escapeHTML } from '../../utils/helpers'; // Certifique-se que este caminho e arquivo existem
 
 interface ProcessedDatabasesTableProps {
   databases: ProcessedDatabase[];
@@ -56,12 +57,15 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({ datab
               const statusClass = db.status ? `status-${db.status.toLowerCase().replace(/\s+/g, '-')}` : 'status-desconhecido';
               const originalName = db.originalBackupFileName || (db.internalFileName ? `(Interno: ${db.internalFileName.split('_').slice(1).join('_') || db.internalFileName})` : 'N/A');
               const alias = db.restoredDbAlias || 'N/A';
-              const notas = db.notasTecnico || ''; // Usando notasTecnico como no JS
+              
+              // ***** LINHA CORRIGIDA ABAIXO (Linha 59 original) *****
+              const notas = db.uploadNotas || ''; // Alterado de db.notasTecnico para db.uploadNotas
+                                                 // Se preferir notas internas do sistema, use: const notas = db.notes || '';
 
               let actionsHtml;
               if (db.status && db.status.toLowerCase() === 'ativo') {
                 actionsHtml = <button className="action-button discard-button" onClick={() => onMarkForDiscard(db.id)} title="Marcar para Descarte">Descartar</button>;
-              } else if (db.status && db.status.toLowerCase() === 'marcadoparadescarte') { // Assumindo que este é o status usado
+              } else if (db.status && db.status.toLowerCase() === 'marcadoparadescarte') {
                 actionsHtml = <span className="status-marked" title="Este banco já foi marcado para descarte futuro.">Marcado</span>;
               } else {
                 actionsHtml = <span>-</span>;
@@ -74,7 +78,8 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({ datab
                   <td>{restorationDate}</td>
                   <td className={statusClass}>{escapeHTML(db.status || 'Desconhecido')}</td>
                   <td>{custodyEndDate}</td>
-                  <td className="notes-cell" title={escapeHTML(notas)}><div className="notes-content">{escapeHTML(notas)}</div></td>
+                  {/* React já escapa strings dentro de {}, a menos que escapeHTML faça algo mais específico */}
+                  <td className="notes-cell" title={notas}><div className="notes-content">{notas}</div></td>
                   <td>{actionsHtml}</td>
                 </tr>
               );
