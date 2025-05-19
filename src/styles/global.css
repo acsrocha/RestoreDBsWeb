@@ -1080,3 +1080,309 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
 .button-secondary:hover {
   filter: brightness(110%);
 }
+
+/* === MODAL STYLES === */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65); /* Fundo mais escuro para maior contraste */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050; /* Z-index alto para ficar sobre outros elementos */
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
+}
+
+.modal-overlay.active { /* Adicione esta classe ao overlay quando o modal estiver aberto */
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+  padding: 25px 30px;
+  border-radius: 8px; /* Bordas levemente mais arredondadas */
+  box-shadow: var(--shadow), 0 8px 30px rgba(0, 0, 0, 0.15); /* Sombra mais pronunciada */
+  width: 100%;
+  max-width: 520px; /* Um pouco mais de largura */
+  position: relative;
+  text-align: left;
+  border: 1px solid var(--border-color);
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  font-size: 1.6em; /* Título um pouco maior */
+  font-weight: 600; /* Mais peso para o título */
+  margin-bottom: 20px; /* Mais espaço abaixo do título */
+  color: var(--text-color);
+}
+
+.modal-content.discard-modal h2 {
+  color: var(--error-color); /* Vermelho para descarte, usando sua variável */
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 12px; /* Ajuste para melhor posicionamento */
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 2.2rem; /* Botão de fechar maior */
+  line-height: 1;
+  color: var(--text-secondary-color);
+  cursor: pointer;
+  padding: 5px; /* Área de clique maior */
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.modal-close-button:hover {
+  color: var(--error-color); /* Cor de erro no hover para consistência com descarte */
+  transform: scale(1.1);
+}
+
+.modal-content p {
+  margin-bottom: 12px;
+  line-height: 1.6;
+  font-size: 0.95em; /* Tamanho de texto de parágrafo levemente ajustado */
+}
+
+.ticket-confirmation {
+  margin-top: 20px;
+  margin-bottom: 25px;
+  padding: 18px;
+  background-color: var(--bg-color); /* Usar o bg-color geral para leve destaque */
+  border: 1px solid var(--border-color);
+  border-radius: 6px; /* Bordas arredondadas consistentes */
+}
+
+.ticket-confirmation .ticket-instruction {
+  font-size: 0.9em;
+  color: var(--text-secondary-color);
+  margin-bottom: 10px;
+}
+.ticket-confirmation .ticket-instruction strong {
+    color: var(--text-color);
+}
+
+/* Input de texto dentro do modal, herdando estilos de .form-group */
+.ticket-confirmation input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px; /* Consistente com outros inputs */
+  background-color: var(--card-bg-color); /* Fundo do card para o input, para contraste com .ticket-confirmation */
+  color: var(--text-color);
+  font-size: 0.95em;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.ticket-confirmation input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-accent-color-rgb), 0.25); /* Sombra de foco maior */
+}
+
+.ticket-confirmation input.input-error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25); /* Sombra de erro vermelha */
+}
+.ticket-confirmation input.input-error:focus {
+  border-color: var(--error-color); /* Mantém a borda de erro no foco */
+}
+
+
+.modal-input-error { /* Erro específico do input dentro do modal */
+  font-size: 0.88em;
+  color: var(--error-color);
+  margin-top: -5px;
+  margin-bottom: 10px;
+  display: block; /* Garante que ocupe a linha */
+}
+
+.modal-content .warning-text {
+  color: var(--warning-color); /* Usando sua variável */
+  background-color: rgba(255, 193, 7, 0.1); /* Fundo mais sutil para o aviso */
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  padding: 12px 15px; /* Padding ajustado */
+  border-radius: 6px;
+  margin-top: 20px;
+  font-size: 0.9em;
+  display: flex; /* Para alinhar ícone e texto se você adicionar um */
+  align-items: center;
+}
+.modal-content .warning-text strong {
+    color: var(--warning-color);
+}
+
+.modal-actions {
+  margin-top: 30px; /* Mais espaço antes dos botões */
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* Espaço entre botões ajustado */
+  padding-top: 20px; /* Espaço acima dos botões */
+  border-top: 1px solid var(--border-color); /* Linha separadora */
+}
+
+/* Estilos de botões no modal */
+.modal-actions button {
+  padding: 10px 22px; /* Botões um pouco maiores */
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600; /* Texto dos botões mais forte */
+  font-size: 0.95em;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  line-height: 1.5; /* Melhor alinhamento vertical do texto */
+}
+
+.modal-actions button:active {
+  transform: translateY(1px);
+}
+
+.modal-actions .button-secondary {
+  background-color: var(--text-secondary-color); /* Usando variável existente */
+  color: var(--white-color);
+  border: 1px solid transparent; /* Para manter o tamanho ao adicionar borda no hover */
+}
+.modal-actions .button-secondary:hover {
+  background-color: #5a6268; /* Escurece o text-secondary-color */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.modal-actions .button-secondary:disabled {
+  background-color: #adb5bd;
+  color: #e9ecef;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.modal-actions .button-danger {
+  background-color: var(--error-color); /* Usando variável existente */
+  color: var(--white-color);
+  border: 1px solid transparent;
+}
+.modal-actions .button-danger:hover {
+  background-color: #c82333; /* Escurece o error-color */
+  box-shadow: 0 2px 5px rgba(var(--error-color), 0.2);
+}
+.modal-actions .button-danger:disabled {
+  background-color: #e96975; /* Tom mais claro de error-color para desabilitado */
+  color: var(--white-color);
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+/* === NOTIFICATION BANNER STYLES === */
+.notification-banner {
+  padding: 15px 20px;
+  margin: 20px 0; /* Espaçamento consistente com outros elementos */
+  border-radius: 6px; /* Consistente com outros cards/inputs */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+  font-size: 0.95em;
+  border-width: 1px;
+  border-style: solid;
+  position: relative; /* Para posicionar o botão de fechar */
+  /* Animação de entrada */
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slideDownFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes slideDownFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-banner p {
+  margin: 0;
+  flex-grow: 1;
+  line-height: 1.5; /* Melhor legibilidade */
+  padding-right: 30px; /* Espaço para o botão de fechar não sobrepor o texto */
+}
+
+.notification-success {
+  background-color: rgba(var(--primary-accent-color-rgb), 0.1); /* Usando sua cor primária com opacidade */
+  color: var(--success-color); /* Usando sua variável de sucesso para o texto */
+  border-color: rgba(var(--primary-accent-color-rgb), 0.3);
+}
+html[data-theme='dark'] .notification-success {
+  background-color: rgba(var(--primary-accent-color-rgb), 0.15);
+  border-color: rgba(var(--primary-accent-color-rgb), 0.4);
+}
+
+.notification-error {
+  background-color: var(--error-bg-color); /* Usando sua variável */
+  color: var(--error-color); /* Usando sua variável */
+  border-color: rgba(220, 53, 69, 0.3); /* Tom mais suave da cor de erro para a borda */
+}
+html[data-theme='dark'] .notification-error {
+  background-color: rgba(245, 101, 101, 0.15); /* Variação para tema escuro, se error-bg-color não for suficiente */
+  border-color: rgba(245, 101, 101, 0.4);
+}
+
+
+.notification-info { /* Adicionando estilo para 'info' se você usar */
+  background-color: rgba(var(--info-color), 0.1);
+  color: var(--info-color);
+  border-color: rgba(var(--info-color), 0.3);
+}
+html[data-theme='dark'] .notification-info {
+  background-color: rgba(var(--info-color), 0.15);
+  border-color: rgba(var(--info-color), 0.4);
+}
+
+.notification-warning { /* Adicionando estilo para 'warning' se você usar */
+  background-color: rgba(255,193,7, 0.1); /* Usando var(--warning-color) como base */
+  color: #856404; /* Cor de texto mais escura para contraste com fundo amarelo claro */
+  border-color: rgba(255,193,7, 0.3);
+}
+html[data-theme='dark'] .notification-warning {
+  background-color: rgba(236,201,75, 0.15); /* Tom mais escuro para o tema dark */
+  color: var(--warning-color);
+  border-color: rgba(236,201,75, 0.4);
+}
+
+
+.notification-dismiss-button {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem; /* Botão de fechar um pouco maior */
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  color: inherit; /* Herda a cor do texto do banner */
+  opacity: 0.6;
+  position: absolute; /* Posiciona em relação ao banner */
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  transition: opacity 0.2s ease;
+}
+.notification-dismiss-button:hover {
+  opacity: 1;
+}

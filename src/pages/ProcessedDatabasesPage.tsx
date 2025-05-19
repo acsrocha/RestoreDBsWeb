@@ -10,23 +10,39 @@ import { useInterval } from '../hooks/useInterval'
 import { useLastUpdated } from '../contexts/LastUpdatedContext'
 import { FiDatabase, FiRefreshCw } from 'react-icons/fi'
 
+// --- NOVOS IMPORTS ---
+import DiscardConfirmationModal from '../components/shared/DiscardConfirmationModal'
+import NotificationBanner from '../components/shared/NotificationBanner'
+// --- FIM DOS NOVOS IMPORTS ---
+
 const REFRESH_PROCESSED_INTERVAL = 15000
 
 const ProcessedDatabasesPage: React.FC = () => {
   const [databases, setDatabases] = useState<ProcessedDatabase[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isPollingLoading, setIsPollingLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null) // Erro de carregamento da lista
 
-  const { signalUpdate, addActivity } = useLastUpdated() // Supondo que addActivity existe no contexto
+  const { signalUpdate, addActivity } = useLastUpdated()
+
+  // --- NOVOS ESTADOS para o Modal e Feedback ---
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState<boolean>(false)
+  const [dbToConfirmDiscard, setDbToConfirmDiscard] =
+    useState<ProcessedDatabase | null>(null)
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
+  const [isDiscarding, setIsDiscarding] = useState<boolean>(false)
+  // --- FIM DOS NOVOS ESTADOS ---
 
   const loadDatabases = useCallback(
     async (isPollOperation = false, isTriggeredByManualAction = false) => {
       if (isTriggeredByManualAction && !isPollOperation) {
-        setIsLoading(true)
+        setIsLoading(true) // Loading principal da página
         setError(null)
       } else if (isPollOperation && !isTriggeredByManualAction && !isLoading) {
-        setIsPollingLoading(true)
+        setIsPollingLoading(true) // Loading sutil para polling
       }
 
       try {
@@ -41,11 +57,11 @@ const ProcessedDatabasesPage: React.FC = () => {
             ? err.message
             : 'Erro ao carregar bancos processados.'
         if (!isPollOperation || isTriggeredByManualAction) {
-          setError(errorMessage)
-          // Não limpar 'databases' em caso de erro de polling, para manter a última lista válida visível
+          setError(errorMessage) // Define erro para carregamentos principais/manuais
           if (isTriggeredByManualAction || firstLoadProcessedRef.current)
-            setDatabases([])
+            setDatabases([]) // Limpa dados apenas em erro de carregamento inicial ou manual
         }
+        // Não define feedbackMessage aqui, pois este 'error' é para o carregamento da lista
       } finally {
         if (isTriggeredByManualAction || (!isPollOperation && isLoading)) {
           setIsLoading(false)
@@ -55,98 +71,96 @@ const ProcessedDatabasesPage: React.FC = () => {
         }
       }
     },
-    [signalUpdate, isLoading]
-  ) // isLoading como dependência
+    [signalUpdate, isLoading] // Mantém isLoading aqui, pois afeta a lógica de setIsPollingLoading
+  )
 
   const firstLoadProcessedRef = useRef(true)
   useEffect(() => {
     if (firstLoadProcessedRef.current) {
-      setIsLoading(true)
-      loadDatabases(false, true)
+      // setIsLoading(true); // Já é tratado no loadDatabases
+      loadDatabases(false, true) // true para isTriggeredByManualAction na carga inicial
       firstLoadProcessedRef.current = false
     }
   }, [loadDatabases])
 
   useInterval(() => {
-    if (!isLoading && !isPollingLoading) {
+    if (!isLoading && !isPollingLoading && !isDiscardModalOpen) {
+      // Não atualiza se o modal estiver aberto
       loadDatabases(true, false)
     }
   }, REFRESH_PROCESSED_INTERVAL)
 
-  const handleMarkForDiscard = async (
-    dbId: string,
-    originalTicketId?: string
-  ) => {
-    let confirmationTicketValue: string | null = '' // O valor que será enviado ao backend
-
-    const dbToDiscard = databases.find(db => db.id === dbId)
-    const aliasToDiscard = dbToDiscard
-      ? dbToDiscard.restoredDbAlias
-      : `ID ${dbId}`
-
-    // Verifica se o ticket original existe e não é uma string vazia/undefined
-    const hasOriginalTicket = originalTicketId && originalTicketId.trim() !== ''
-
-    if (hasOriginalTicket) {
-      confirmationTicketValue = window.prompt(
-        `CONFIRMAÇÃO ADICIONAL NECESSÁRIA:\n\n` +
-          `O banco '${aliasToDiscard}' está associado ao Ticket ID original: '${originalTicketId}'.\n` +
-          `Para confirmar o DESCARTE PERMANENTE, por favor, digite o Ticket ID ('${originalTicketId}') novamente abaixo:`
-      )
-
-      if (confirmationTicketValue === null) {
-        // Usuário clicou em "Cancelar" no prompt
-        alert(`Descarte do banco '${aliasToDiscard}' cancelado pelo usuário.`)
-        if (addActivity)
-          addActivity(
-            `Tentativa de descarte para '${aliasToDiscard}' cancelada pelo usuário.`
-          )
-        return
-      }
+  // --- NOVAS FUNÇÕES PARA GERENCIAR O MODAL DE DESCARTE ---
+  const handleOpenDiscardModal = (dbId: string) => {
+    // Remove originalTicketId daqui
+    const dbToProcess = databases.find(d => d.id === dbId)
+    if (dbToProcess) {
+      setDbToConfirmDiscard(dbToProcess)
+      setIsDiscardModalOpen(true)
+      setFeedbackMessage(null)
     } else {
-      // Se não há ticket original, apenas uma confirmação simples
-      if (
-        !window.confirm(
-          `Tem certeza que deseja marcar o banco '${aliasToDiscard}' para descarte? Esta ação é irreversível.`
-        )
-      ) {
-        if (addActivity)
-          addActivity(
-            `Tentativa de descarte para '${aliasToDiscard}' cancelada pelo usuário (confirmação simples).`
-          )
-        return
-      }
-      // confirmationTicketValue permanece ""
+      console.error(
+        `[handleOpenDiscardModal] Banco com ID ${dbId} NÃO encontrado.`
+      )
+      setFeedbackMessage({
+        type: 'error',
+        text: `Erro: Não foi possível encontrar o banco de dados com ID ${dbId} para descarte.`
+      })
     }
+  }
 
-    setIsLoading(true) // Feedback visual para a ação de descarte
-    setError(null)
+  const handleCloseDiscardModal = () => {
+    if (addActivity && dbToConfirmDiscard && !isDiscarding) {
+      addActivity(
+        `Descarte para '${dbToConfirmDiscard.restoredDbAlias}' cancelado pelo usuário no modal.`
+      )
+    }
+    setIsDiscardModalOpen(false)
+    setDbToConfirmDiscard(null)
+  }
+
+  const handleConfirmDiscard = async (
+    confirmationTicketValueFromModal?: string
+  ) => {
+    if (!dbToConfirmDiscard) return
+
+    setIsDiscarding(true)
+    setFeedbackMessage(null)
+
+    const aliasToDiscard = dbToConfirmDiscard.restoredDbAlias
+
     try {
       const message = await markDatabaseForDiscard(
-        dbId,
-        confirmationTicketValue.trim()
+        dbToConfirmDiscard.id,
+        confirmationTicketValueFromModal || ''
       )
-      alert(message) // Exibe a mensagem de sucesso (ou aviso com erros parciais) do backend
-      if (addActivity) addActivity(message) // Loga a mensagem do backend na UI de atividades
-      await loadDatabases(false, true) // Recarrega a lista como uma ação manual
+      setFeedbackMessage({ type: 'success', text: message })
+      if (addActivity) addActivity(message)
+      await loadDatabases(false, true)
+      setIsDiscardModalOpen(false)
+      setDbToConfirmDiscard(null)
     } catch (err) {
       const errorMessage =
         err instanceof Error
           ? err.message
           : `Erro desconhecido ao marcar '${aliasToDiscard}' para descarte.`
       console.error(`Falha ao marcar para descarte '${aliasToDiscard}':`, err)
-      alert(
-        `Falha ao marcar '${aliasToDiscard}' para descarte:\n\n${errorMessage}`
-      ) // Exibe a mensagem de erro do backend
-      setError(errorMessage)
-      setIsLoading(false)
+      setFeedbackMessage({
+        type: 'error',
+        text: `Falha ao marcar '${aliasToDiscard}' para descarte: ${errorMessage}`
+      })
+    } finally {
+      setIsDiscarding(false)
     }
-    // Se o descarte for bem-sucedido, o setIsLoading(false) é feito no finally de loadDatabases
   }
+  // --- FIM DAS NOVAS FUNÇÕES ---
 
   const handleRefreshManual = () => {
+    setFeedbackMessage(null)
     loadDatabases(false, true)
   }
+
+  // LOG D: Verifica os estados relevantes antes de cada renderização da página
 
   return (
     <div id='view-bancos-restaurados' className='view active'>
@@ -167,27 +181,46 @@ const ProcessedDatabasesPage: React.FC = () => {
             className='button-refresh'
             title='Atualizar lista de bancos processados'
             onClick={handleRefreshManual}
-            disabled={isLoading || isPollingLoading}
+            disabled={isLoading || isPollingLoading || isDiscarding}
           >
             <FiRefreshCw />
-            {isLoading && !isPollingLoading
+            {isLoading && !isPollingLoading && !isDiscarding
               ? 'Carregando...'
-              : isPollingLoading
+              : isPollingLoading && !isDiscarding
               ? 'Atualizando...'
+              : isDiscarding
+              ? 'Processando...'
               : 'Atualizar Lista'}
           </button>
         </div>
+
+        {feedbackMessage && (
+          <NotificationBanner
+            type={feedbackMessage.type}
+            message={feedbackMessage.text}
+            onDismiss={() => setFeedbackMessage(null)}
+          />
+        )}
+
         {error && !isLoading && (
           <div className='error-message' style={{ marginBottom: '15px' }}>
-            {`Erro: ${error}`}
+            {`Erro ao carregar dados: ${error}`}
           </div>
         )}
         <ProcessedDatabasesTable
           databases={databases}
-          isLoading={isLoading && databases.length === 0}
-          onMarkForDiscard={handleMarkForDiscard}
+          isLoading={isLoading && databases.length === 0 && !isDiscarding}
+          onMarkForDiscard={handleOpenDiscardModal}
         />
       </section>
+
+      <DiscardConfirmationModal
+        isOpen={isDiscardModalOpen}
+        dbToDiscard={dbToConfirmDiscard}
+        onClose={handleCloseDiscardModal}
+        onConfirm={handleConfirmDiscard}
+        isDiscarding={isDiscarding}
+      />
     </div>
   )
 }

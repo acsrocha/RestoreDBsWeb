@@ -7,7 +7,7 @@ interface ProcessedDatabasesTableProps {
   databases: ProcessedDatabase[];
   isLoading: boolean;
   // Atualizada para receber o originalTicketId (pode ser undefined ou string vazia)
-  onMarkForDiscard: (dbId: string, originalTicketId?: string) => void;
+  onMarkForDiscard: (dbId: string) => void;
 }
 
 const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
@@ -96,7 +96,7 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
                 actionsHtml = (
                   <button
                     className="action-button discard-button"
-                    onClick={() => onMarkForDiscard(db.id, db.uploadedByTicketID)} // Passa o ticket original
+                    onClick={() => onMarkForDiscard(db.id)} // Passa o ticket original
                     title="Marcar para Descarte"
                   >
                     Descartar
