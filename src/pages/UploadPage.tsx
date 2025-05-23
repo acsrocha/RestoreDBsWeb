@@ -1,7 +1,7 @@
 // src/pages/UploadPage.tsx
 import React from 'react';
 import UploadForm from '../components/upload/UploadForm';
-import { FiUploadCloud } from 'react-icons/fi'; // Ícone para o título da página
+import { FiUploadCloud, FiUserPlus } from 'react-icons/fi'; // Ícone para o título da página
 
 const UploadPage: React.FC = () => {
   return (
@@ -13,8 +13,12 @@ const UploadPage: React.FC = () => {
       */}
       <section className="list-card upload-card" id="uploadSection" aria-labelledby="uploadHeader">
         <h2 id="uploadHeader">
-          <span className="icon"><FiUploadCloud /></span>
+          <FiUserPlus />{' '}
+          {/* Ícone consistente com o estilo de outros títulos de list-card */}
           Upload de Novo Backup para Restauração
+
+          {/* <span className="icon"><FiUploadCloud /></span>
+          Upload de Novo Backup para Restauração */}
         </h2>
         <UploadForm />
       </section>

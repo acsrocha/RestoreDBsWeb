@@ -82,7 +82,7 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
           </div>
         )}
         <p className="warning-text">
-          <strong>Atenção:</strong> Esta ação é irreversível.
+          <strong>Atenção:&nbsp;</strong> Esta ação é irreversível.
         </p>
         <div className="modal-actions">
           <button onClick={onClose} className="button-secondary" disabled={isDiscarding}>

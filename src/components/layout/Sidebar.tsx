@@ -4,22 +4,28 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import logo from '../../assets/firebird-logo.png';
 
-// Importando ícones do Feather Icons (ou outro conjunto de sua escolha)
-import { FiBarChart2, FiUploadCloud, FiDatabase, FiMoon, FiSun } from 'react-icons/fi';
-// Ou Heroicons v2
-// import { ChartBarIcon, ArrowUpTrayIcon, CircleStackIcon, MoonIcon, SunIcon } from '@heroicons/react/24/outline';
-
+// Importando ícones do Feather Icons
+import { 
+  FiBarChart2, 
+  FiUploadCloud, 
+  FiDatabase, 
+  FiFolderPlus, // <<< NOVO ÍCONE ADICIONADO
+  FiMoon, 
+  FiSun 
+} from 'react-icons/fi';
 
 interface SidebarProps {
   collapsed: boolean;
   setCurrentViewTitle: (title: string) => void;
 }
 
-// Atualizando navItems com os componentes de ícone
+// Atualizando navItems com o novo item de menu
 const navItems = [
   { path: '/monitoramento', icon: <FiBarChart2 />, text: 'Monitoramento' },
   { path: '/upload', icon: <FiUploadCloud />, text: 'Enviar Backup' },
   { path: '/bancos-restaurados', icon: <FiDatabase />, text: 'Bancos Restaurados' },
+  // NOVO ITEM DE NAVEGAÇÃO:
+  { path: '/provisionar-pasta-cliente', icon: <FiFolderPlus />, text: 'Área Cliente (Drive)' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => {
@@ -31,7 +37,22 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
     if (activeItem) {
       setCurrentViewTitle(activeItem.text);
     } else {
-      setCurrentViewTitle('Dashboard'); // Fallback
+      // Fallback para o título se a rota não estiver nos navItems principais
+      // Poderia ser ajustado para outros casos, se necessário
+      if (location.pathname === '/') { // Rota raiz que redireciona
+        const defaultItem = navItems.find(item => item.path === '/monitoramento');
+        if (defaultItem) {
+          setCurrentViewTitle(defaultItem.text);
+        } else {
+          setCurrentViewTitle('RestoreDB'); // Um fallback genérico
+        }
+      } else {
+         // Tenta encontrar um título para rotas que não estão no menu principal mas podem ter um título lógico
+         // Por exemplo, se você tivesse uma página de "Detalhes do Usuário" acessada de outro lugar
+         // Aqui, para rotas não mapeadas no navItems, você pode definir um título padrão ou deixar como está.
+         // Para o novo item, como ele está em navItems, o título será definido corretamente.
+        setCurrentViewTitle('RestoreDB'); // Ou um título mais apropriado para rotas não listadas
+      }
     }
   }, [location.pathname, setCurrentViewTitle]);
 
@@ -49,7 +70,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
                 to={item.path}
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
               >
-                {/* O ícone agora é um componente React */}
                 <span className="nav-icon">{item.icon}</span>
                 {!collapsed && <span className="nav-text">{item.text}</span>}
               </NavLink>

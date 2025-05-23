@@ -36,6 +36,8 @@ html {
   --sidebar-width-collapsed: 70px;
   --header-height: 60px;
   --primary-accent-color-rgb: 1, 195, 142;
+  --border-radius-medium: 8px;
+  --border-radius-small: 6px;
 }
 
 html[data-theme='dark'] {
@@ -72,14 +74,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
-  /* border: 3px solid hotpink; */ /* DEBUG */
 }
 
 .app-layout {
   display: flex;
   width: 100%;
   min-height: 100%;
-  /* border: 3px solid cyan; */ /* DEBUG */
 }
 
 /* --- SIDEBAR STYLES --- */
@@ -99,7 +99,6 @@ body {
   overflow-x: hidden;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
-  /* border: 3px solid gold; */ /* DEBUG */
 }
 html[data-theme='dark'] .sidebar {
   box-shadow: 3px 0 12px rgba(0, 0, 0, 0.3);
@@ -107,7 +106,6 @@ html[data-theme='dark'] .sidebar {
 .sidebar.collapsed {
   width: var(--sidebar-width-collapsed);
 }
-/* ... (Restante dos estilos do sidebar como antes - omitido por brevidade, mas mantenha-os) ... */
 .sidebar.collapsed .sidebar-header h2,
 .sidebar.collapsed .nav-text,
 .sidebar.collapsed .theme-switcher-sidebar label {
@@ -243,15 +241,14 @@ html[data-theme='dark'] .theme-switcher-sidebar {
 
 /* --- MAIN CONTENT WRAPPER --- */
 .main-content-wrapper {
-  flex-grow: 1; /* Ocupa o espaço restante ao lado do sidebar */
+  flex-grow: 1;
   margin-left: var(--sidebar-width);
   display: flex;
-  flex-direction: column; /* Header, content-area, Footer empilhados */
+  flex-direction: column;
   transition: margin-left 0.25s ease-in-out;
   background-color: var(--bg-color);
-  min-width: 0; /* Crucial para evitar que conteúdo interno impeça o encolhimento/crescimento correto em contextos flex */
-  overflow-x: hidden; /* Evita scroll horizontal no wrapper se algo vazar */
-  /* border: 3px solid yellow; */ /* DEBUG */
+  min-width: 0;
+  overflow-x: hidden;
 }
 .sidebar.collapsed ~ .main-content-wrapper {
   margin-left: var(--sidebar-width-collapsed);
@@ -269,9 +266,8 @@ header.main-header {
   position: sticky;
   top: 0;
   z-index: 900;
-  flex-shrink: 0; /* Header não deve encolher */
+  flex-shrink: 0;
 }
-/* ... (Restante dos estilos do header como antes - omitido por brevidade) ... */
 #sidebarToggleBtn {
   background: none;
   border: none;
@@ -297,13 +293,11 @@ header.main-header {
 /* --- CONTENT AREA --- */
 .content-area {
   padding: 25px;
-  flex-grow: 1; /* Ocupa o espaço vertical restante */
-  overflow-y: auto; /* Scroll vertical se necessário */
-  /* width: 100%; */ /* Removido - como filho de um container flex (main-content-wrapper), ele deve se esticar por padrão. Se não, o display:flex abaixo ajuda. */
-  display: flex; /* AJUSTE: Faz .content-area ser um container flex */
-  flex-direction: column; /* Para que .view.active possa usar flex-grow */
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
-  /* border: 2px solid red; */ /* DEBUG */
 }
 
 /* --- VIEW --- */
@@ -312,12 +306,11 @@ header.main-header {
   animation: fadeInView 0.4s ease-out;
 }
 .view.active {
-  display: flex; /* AJUSTE: Faz a view ser um container flex */
-  flex-direction: column; /* Para empilhar as seções internas */
-  flex-grow: 1; /* AJUSTE: Faz a view ocupar todo o espaço do .content-area */
-  width: 100%; /* Garante que use a largura total */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
   box-sizing: border-box;
-  /* border: 2px solid blue; */ /* DEBUG */
 }
 @keyframes fadeInView {
   from {
@@ -331,21 +324,17 @@ header.main-header {
 }
 
 /* --- SEÇÕES DENTRO DA VIEW --- */
-/* Agora que .view.active é flex column, estas seções serão filhas diretas.
-   Elas já são block por padrão (section), então ocuparão a largura.
-   O width: 100% aqui é uma redundância segura. */
 .status-highlight-grid,
 .monitor-detailed-lists-grid,
 .upload-card,
 .processed-databases-card,
-#view-monitoramento .errors-list-card, /* Se for filho direto da view */
-.list-card {
-  /* Aplicando a .list-card se ele for um filho direto da view e não estiver em outra grid */
+#view-monitoramento .errors-list-card,
+.list-card,
+.client-drive-area-card {
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 25px; /* Espaçamento entre seções */
+  margin-bottom: 25px;
 }
-/* Remove margin-bottom do último filho direto da view para evitar espaço extra antes do footer */
 .view.active > *:last-child {
   margin-bottom: 0;
 }
@@ -354,40 +343,23 @@ header.main-header {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  /* border: 2px solid green; */ /* DEBUG */
 }
 
 .monitor-detailed-lists-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 20px;
-  /* border: 2px solid orange; */ /* DEBUG */
 }
-/* Se FailedRestoresList (que renderiza .errors-list-card ou .list-card)
-   estiver dentro de .monitor-detailed-lists-grid, o grid-column abaixo se aplicaria.
-   Se for filho direto de .view.active, ele já tem width: 100% da regra mais geral acima. */
 #view-monitoramento .errors-list-card {
-  /* Se este seletor for para um card que está DENTRO de .monitor-detailed-lists-grid: */
-  /* grid-column: 1 / -1; */
-  /* Se for filho DIRETO de .view.active, a regra acima de width:100% para .list-card já o cobre. */
-  /* A margin-top: 0 foi removida, pois o espaçamento é controlado por margin-bottom da section acima. */
+  /* Estilos específicos se necessário */
 }
-
-/* Cards dentro de .monitor-detailed-lists-grid não precisam de margin-bottom, pois a grid tem 'gap' */
 .monitor-detailed-lists-grid > .list-card {
   margin-bottom: 0;
 }
 
-/* --- RESTANTE DO CSS (HighlightCard, ListCard items, Forms, Tables, Responsividade, etc.) --- */
-/* Copie e cole o restante do seu global.css que lida com os estilos internos desses elementos.
-   As regras de responsividade para .status-highlight-grid, etc., devem ser mantidas. */
-
-/* COPIEI O RESTANTE DO SEU CSS PARA MANTER A INTEGRIDADE */
-/* (exceto as regras já cobertas/modificadas acima para .status-highlight-grid, .list-card, etc. no contexto de layout) */
-
 .highlight-card {
   background-color: var(--card-bg-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-medium);
   padding: 18px;
   display: flex;
   align-items: center;
@@ -483,17 +455,26 @@ html[data-theme='dark'] .highlight-card.activity-summary .card-icon {
   margin-right: auto;
 }
 .list-card h2 {
-  color: var(--text-secondary-color);
-  font-size: 1.1em;
-  font-weight: 500;
+  color: var(--text-color); /* Alterado de --text-secondary-color */
+  font-size: 1.3em; /* Alterado de 1.1em */
+  font-weight: 600; /* Alterado de 500 */
   margin-top: 0;
-  margin-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
+  margin-bottom: 1rem; /* Espaçamento inferior consistente (era 10px para .client-drive-area-card h2) */
+  border-bottom: none; /* REMOVIDA a borda inferior */
+  padding-bottom: 0; /* REMOVIDO o padding inferior que acompanhava a borda */
   display: flex;
   align-items: center;
-  transition: color 0.3s, border-color 0.3s;
+  gap: 0.7rem; /* ADICIONADO para espaçamento entre ícone e texto */
+  transition: color 0.3s; /* Removida transição de border-color */
+  flex-shrink: 0; /* Adicionado para consistência, embora h2 seja block */
 }
+
+.list-card h2 > svg {
+  color: var(--primary-accent-color);
+  font-size: 1.2em; /* Relativo ao font-size do h2, tornando-o um pouco maior */
+  flex-shrink: 0; /* Evita que o ícone encolha */
+}
+
 .list-card h2 .icon {
   margin-right: 8px;
   font-size: 1em;
@@ -501,7 +482,7 @@ html[data-theme='dark'] .highlight-card.activity-summary .card-icon {
 }
 .errors-list-card h2 .icon {
   color: var(--error-color);
-} /* Continua específico para o card de erros */
+}
 .list-card ul {
   list-style: none;
   padding: 0;
@@ -569,7 +550,7 @@ html[data-theme='dark'] .failed-restore-item:hover {
 .error-details {
   background-color: var(--error-bg-color);
   border: 1px solid var(--error-color);
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   padding: 12px;
   margin-top: 10px;
   font-family: 'Consolas', 'Courier New', Courier, monospace;
@@ -637,22 +618,31 @@ html[data-theme='dark'] .error-details {
 html[data-theme='dark'] .form-group label {
   color: var(--text-secondary-color);
 }
+
+/* --- INÍCIO DAS ALTERAÇÕES PARA INPUTS --- */
 .form-group input[type='file'],
 .form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='password'],
+.form-group input[type='search'],
+.form-group input[type='number'],
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--border-radius-small);
   background-color: var(--bg-color);
   color: var(--text-color);
   font-size: 0.95em;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s,
+    color 0.3s;
 }
-.form-group input[type='file'] {
-  padding: 8px 10px;
-}
+
+/* Removendo a regra específica .form-group input[type='file'] { padding: 8px 10px; } pois a regra geral acima já cobre o padding.
+   A regra para o input de arquivo customizado (.form-group input[type='file'] com .visually-hidden) é mais importante.
+*/
+
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
@@ -663,12 +653,43 @@ html[data-theme='dark'] .form-group input:focus,
 html[data-theme='dark'] .form-group textarea:focus {
   box-shadow: 0 0 0 2px rgba(var(--primary-accent-color-rgb), 0.35);
 }
+
+/* NOVO: Sobrescrever estilos de autopreenchimento do navegador para tema escuro */
+html[data-theme='dark'] .form-group input:-webkit-autofill,
+html[data-theme='dark'] .form-group input:-webkit-autofill:hover,
+html[data-theme='dark'] .form-group input:-webkit-autofill:focus,
+html[data-theme='dark'] .form-group input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 40px var(--bg-color) inset !important;
+  -webkit-text-fill-color: var(--text-color) !important;
+  caret-color: var(--text-color) !important;
+  border: 1px solid var(--border-color) !important; /* Garante que a borda também seja estilizada */
+  border-radius: var(
+    --border-radius-small
+  ) !important; /* Mantém o border-radius */
+  transition: background-color 600000s 0s, color 600000s 0s !important; /* Truque da transição longa */
+  filter: none !important; /* Tentativa de remover filtros padrão */
+}
+
+/* Para navegadores que usam o padrão (não -webkit) */
+html[data-theme='dark'] .form-group input:autofill,
+html[data-theme='dark'] .form-group input:autofill:hover,
+html[data-theme='dark'] .form-group input:autofill:focus,
+html[data-theme='dark'] .form-group input:autofill:active {
+  box-shadow: 0 0 0 40px var(--bg-color) inset !important;
+  filter: none !important;
+  color: var(--text-color) !important;
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius-small) !important;
+}
+/* --- FIM DAS ALTERAÇÕES PARA INPUTS --- */
+
 .button-primary {
   background-color: var(--primary-accent-color);
   color: var(--white-color);
   border: none;
   padding: 12px 20px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-small);
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
@@ -691,7 +712,7 @@ html[data-theme='dark'] .form-group textarea:focus {
 .upload-status-message {
   margin-top: 15px;
   padding: 10px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   font-size: 0.9em;
   text-align: center;
 }
@@ -719,7 +740,7 @@ html[data-theme='dark'] .form-group textarea:focus {
   color: var(--white-color);
   border: none;
   padding: 8px 15px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-small);
   font-size: 0.9em;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -739,13 +760,16 @@ html[data-theme='dark'] .form-group textarea:focus {
   font-size: 0.9em;
 }
 .data-table td {
-  padding: 10px 12px;
+  padding: 10px 15px; /* AJUSTADO: Vertical 10px, Horizontal 15px */
   text-align: left;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
+  /* Adicionado para consistência de quebra de palavra, se necessário, embora não seja o problema principal aqui */
+  word-break: break-word;
 }
+
 .data-table th {
-  padding: 12px 15px;
+  padding: 12px 15px; /* MANTIDO: Vertical 12px, Horizontal 15px */
   text-align: left;
   border-bottom: 2px solid var(--primary-accent-color);
   vertical-align: middle;
@@ -755,6 +779,7 @@ html[data-theme='dark'] .form-group textarea:focus {
   white-space: nowrap;
   font-size: 0.9em;
 }
+
 html[data-theme='dark'] .data-table th {
   background-color: #232e42;
   border-bottom: 2px solid var(--primary-accent-color);
@@ -782,7 +807,7 @@ html[data-theme='dark'] .data-table tbody tr:hover {
   border: none;
   padding: 5px 10px;
   font-size: 0.85em;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -815,7 +840,7 @@ footer.content-footer {
   font-size: 0.85em;
   color: var(--text-secondary-color);
   background-color: var(--card-bg-color);
-  flex-shrink: 0; /* Footer não deve encolher */
+  flex-shrink: 0;
 }
 ::-webkit-scrollbar {
   width: 8px;
@@ -836,7 +861,6 @@ html[data-theme='dark'] ::-webkit-scrollbar-track {
   background: var(--text-secondary-color);
 }
 
-/* --- RESPONSIVIDADE (Ajustes na .status-highlight-grid) --- */
 @media (max-width: 1024px) {
   .monitor-detailed-lists-grid {
     grid-template-columns: 1fr;
@@ -897,7 +921,7 @@ html[data-theme='dark'] ::-webkit-scrollbar-track {
   }
   .list-card {
     padding: 15px;
-  } /* Afeta todos os .list-card */
+  }
   .list-card h2 {
     font-size: 1.05em;
     margin-bottom: 12px;
@@ -937,7 +961,6 @@ html[data-theme='dark'] ::-webkit-scrollbar-track {
   }
 }
 
-/* --- THEME TOGGLE (Mantido) --- */
 .theme-switcher-sidebar #themeToggle {
   width: 38px;
   height: 20px;
@@ -971,81 +994,60 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   transform: translateX(18px);
 }
 
-/* --- ERROR MESSAGE (Mantido) --- */
 .error-message {
   background-color: var(--error-bg-color);
   color: var(--error-color);
   border: 1px solid var(--error-color);
   padding: 10px 15px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   margin-bottom: 20px;
   text-align: center;
 }
 
-/* Estilização para ícones SVG usados nos componentes */
-.nav-icon svg, /* Ícones no Sidebar */
-.list-card h2 .icon svg, /* Ícones nos títulos de ListCard (h2) */
-.highlight-card .card-icon svg { /* Ícones nos HighlightCards */
-  vertical-align: middle; /* Bom para alinhar com texto adjacente */
-  /* O tamanho pode ser herdado de 'font-size' do elemento pai
-     ou definido explicitamente aqui se necessário.
-     Ex: font-size: 1.1em; (para .list-card h2 .icon svg)
-         font-size: 1em; (para .nav-icon svg)
-     Os HighlightCards já têm um .card-icon com font-size, então o SVG deve herdar.
-  */
+.nav-icon svg,
+.list-card h2 .icon svg,
+.highlight-card .card-icon svg {
+  vertical-align: middle;
 }
 
-/* Estilização para ícones dentro de botões */
 .button-primary svg,
 .button-refresh svg,
 .action-button svg {
-  /* margin-right: 6px; */ /* Removido - melhor adicionar o espaço no JSX se necessário (<Icono /> Texto) ou com gap do flex no botão */
-  vertical-align: middle; /* Alinha o ícone com o texto do botão */
-  /* font-size: 1em; */ /* Geralmente herdam bem o tamanho */
-  /* Se o ícone parecer muito grande ou pequeno, ajuste o font-size do botão
-     ou aplique um tamanho específico ao SVG aqui. */
+  vertical-align: middle;
 }
 
-
-
-
-
-/* Esconde o input de arquivo padrão */
 .visually-hidden {
   position: absolute !important;
   height: 1px;
   width: 1px;
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
-  white-space: nowrap; /* Evita quebra de linha que pode torná-lo visível */
+  white-space: nowrap;
 }
 
-/* Container para o botão customizado e o nome do arquivo */
 .custom-file-input-container {
   display: flex;
   align-items: center;
-  gap: 10px; /* Espaço entre o botão e o nome do arquivo */
-  margin-top: 4px; /* Pequeno espaço abaixo do label "Arquivo de Backup" */
+  gap: 10px;
+  margin-top: 4px;
 }
 
-/* Estilo para o label que se parece com um botão */
 .custom-file-button {
-  /* Você pode criar um estilo .button-secondary ou usar .button-primary se quiser a mesma cor */
   display: inline-flex;
   align-items: center;
-  padding: 8px 15px; /* Ajuste o padding para o tamanho desejado */
+  padding: 8px 15px;
   font-size: 0.9em;
   font-weight: 500;
-  color: var(--sidebar-text-color); /* Exemplo: texto claro */
-  background-color: var(--sidebar-link-hover-bg); /* Exemplo: cor de fundo do sidebar hover */
+  color: var(--sidebar-text-color);
+  background-color: var(--sidebar-link-hover-bg);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .custom-file-button:hover {
-  background-color: var(--sidebar-bg-color); /* Exemplo: cor de fundo do sidebar */
+  background-color: var(--sidebar-bg-color);
   border-color: var(--primary-accent-color);
 }
 
@@ -1059,23 +1061,23 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: calc(100% - 150px); /* Ajuste conforme a largura do botão */
+  max-width: calc(100% - 150px);
 }
 
-/* Remove o padding padrão do input de arquivo se ele não estiver escondido,
-   mas .visually-hidden deve cuidar disso. */
 .form-group input[type='file'] {
-  padding: 0; /* Se .visually-hidden não for suficiente */
-  border: none; /* Se .visually-hidden não for suficiente */
+  /* Se usar .visually-hidden, estes são menos críticos, mas podem servir de fallback. */
+  /* padding: 0; */
+  /* border: none; */
 }
 
-/* Se você quiser um estilo .button-secondary genérico */
 .button-secondary {
-  /* ... defina aqui um estilo de botão secundário que combine com sua paleta ... */
-  /* Exemplo: */
-  background-color: var(--text-secondary-color); /* Cinza */
+  background-color: var(--text-secondary-color);
   color: var(--white-color);
-  /* ... outras propriedades como padding, border-radius, etc. ... */
+  padding: 10px 18px;
+  border-radius: var(--border-radius-small);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s ease;
 }
 .button-secondary:hover {
   filter: brightness(110%);
@@ -1088,18 +1090,18 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.65); /* Fundo mais escuro para maior contraste */
+  background-color: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050; /* Z-index alto para ficar sobre outros elementos */
+  z-index: 1050;
   padding: 20px;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
 }
 
-.modal-overlay.active { /* Adicione esta classe ao overlay quando o modal estiver aberto */
+.modal-overlay.active {
   opacity: 1;
   visibility: visible;
 }
@@ -1108,10 +1110,10 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   background-color: var(--card-bg-color);
   color: var(--text-color);
   padding: 25px 30px;
-  border-radius: 8px; /* Bordas levemente mais arredondadas */
-  box-shadow: var(--shadow), 0 8px 30px rgba(0, 0, 0, 0.15); /* Sombra mais pronunciada */
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow), 0 8px 30px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 520px; /* Um pouco mais de largura */
+  max-width: 520px;
   position: relative;
   text-align: left;
   border: 1px solid var(--border-color);
@@ -1127,48 +1129,48 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
 
 .modal-content h2 {
   margin-top: 0;
-  font-size: 1.6em; /* Título um pouco maior */
-  font-weight: 600; /* Mais peso para o título */
-  margin-bottom: 20px; /* Mais espaço abaixo do título */
+  font-size: 1.6em;
+  font-weight: 600;
+  margin-bottom: 20px;
   color: var(--text-color);
 }
 
 .modal-content.discard-modal h2 {
-  color: var(--error-color); /* Vermelho para descarte, usando sua variável */
+  color: var(--error-color);
 }
 
 .modal-close-button {
   position: absolute;
-  top: 12px; /* Ajuste para melhor posicionamento */
+  top: 12px;
   right: 15px;
   background: transparent;
   border: none;
-  font-size: 2.2rem; /* Botão de fechar maior */
+  font-size: 2.2rem;
   line-height: 1;
   color: var(--text-secondary-color);
   cursor: pointer;
-  padding: 5px; /* Área de clique maior */
+  padding: 5px;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .modal-close-button:hover {
-  color: var(--error-color); /* Cor de erro no hover para consistência com descarte */
+  color: var(--error-color);
   transform: scale(1.1);
 }
 
 .modal-content p {
   margin-bottom: 12px;
   line-height: 1.6;
-  font-size: 0.95em; /* Tamanho de texto de parágrafo levemente ajustado */
+  font-size: 0.95em;
 }
 
 .ticket-confirmation {
   margin-top: 20px;
   margin-bottom: 25px;
   padding: 18px;
-  background-color: var(--bg-color); /* Usar o bg-color geral para leve destaque */
+  background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 6px; /* Bordas arredondadas consistentes */
+  border-radius: var(--border-radius-small);
 }
 
 .ticket-confirmation .ticket-instruction {
@@ -1177,16 +1179,15 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   margin-bottom: 10px;
 }
 .ticket-confirmation .ticket-instruction strong {
-    color: var(--text-color);
+  color: var(--text-color);
 }
 
-/* Input de texto dentro do modal, herdando estilos de .form-group */
-.ticket-confirmation input[type="text"] {
+.ticket-confirmation input[type='text'] {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 6px; /* Consistente com outros inputs */
-  background-color: var(--card-bg-color); /* Fundo do card para o input, para contraste com .ticket-confirmation */
+  border-radius: var(--border-radius-small);
+  background-color: var(--card-bg-color);
   color: var(--text-color);
   font-size: 0.95em;
   box-sizing: border-box;
@@ -1195,63 +1196,62 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   margin-bottom: 10px;
 }
 
-.ticket-confirmation input[type="text"]:focus {
+.ticket-confirmation input[type='text']:focus {
   outline: none;
   border-color: var(--primary-accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--primary-accent-color-rgb), 0.25); /* Sombra de foco maior */
+  box-shadow: 0 0 0 3px rgba(var(--primary-accent-color-rgb), 0.25);
 }
 
 .ticket-confirmation input.input-error {
   border-color: var(--error-color);
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25); /* Sombra de erro vermelha */
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
 }
 .ticket-confirmation input.input-error:focus {
-  border-color: var(--error-color); /* Mantém a borda de erro no foco */
+  border-color: var(--error-color);
 }
 
-
-.modal-input-error { /* Erro específico do input dentro do modal */
+.modal-input-error {
   font-size: 0.88em;
   color: var(--error-color);
   margin-top: -5px;
   margin-bottom: 10px;
-  display: block; /* Garante que ocupe a linha */
+  display: block;
 }
 
 .modal-content .warning-text {
-  color: var(--warning-color); /* Usando sua variável */
-  background-color: rgba(255, 193, 7, 0.1); /* Fundo mais sutil para o aviso */
+  color: var(--warning-color);
+  background-color: rgba(255, 193, 7, 0.1);
   border: 1px solid rgba(255, 193, 7, 0.3);
-  padding: 12px 15px; /* Padding ajustado */
-  border-radius: 6px;
+  padding: 12px 15px;
+  border-radius: var(--border-radius-small);
   margin-top: 20px;
   font-size: 0.9em;
-  display: flex; /* Para alinhar ícone e texto se você adicionar um */
+  display: flex;
   align-items: center;
 }
 .modal-content .warning-text strong {
-    color: var(--warning-color);
+  color: var(--warning-color);
 }
 
 .modal-actions {
-  margin-top: 30px; /* Mais espaço antes dos botões */
+  margin-top: 30px;
   display: flex;
   justify-content: flex-end;
-  gap: 12px; /* Espaço entre botões ajustado */
-  padding-top: 20px; /* Espaço acima dos botões */
-  border-top: 1px solid var(--border-color); /* Linha separadora */
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
 }
 
-/* Estilos de botões no modal */
 .modal-actions button {
-  padding: 10px 22px; /* Botões um pouco maiores */
-  border-radius: 6px;
+  padding: 10px 22px;
+  border-radius: var(--border-radius-small);
   border: none;
   cursor: pointer;
-  font-weight: 600; /* Texto dos botões mais forte */
+  font-weight: 600;
   font-size: 0.95em;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-  line-height: 1.5; /* Melhor alinhamento vertical do texto */
+  transition: background-color 0.2s ease, transform 0.1s ease,
+    box-shadow 0.2s ease;
+  line-height: 1.5;
 }
 
 .modal-actions button:active {
@@ -1259,13 +1259,13 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
 }
 
 .modal-actions .button-secondary {
-  background-color: var(--text-secondary-color); /* Usando variável existente */
+  background-color: var(--text-secondary-color);
   color: var(--white-color);
-  border: 1px solid transparent; /* Para manter o tamanho ao adicionar borda no hover */
+  border: 1px solid transparent;
 }
 .modal-actions .button-secondary:hover {
-  background-color: #5a6268; /* Escurece o text-secondary-color */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background-color: #5a6268;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 .modal-actions .button-secondary:disabled {
   background-color: #adb5bd;
@@ -1275,28 +1275,27 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
 }
 
 .modal-actions .button-danger {
-  background-color: var(--error-color); /* Usando variável existente */
+  background-color: var(--error-color);
   color: var(--white-color);
   border: 1px solid transparent;
 }
 .modal-actions .button-danger:hover {
-  background-color: #c82333; /* Escurece o error-color */
+  background-color: #c82333;
   box-shadow: 0 2px 5px rgba(var(--error-color), 0.2);
 }
 .modal-actions .button-danger:disabled {
-  background-color: #e96975; /* Tom mais claro de error-color para desabilitado */
+  background-color: #e96975;
   color: var(--white-color);
   opacity: 0.7;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-
 /* === NOTIFICATION BANNER STYLES === */
 .notification-banner {
   padding: 15px 20px;
-  margin: 20px 0; /* Espaçamento consistente com outros elementos */
-  border-radius: 6px; /* Consistente com outros cards/inputs */
+  margin: 20px 0;
+  border-radius: var(--border-radius-small);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1304,8 +1303,7 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   font-size: 0.95em;
   border-width: 1px;
   border-style: solid;
-  position: relative; /* Para posicionar o botão de fechar */
-  /* Animação de entrada */
+  position: relative;
   opacity: 0;
   transform: translateY(-10px);
   animation: slideDownFadeIn 0.3s ease-out forwards;
@@ -1321,13 +1319,13 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
 .notification-banner p {
   margin: 0;
   flex-grow: 1;
-  line-height: 1.5; /* Melhor legibilidade */
-  padding-right: 30px; /* Espaço para o botão de fechar não sobrepor o texto */
+  line-height: 1.5;
+  padding-right: 30px;
 }
 
 .notification-success {
-  background-color: rgba(var(--primary-accent-color-rgb), 0.1); /* Usando sua cor primária com opacidade */
-  color: var(--success-color); /* Usando sua variável de sucesso para o texto */
+  background-color: rgba(var(--primary-accent-color-rgb), 0.1);
+  color: var(--success-color);
   border-color: rgba(var(--primary-accent-color-rgb), 0.3);
 }
 html[data-theme='dark'] .notification-success {
@@ -1336,17 +1334,16 @@ html[data-theme='dark'] .notification-success {
 }
 
 .notification-error {
-  background-color: var(--error-bg-color); /* Usando sua variável */
-  color: var(--error-color); /* Usando sua variável */
-  border-color: rgba(220, 53, 69, 0.3); /* Tom mais suave da cor de erro para a borda */
+  background-color: var(--error-bg-color);
+  color: var(--error-color);
+  border-color: rgba(220, 53, 69, 0.3);
 }
 html[data-theme='dark'] .notification-error {
-  background-color: rgba(245, 101, 101, 0.15); /* Variação para tema escuro, se error-bg-color não for suficiente */
+  background-color: rgba(245, 101, 101, 0.15);
   border-color: rgba(245, 101, 101, 0.4);
 }
 
-
-.notification-info { /* Adicionando estilo para 'info' se você usar */
+.notification-info {
   background-color: rgba(var(--info-color), 0.1);
   color: var(--info-color);
   border-color: rgba(var(--info-color), 0.3);
@@ -1356,28 +1353,27 @@ html[data-theme='dark'] .notification-info {
   border-color: rgba(var(--info-color), 0.4);
 }
 
-.notification-warning { /* Adicionando estilo para 'warning' se você usar */
-  background-color: rgba(255,193,7, 0.1); /* Usando var(--warning-color) como base */
-  color: #856404; /* Cor de texto mais escura para contraste com fundo amarelo claro */
-  border-color: rgba(255,193,7, 0.3);
+.notification-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  border-color: rgba(255, 193, 7, 0.3);
 }
 html[data-theme='dark'] .notification-warning {
-  background-color: rgba(236,201,75, 0.15); /* Tom mais escuro para o tema dark */
+  background-color: rgba(236, 201, 75, 0.15);
   color: var(--warning-color);
-  border-color: rgba(236,201,75, 0.4);
+  border-color: rgba(236, 201, 75, 0.4);
 }
-
 
 .notification-dismiss-button {
   background: transparent;
   border: none;
-  font-size: 1.8rem; /* Botão de fechar um pouco maior */
+  font-size: 1.8rem;
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  color: inherit; /* Herda a cor do texto do banner */
+  color: inherit;
   opacity: 0.6;
-  position: absolute; /* Posiciona em relação ao banner */
+  position: absolute;
   top: 50%;
   right: 15px;
   transform: translateY(-50%);
@@ -1386,3 +1382,273 @@ html[data-theme='dark'] .notification-warning {
 .notification-dismiss-button:hover {
   opacity: 1;
 }
+
+/* === INÍCIO DOS ESTILOS PARA CreateClientDriveAreaForm (STICKY BUTTON LAYOUT) === */
+/* Esta seção já foi trabalhada para o layout do botão sticky e rolagem interna */
+
+.client-drive-area-card {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-medium);
+  padding: 25px 30px; /* Aumentei um pouco o padding horizontal */
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  max-width: 850px; /* LARGURA DO CARD AUMENTADA */
+  margin: 2rem auto; /* Adicionado/Ajustado para centralizar e dar margem vertical */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(
+    100vh - 4rem
+  ); /* Ajustado para ocupar mais da altura da viewport, considerando margens */
+  overflow: hidden; /* Para conter o sticky footer corretamente */
+}
+
+.client-drive-area-card h2 {
+  color: var(--text-color);
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px; /* Reduzido um pouco para economizar espaço */
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.client-drive-area-card h2 svg {
+  color: var(--primary-accent-color);
+  font-size: 1.2em;
+}
+
+.client-drive-area-card .page-description {
+  margin-top: 0;
+  margin-bottom: 1.5rem; /* Aumentado um pouco para mais respiro */
+  font-size: 0.95rem;
+  color: var(--text-secondary-color);
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+
+.create-client-drive-area-form {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Para ocupar o espaço no card */
+  min-height: 0; /* Para o flex-grow funcionar corretamente com overflow */
+  position: relative;
+}
+
+/* Card para a página de Bancos Processados */
+.processed-databases-card {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-medium);
+  padding: 20px 25px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+
+  /* --- ADICIONADO/MODIFICADO --- */
+  display: flex;
+  flex-direction: column;
+  /* Opcional: se o conteúdo dentro dele (como o table-wrapper) precisar crescer: */
+  /* flex-grow: 1; */
+  /* Opcional: min-height para garantir que seja visível mesmo com pouco conteúdo.
+     Pode não ser necessário se o título e os botões já derem altura suficiente. */
+  /* min-height: 200px; */
+}
+
+/* Card para a página de Upload */
+.upload-card {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-medium);
+  padding: 20px 25px; /* Consistente com outros cards */
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  max-width: 700px; /* Mantém o max-width que você já tinha */
+  margin-left: auto; /* Mantém a centralização */
+  margin-right: auto; /* Mantém a centralização */
+  /* Opcional: se precisar de comportamento flex para altura/layout interno específico */
+  /* display: flex; */
+  /* flex-direction: column; */
+}
+
+/* A regra abaixo para .client-drive-area-card já existe e está correta para o layout daquela página específica */
+.client-drive-area-card {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-medium);
+  padding: 20px 25px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  max-width: 750px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: 75vh;
+}
+
+.form-fields-wrapper {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0.5rem 1rem 0.5rem; /* Ajustado padding, especialmente o de cima para menos espaço */
+  /* O padding-bottom aqui pode ser menor ou removido se o sticky footer não for sobrepor
+     e o form for naturalmente mais curto.
+     Ainda é uma boa prática ter algum padding se o último elemento puder tocar a borda.
+     Com as mudanças, o formulário deve ficar mais curto, reduzindo a necessidade de um padding-bottom grande.
+     Vamos reduzir e testar.
+  */
+  padding-bottom: 1rem; /* Reduzido significativamente */
+}
+/* Garante que o último .form-group em uma .form-row não tenha margin-bottom extra se for a última linha antes do rodapé */
+.form-fields-wrapper > .form-row:last-child .form-group {
+  /* Pode-se ajustar isso se necessário, mas o padding-bottom do wrapper deve ajudar */
+}
+
+/* NOVA CLASSE PARA CAMPOS EM PARALELO */
+.form-row {
+  display: flex;
+  flex-wrap: wrap; /* Quebra em telas menores */
+  gap: 1.5rem; /* Espaçamento horizontal entre os campos */
+  margin-bottom: 0; /* Removido margin-bottom daqui, .form-group já tem */
+}
+
+.form-row .form-group {
+  flex: 1 1 calc(50% - 0.75rem); /* Tenta ocupar 50% (menos metade do gap). Ajuste se o gap mudar. */
+  min-width: 250px; /* Largura mínima antes de quebrar a linha (se flex-wrap: wrap estiver ativo) */
+  margin-bottom: 1.25rem; /* Mantém o margin-bottom do .form-group para espaçamento vertical */
+}
+
+.create-client-drive-area-form small.field-description {
+  font-size: 0.8rem;
+  color: var(--text-secondary-color);
+  margin-top: 0.35rem; /* Leve ajuste */
+  display: block;
+}
+
+.form-actions-sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10; /* Ajustado z-index, 1000 pode ser excessivo dependendo do resto da app */
+
+  background-color: var(--card-bg-color); /* Usando variável CSS */
+  padding: 1rem 1.5rem; /* Padding ajustado para mais respiro */
+  border-top: 1px solid var(--border-color); /* Usando variável CSS */
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.07); /* Sombra um pouco mais pronunciada */
+
+  display: flex;
+  flex-direction: column; /* Mensagem acima do botão */
+  align-items: flex-end; /* ALINHA OS FILHOS (MENSAGEM E BOTÃO) À DIREITA */
+  gap: 1rem;
+  flex-shrink: 0;
+}
+.form-actions-sticky-bottom .client-drive-status-message {
+  width: 100%; /* Mensagem ocupa toda a largura disponível no rodapé */
+  margin-top: 0;
+  text-align: left; /* Texto da mensagem alinhado à esquerda por padrão */
+  /* Os estilos de .success, .error etc. já aplicam padding interno à mensagem */
+}
+
+.client-drive-status-message {
+  margin-top: 0; /* Reset ou ajuste */
+  width: 100%; /* Para ocupar a largura do rodapé */
+}
+
+.client-drive-status-message .status-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Espaço entre o ícone e o texto da mensagem */
+}
+
+.client-drive-status-message .status-icon {
+  font-size: 1.3em; /* Mantido */
+  flex-shrink: 0;
+  /* margin-right já tratado pelo gap no .status-header */
+}
+.client-drive-status-message .message-text {
+  flex-grow: 1;
+  font-weight: 500;
+}
+.form-actions-sticky-bottom .button-primary {
+  width: auto; /* LARGURA DO BOTÃO AJUSTADA PARA AUTOMÁTICA */
+  padding: 0.75rem 1.75rem; /* Padding do botão levemente ajustado para elegância */
+  min-width: 200px; /* Largura mínima para o botão não ficar muito pequeno */
+  text-align: center;
+}
+
+
+/* Garanta que os ícones e texto na mensagem de status estejam bem alinhados */
+.client-drive-status-message .status-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Ajustado para um pouco mais de espaço */
+}
+
+.client-drive-status-message.success {
+  background-color: rgba(var(--primary-accent-color-rgb), 0.08);
+  color: var(--success-color);
+  border: 1px solid rgba(var(--primary-accent-color-rgb), 0.2);
+}
+.client-drive-status-message.success .status-icon {
+  color: var(--success-color);
+}
+
+.client-drive-status-message.error {
+  background-color: var(--error-bg-color);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+.client-drive-status-message.error .status-icon {
+  color: var(--error-color);
+}
+
+.client-drive-status-message.pending {
+  background-color: rgba(var(--info-color), 0.1);
+  color: var(--info-color);
+  border: 1px solid rgba(var(--info-color), 0.3);
+}
+.client-drive-status-message.pending .status-icon {
+  color: var(--info-color);
+}
+
+.client-drive-status-message.partial-success {
+  background-color: rgba(var(--warning-color), 0.1);
+  color: #856404;
+  border: 1px solid rgba(var(--warning-color), 0.3);
+}
+html[data-theme='dark'] .client-drive-status-message.partial-success {
+  color: var(
+    --warning-color
+  ); /* Ajuste para melhor visibilidade no tema escuro */
+}
+.client-drive-status-message.partial-success .status-icon {
+  color: var(--warning-color);
+}
+
+.client-drive-status-message .folder-link-container {
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  padding-left: calc(1.3em + 0.75rem); /* Alinha com o texto, considerando o tamanho do ícone + gap */
+}
+.client-drive-status-message .folder-link-container a {
+  color: var(--primary-accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.client-drive-status-message .folder-link-container a:hover {
+  text-decoration: underline;
+}
+
+.client-drive-status-message .link-icon {
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+
+.client-drive-status-message .warning-details {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  color: var(--text-secondary-color);
+  padding-left: calc(1.3em + 0.75rem); /* Alinha com o texto */
+}
+/* === FIM DOS ESTILOS PARA CreateClientDriveAreaForm === */

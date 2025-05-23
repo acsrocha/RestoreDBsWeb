@@ -37,3 +37,22 @@ export interface ProcessedDatabase {
   // a uma tag json da struct ProcessedDatabase em Go.
   // Use `notes` para notas gerais ou `uploadNotas` para notas do técnico do upload.
 }
+
+// NOVO: Para o endpoint /api/client_upload_area/create
+export interface CreateClientUploadAreaRequest {
+  clientName: string;
+  clientEmail: string;
+  ticketID?: string;
+  folderNameSuffix?: string;
+}
+
+export interface CreateClientUploadAreaResponse {
+  success: boolean;
+  message: string;
+  googleDriveFolderId?: string;
+  googleDriveFolderName?: string;
+  googleDriveFolderUrl?: string;
+  sharedDriveIdUsed?: string;
+  clientEmail?: string;
+  permissionRoleGranted?: string;
+}

@@ -98,7 +98,7 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
           </div>
         )}
         <p className="warning-text">
-          <strong>Atenção:</strong> Esta ação é irreversível.
+          <strong>Atenção:&nbsp;</strong> Esta ação é irreversível.
         </p>
         {/* Espaço para mensagem de erro da API, se o onConfirm falhar e você quiser mostrar no modal */}
         <div className="modal-actions">

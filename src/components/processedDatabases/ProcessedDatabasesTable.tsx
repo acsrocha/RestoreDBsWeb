@@ -1,12 +1,11 @@
 // src/components/processedDatabases/ProcessedDatabasesTable.tsx
 import React from 'react';
-import type { ProcessedDatabase } from '../../types/api'; // Certifique-se que este tipo inclui uploadedByTicketID
-import { escapeHTML } from '../../utils/helpers'; // Assumindo que você tem esta função auxiliar
+import type { ProcessedDatabase } from '../../types/api';
+import { escapeHTML } from '../../utils/helpers'; 
 
 interface ProcessedDatabasesTableProps {
   databases: ProcessedDatabase[];
   isLoading: boolean;
-  // Atualizada para receber o originalTicketId (pode ser undefined ou string vazia)
   onMarkForDiscard: (dbId: string) => void;
 }
 
@@ -15,6 +14,9 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
   isLoading,
   onMarkForDiscard,
 }) => {
+  // Contagem de colunas visíveis (após remover "Notas Upload")
+  const columnCount = 7; 
+
   if (isLoading) {
     return (
       <div className="table-wrapper">
@@ -23,17 +25,18 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
             <tr>
               <th>Nome Original do Backup</th>
               <th>Alias Restaurado</th>
-              <th>Ticket ID Original</th> {/* Nova coluna */}
+              <th>Ticket ID Original</th>
               <th>Data Restauração</th>
               <th>Status</th>
               <th>Data Fim Custódia</th>
-              <th className="notes-column">Notas Upload</th>
+              {/* <th className="notes-column">Notas Upload</th> // Confirmado como comentado/removido */}
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colSpan={8} className="empty-list"> {/* Ajustado colSpan */}
+              {/* --- AJUSTADO colSpan --- */}
+              <td colSpan={columnCount} className="empty-list"> 
                 <em>Carregando bancos processados...</em>
               </td>
             </tr>
@@ -50,23 +53,24 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
           <tr>
             <th>Nome Original do Backup</th>
             <th>Alias Restaurado</th>
-            <th>Ticket ID Original</th> {/* Nova coluna */}
+            <th>Ticket ID Original</th>
             <th>Data Restauração</th>
             <th>Status</th>
             <th>Data Fim Custódia</th>
-            <th className="notes-column">Notas Upload</th>
+            {/* <th className="notes-column">Notas Upload</th> // Confirmado como comentado/removido */}
             <th>Ações</th>
           </tr>
         </thead>
         <tbody id="processedDatabasesList">
           {databases.length === 0 ? (
             <tr>
-              <td colSpan={8} className="empty-list"> {/* Ajustado colSpan */}
+              {/* --- AJUSTADO colSpan --- */}
+              <td colSpan={columnCount} className="empty-list"> 
                 <em>Nenhum banco de dados processado.</em>
               </td>
             </tr>
           ) : (
-            databases.map((db) => { // Adicionado parênteses ao redor de db para clareza
+            databases.map((db) => {
               const restorationDate = db.restorationTimestamp
                 ? new Date(db.restorationTimestamp).toLocaleString('pt-BR', {
                     dateStyle: 'short',
@@ -88,15 +92,15 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
                     })`
                   : 'N/A');
               const alias = db.restoredDbAlias || 'N/A';
-              const originalTicketIdDisplay = db.uploadedByTicketID || '-'; // Para exibição na tabela
-              const notasUpload = db.uploadNotas || ''; // Notas do upload original
+              const originalTicketIdDisplay = db.uploadedByTicketID || '-';
+              // const notasUpload = db.uploadNotas || ''; // Variável não é mais necessária para exibição
 
               let actionsHtml;
               if (db.status && db.status.toLowerCase() === 'ativo') {
                 actionsHtml = (
                   <button
                     className="action-button discard-button"
-                    onClick={() => onMarkForDiscard(db.id)} // Passa o ticket original
+                    onClick={() => onMarkForDiscard(db.id)}
                     title="Marcar para Descarte"
                   >
                     Descartar
@@ -112,7 +116,7 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
                     className={`status-marked ${statusClass}`}
                     title={`Este banco está ${db.status.toLowerCase()}.`}
                   >
-                    {db.status}
+                    {escapeHTML(db.status)}
                   </span>
                 );
               } else {
@@ -129,15 +133,17 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
                     {escapeHTML(originalName)}
                   </td>
                   <td title={escapeHTML(alias)}>{escapeHTML(alias)}</td>
-                  <td>{escapeHTML(originalTicketIdDisplay)}</td> {/* Exibe o Ticket ID */}
+                  <td>{escapeHTML(originalTicketIdDisplay)}</td>
                   <td>{restorationDate}</td>
                   <td className={statusClass}>
                     {escapeHTML(db.status || 'Desconhecido')}
                   </td>
                   <td>{custodyEndDate}</td>
-                  <td className="notes-cell" title={notasUpload}>
+                  {/* --- REMOVIDA a célula <td> para Notas Upload --- */}
+                  {/* <td className="notes-cell" title={notasUpload}>
                     <div className="notes-content">{notasUpload}</div>
-                  </td>
+                  </td> 
+                  */}
                   <td>{actionsHtml}</td>
                 </tr>
               );
