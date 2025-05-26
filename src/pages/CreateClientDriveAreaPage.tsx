@@ -1,7 +1,8 @@
 // src/pages/CreateClientDriveAreaPage.tsx
-import React from 'react'
-import CreateClientDriveAreaForm from '../components/clientDriveArea/CreateClientDriveAreaForm' // Ajuste o caminho se necessário
-import { FiUserPlus } from 'react-icons/fi'
+import React from 'react';
+import CreateClientDriveAreaForm from '../components/clientDriveArea/CreateClientDriveAreaForm'; // Ajuste o caminho se necessário
+// import { FiUserPlus } from 'react-icons/fi'; // Remover esta linha
+import { SiGoogledrive } from 'react-icons/si'; // <<< ÍCONE DO TRIÂNGULO DO DRIVE ADICIONADO
 
 const CreateClientDriveAreaPage: React.FC = () => {
   return (
@@ -14,8 +15,7 @@ const CreateClientDriveAreaPage: React.FC = () => {
         aria-labelledby='createClientDriveAreaHeader'
       >
         <h2 id='createClientDriveAreaHeader'>
-          <FiUserPlus />{' '}
-          {/* Ícone consistente com o estilo de outros títulos de list-card */}
+          <SiGoogledrive />{' '} {/* ÍCONE DO GOOGLE DRIVE (TRIÂNGULO) SUBSTITUINDO O ANTERIOR */}
           Preparar Área de Upload para Cliente (Google Drive)
         </h2>
         <p className='page-description'>
@@ -25,7 +25,7 @@ const CreateClientDriveAreaPage: React.FC = () => {
         <CreateClientDriveAreaForm />
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default CreateClientDriveAreaPage
+export default CreateClientDriveAreaPage;
