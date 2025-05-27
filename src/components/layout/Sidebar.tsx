@@ -9,23 +9,24 @@ import {
   FiBarChart2,
   FiUploadCloud,
   FiDatabase,
-  // FiFolderPlus, // Removido, pois será substituído pelo ícone do Google Drive
   FiMoon,
-  FiSun
+  FiSun,
+  FiUsers // <<< NOVO ÍCONE ADICIONADO PARA GERENCIAMENTO
 } from 'react-icons/fi';
-import { SiGoogledrive } from 'react-icons/si'; // <<< ÍCONE DO GOOGLE DRIVE ADICIONADO
+import { SiGoogledrive } from 'react-icons/si';
 
 interface SidebarProps {
   collapsed: boolean;
   setCurrentViewTitle: (title: string) => void;
 }
 
-// Atualizando navItems com o novo ícone para "Área Cliente (Drive)"
+// Atualizando navItems com o novo ícone para "Área Cliente (Drive)" e o novo item de menu
 const navItems = [
   { path: '/monitoramento', icon: <FiBarChart2 />, text: 'Monitoramento' },
   { path: '/upload', icon: <FiUploadCloud />, text: 'Enviar Backup' },
   { path: '/bancos-restaurados', icon: <FiDatabase />, text: 'Bancos Restaurados' },
-  { path: '/provisionar-pasta-cliente', icon: <SiGoogledrive />, text: 'Área Cliente (Drive)' }, // <<< ÍCONE ATUALIZADO AQUI
+  { path: '/provisionar-pasta-cliente', icon: <SiGoogledrive />, text: 'Criar Área Cliente' }, // Mantém o formulário de criação
+  { path: '/admin/client-areas', icon: <FiUsers />, text: 'Gerenciar Áreas Cliente' }, // <<< NOVO ITEM DE MENU ADICIONADO
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => {
@@ -37,15 +38,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
     if (activeItem) {
       setCurrentViewTitle(activeItem.text);
     } else {
+      // Se a rota atual não está nos navItems (ex: rota inicial '/')
+      // define um título padrão ou baseado na rota '/' se necessário.
       if (location.pathname === '/') {
+        // Para a rota '/', redirecionamos para /monitoramento no App.tsx
+        // então o título de Monitoramento deve ser pego.
         const defaultItem = navItems.find(item => item.path === '/monitoramento');
         if (defaultItem) {
           setCurrentViewTitle(defaultItem.text);
         } else {
-          setCurrentViewTitle('RestoreDB');
+          setCurrentViewTitle('RestoreDB'); // Fallback genérico
         }
       } else {
-        setCurrentViewTitle('RestoreDB');
+        // Para outras rotas não listadas (ex: uma futura página 404 ou sub-rotas não primárias)
+        setCurrentViewTitle('RestoreDB'); // Ou um título mais específico se puder ser determinado
       }
     }
   }, [location.pathname, setCurrentViewTitle]);
@@ -64,7 +70,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
                 to={item.path}
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
               >
-                {/* A classe "nav-icon" já deve estar sendo aplicada pelo seu CSS global ao span */}
                 <span className="nav-icon">{item.icon}</span>
                 {!collapsed && <span className="nav-text">{item.text}</span>}
               </NavLink>
@@ -79,11 +84,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
         </label>}
         <input
           type="checkbox"
-          id="themeToggleCheckbox"
+          id="themeToggleCheckbox" // O id era "themeToggle" no seu global.css para o switch estilizado, mudei para consistência com o label
           title="Alternar tema claro/escuro"
           checked={theme === 'dark'}
           onChange={toggleTheme}
+          className="visually-hidden" // Esconde o checkbox padrão, o label estilizado fará o trabalho
         />
+         {/* Se você tiver um switch customizado que usa o label, pode precisar ajustar o htmlFor e id */}
       </div>
     </aside>
   );

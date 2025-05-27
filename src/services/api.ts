@@ -3,17 +3,19 @@ import type {
   StatusData,
   FailedRestoreItem,
   ProcessedDatabase,
-  // NOVO: Importar os novos tipos que você adicionou ao seu src/types/api.ts
   CreateClientUploadAreaRequest,
-  CreateClientUploadAreaResponse
-} from '../types/api';
+  CreateClientUploadAreaResponse,
+  // NOVO: Importar os novos tipos para a página de administração
+  AdminClientUploadAreaDetail
+} from '../types/api'; // Supondo que suas interfaces Admin estejam em 'src/types/api.ts'
 
 const STATUS_API_URL = '/api/status';
 const ERRORS_API_URL = '/api/errors';
 const PROCESSED_API_URL = '/api/processed_databases';
 const UPLOAD_API_URL = '/api/upload';
-// NOVO: URL para o novo endpoint
 const CREATE_CLIENT_DRIVE_AREA_URL = '/api/client_upload_area/create';
+// NOVO: URL para o endpoint de detalhes das áreas de upload de administração
+const ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL = '/api/admin/client_upload_areas_details';
 
 // Função auxiliar para tratamento de erros de fetch (sua função existente)
 async function handleResponse<T>(response: Response, isJsonExpected = true): Promise<T> {
@@ -111,3 +113,13 @@ export const createClientDriveArea = async (
   // de erro do backend (400, 500, 503) são esperadas como JSON.
   return handleResponse<CreateClientUploadAreaResponse>(response, true); // isJsonExpected = true
 };
+
+// --- NOVA FUNÇÃO PARA BUSCAR DETALHES DAS ÁREAS DE UPLOAD DE CLIENTES (ADMIN) ---
+export const fetchAdminClientUploadAreaDetails = async (): Promise<AdminClientUploadAreaDetail[]> => {
+  const response = await fetch(ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL, {
+    cache: 'no-store', // Garante que os dados sejam sempre os mais recentes
+  });
+  // Espera-se que a resposta seja um JSON contendo um array de AdminClientUploadAreaDetail
+  return handleResponse<AdminClientUploadAreaDetail[]>(response, true); // isJsonExpected = true
+};
+// --- FIM DA NOVA FUNÇÃO ---
