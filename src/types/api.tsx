@@ -5,13 +5,16 @@ export interface StatusData {
   queuedFiles: string[];
   recentActivity: string[];
   queueCount: number;
+  driveMonitorNextRunEpoch?: number;    // NOVO
+  driveMonitorIntervalMinutes?: number; // NOVO
 }
 
+// ... (FailedRestoreItem, ProcessedDatabase, etc. sem alterações) ...
 export interface FailedRestoreItem {
   fileName: string;
   fullFilePath: string;
   errorMessage: string;
-  timestamp: string; // ou Date
+  timestamp: string; 
 }
 
 export interface ProcessedDatabase {
@@ -49,16 +52,14 @@ export interface CreateClientUploadAreaResponse {
   permissionRoleGranted?: string;
 }
 
-// --- NOVAS INTERFACES PARA A PÁGINA DE ADMINISTRAÇÃO DE ÁREAS DE UPLOAD ---
-
 export interface AdminProcessedBackupDetail {
   pb_id: string;
   pb_original_backup_filename: string;
   pb_internal_filename?: string;
   pb_restored_alias: string;
-  pb_restoration_date: string; // String formatada: "YYYY-MM-DD HH:MM:SS"
+  pb_restoration_date: string; 
   pb_status: string;
-  pb_custody_end_date?: string; // String formatada: "YYYY-MM-DD"
+  pb_custody_end_date?: string; 
   pb_database_notes?: string;
   pb_upload_notes_tecnico?: string;
 }
@@ -71,9 +72,8 @@ export interface AdminClientUploadAreaDetail {
   gdrive_folder_name: string;
   gdrive_folder_id: string;
   gdrive_folder_url?: string;
-  area_creation_date: string; // String formatada: "YYYY-MM-DD HH:MM:SS"
+  area_creation_date: string; 
   upload_area_status: string;
   upload_area_notes?: string;
-  processed_backups: AdminProcessedBackupDetail[]; // Array de backups processados
+  processed_backups: AdminProcessedBackupDetail[]; 
 }
-// --- FIM DAS NOVAS INTERFACES ---

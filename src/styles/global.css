@@ -1802,3 +1802,15 @@ html[data-theme='dark'] .client-drive-status-message.partial-success {
   padding-left: calc(1.3em + 0.75rem);
 }
 /* === FIM DOS ESTILOS PARA CreateClientDriveAreaForm === */
+/* src/styles/global.css */
+/* ... (seu CSS existente) ... */
+
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin-animation { /* Classe usada no botão de refresh, pode reusar para o ícone do timer */
+  animation: spin 1.5s linear infinite;
+}
