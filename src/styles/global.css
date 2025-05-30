@@ -50,6 +50,10 @@ html {
   --sidebar-link-hover-bg-rgb: 52, 73, 94;
   --sidebar-bg-color-rgb: 44, 62, 80;
   --sidebar-text-color-rgb: 236, 240, 241;
+  --status-success-color: #28a745;
+  --status-error-color: #dc3545;
+  --status-warning-color: #ffc107;
+  --status-info-color: #17a2b8;
 }
 
 html[data-theme='dark'] {
@@ -111,7 +115,9 @@ body {
   font-size: 0.95em;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.18s ease, box-shadow 0.22s ease, opacity 0.22s ease; /* Transições um pouco mais rápidas */
+  transition: background-color 0.22s ease, color 0.22s ease,
+    border-color 0.22s ease, transform 0.18s ease, box-shadow 0.22s ease,
+    opacity 0.22s ease; /* Transições um pouco mais rápidas */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -119,7 +125,7 @@ body {
   border: 1px solid transparent;
   line-height: 1.4;
   text-decoration: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0,0,0,0.08); /* Sombra base ainda mais sutil */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0, 0, 0, 0.08); /* Sombra base ainda mais sutil */
 }
 
 .button-primary:hover,
@@ -138,7 +144,7 @@ body {
 .modal-actions .button-danger:active,
 .custom-file-button:active {
   transform: translateY(0px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12); /* Sombra interna um pouco mais pronunciada */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12); /* Sombra interna um pouco mais pronunciada */
 }
 
 .button-primary:disabled,
@@ -174,14 +180,19 @@ html[data-theme='dark'] .custom-file-button:focus-visible {
   box-shadow: 0 0 0 3px rgba(var(--primary-accent-color-rgb), 0.35);
 }
 
-
 /* --- BOTÃO PRIMÁRIO --- */
 .button-primary {
-  background-color: rgba(var(--primary-accent-color-rgb), 0.88); /* Mais transparência no padrão */
+  background-color: rgba(
+    var(--primary-accent-color-rgb),
+    0.88
+  ); /* Mais transparência no padrão */
   color: var(--white-color);
 }
 .button-primary:hover {
-  background-color: rgba(var(--primary-accent-color-rgb), 1); /* Cor viva e sólida no hover */
+  background-color: rgba(
+    var(--primary-accent-color-rgb),
+    1
+  ); /* Cor viva e sólida no hover */
   box-shadow: 0 4px 12px rgba(var(--primary-accent-color-rgb), 0.25); /* Sombra mais suave e difusa */
 }
 .button-primary:disabled {
@@ -192,7 +203,10 @@ html[data-theme='dark'] .custom-file-button:focus-visible {
 
 /* --- BOTÃO SECUNDÁRIO --- */
 .button-secondary {
-  background-color: rgba(var(--text-secondary-color-rgb), 0.1); /* Bem sutil no padrão */
+  background-color: rgba(
+    var(--text-secondary-color-rgb),
+    0.1
+  ); /* Bem sutil no padrão */
   color: var(--text-color);
   border: 1px solid rgba(var(--text-secondary-color-rgb), 0.25);
 }
@@ -208,7 +222,10 @@ html[data-theme='dark'] .custom-file-button:focus-visible {
   opacity: 1;
 }
 html[data-theme='dark'] .button-secondary {
-  background-color: rgba(var(--text-secondary-color-rgb), 0.18); /* text-secondary-color-rgb do tema escuro */
+  background-color: rgba(
+    var(--text-secondary-color-rgb),
+    0.18
+  ); /* text-secondary-color-rgb do tema escuro */
   color: var(--text-color);
   border: 1px solid rgba(var(--text-secondary-color-rgb), 0.35);
 }
@@ -228,13 +245,19 @@ html[data-theme='dark'] .button-secondary:disabled {
 .button-danger,
 .modal-actions .button-danger,
 .action-button.discard-button {
-  background-color: rgba(var(--error-color-rgb), 0.88); /* Mais transparência no padrão */
+  background-color: rgba(
+    var(--error-color-rgb),
+    0.88
+  ); /* Mais transparência no padrão */
   color: var(--white-color);
 }
 .button-danger:hover,
 .modal-actions .button-danger:hover,
 .action-button.discard-button:hover {
-  background-color: rgba(var(--error-color-rgb), 1); /* Cor viva e sólida no hover */
+  background-color: rgba(
+    var(--error-color-rgb),
+    1
+  ); /* Cor viva e sólida no hover */
   box-shadow: 0 4px 12px rgba(var(--error-color-rgb), 0.25);
 }
 .button-danger:disabled,
@@ -264,14 +287,21 @@ html[data-theme='dark'] .action-button.discard-button:disabled {
 
 /* --- BOTÃO DE AÇÃO (Info) --- */
 .action-button {
-  background-color: rgba(var(--info-color-rgb), 0.88); /* Mais transparência no padrão */
+  background-color: rgba(
+    var(--info-color-rgb),
+    0.88
+  ); /* Mais transparência no padrão */
   color: var(--white-color);
 }
 .action-button:not(.discard-button):hover {
-  background-color: rgba(var(--info-color-rgb), 1); /* Cor viva e sólida no hover */
+  background-color: rgba(
+    var(--info-color-rgb),
+    1
+  ); /* Cor viva e sólida no hover */
   box-shadow: 0 4px 12px rgba(var(--info-color-rgb), 0.25);
 }
-.action-button:disabled { /* Compartilhado com discard-button, mas ok */
+.action-button:disabled {
+  /* Compartilhado com discard-button, mas ok */
   background-color: rgba(var(--info-color-rgb), 0.45);
   color: rgba(var(--white-color-rgb), 0.7);
   opacity: 1;
@@ -290,7 +320,10 @@ html[data-theme='dark'] .action-button:disabled {
 
 /* --- BOTÃO DE ATUALIZAR (Refresh) --- */
 .button-refresh {
-  background-color: rgba(var(--text-secondary-color-rgb), 0.7); /* text-secondary-color-rgb do tema claro */
+  background-color: rgba(
+    var(--text-secondary-color-rgb),
+    0.7
+  ); /* text-secondary-color-rgb do tema claro */
   color: var(--white-color);
   border: 1px solid rgba(var(--text-secondary-color-rgb), 0.35);
 }
@@ -306,7 +339,10 @@ html[data-theme='dark'] .action-button:disabled {
   opacity: 1;
 }
 html[data-theme='dark'] .button-refresh {
-  background-color: rgba(var(--text-secondary-color-rgb), 0.3); /* text-secondary-color-rgb do tema escuro */
+  background-color: rgba(
+    var(--text-secondary-color-rgb),
+    0.3
+  ); /* text-secondary-color-rgb do tema escuro */
   color: var(--text-color);
   border: 1px solid rgba(var(--text-secondary-color-rgb), 0.45);
 }
@@ -325,7 +361,10 @@ html[data-theme='dark'] .button-refresh:disabled {
 /* --- BOTÃO DE ARQUIVO CUSTOMIZADO --- */
 .custom-file-button {
   font-weight: 500;
-  background-color: rgba(var(--sidebar-link-hover-bg-rgb), 0.82); /* Mais transparência */
+  background-color: rgba(
+    var(--sidebar-link-hover-bg-rgb),
+    0.82
+  ); /* Mais transparência */
   color: var(--sidebar-text-color);
   border: 1px solid rgba(var(--border-color-rgb), 0.5);
 }
@@ -337,7 +376,7 @@ html[data-theme='dark'] .button-refresh:disabled {
 }
 .custom-file-button:disabled {
   background-color: rgba(var(--sidebar-link-hover-bg-rgb), 0.45);
-  color: rgba(var(--sidebar-text-color-rgb),0.6);
+  color: rgba(var(--sidebar-text-color-rgb), 0.6);
   border-color: rgba(var(--border-color-rgb), 0.35);
   opacity: 1;
 }
@@ -354,7 +393,7 @@ html[data-theme='dark'] .custom-file-button:hover {
 }
 html[data-theme='dark'] .custom-file-button:disabled {
   background-color: rgba(var(--sidebar-link-hover-bg-dark-rgb), 0.45);
-  color: rgba(var(--sidebar-text-color-dark-rgb),0.6);
+  color: rgba(var(--sidebar-text-color-dark-rgb), 0.6);
   border-color: rgba(var(--border-color-dark-rgb), 0.35);
   opacity: 1;
 }
@@ -382,7 +421,7 @@ html[data-theme='dark'] .custom-file-button:disabled {
 .modal-actions .button-secondary:active,
 .modal-actions .button-danger:active {
   transform: translateY(0px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 /* O restante do seu CSS continua aqui... */
@@ -879,7 +918,10 @@ html[data-theme='dark'] .failed-restore-item:hover {
 }
 html[data-theme='dark'] .error-details {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-  background-color: rgba(var(--error-color-dark-rgb), 0.1); /* Usando error-color-dark-rgb */
+  background-color: rgba(
+    var(--error-color-dark-rgb),
+    0.1
+  ); /* Usando error-color-dark-rgb */
 }
 .error-details.visible {
   display: block;
@@ -935,6 +977,7 @@ html[data-theme='dark'] .form-group label {
 .form-group input[type='password'],
 .form-group input[type='search'],
 .form-group input[type='number'],
+.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
@@ -949,13 +992,15 @@ html[data-theme='dark'] .form-group label {
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
   border-color: var(--primary-accent-color);
   box-shadow: 0 0 0 2px rgba(var(--primary-accent-color-rgb), 0.25);
 }
 html[data-theme='dark'] .form-group input:focus,
-html[data-theme='dark'] .form-group textarea:focus {
+html[data-theme='dark'] .form-group textarea:focus,
+html[data-theme='dark'] .form-group select:focus {
   box-shadow: 0 0 0 2px rgba(var(--primary-accent-color-rgb), 0.35);
 }
 
@@ -967,9 +1012,7 @@ html[data-theme='dark'] .form-group input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--text-color) !important;
   caret-color: var(--text-color) !important;
   border: 1px solid var(--border-color) !important;
-  border-radius: var(
-    --border-radius-small
-  ) !important;
+  border-radius: var(--border-radius-small) !important;
   transition: background-color 600000s 0s, color 600000s 0s !important;
   filter: none !important;
 }
@@ -999,7 +1042,7 @@ html[data-theme='dark'] .form-group input:autofill:active {
   border: 1px solid var(--warning-color);
 }
 html[data-theme='dark'] .upload-status-message.pending {
- background-color: rgba(var(--warning-color-dark-rgb), 0.15);
+  background-color: rgba(var(--warning-color-dark-rgb), 0.15);
 }
 
 .upload-status-message.success {
@@ -1054,7 +1097,9 @@ html[data-theme='dark'] .upload-status-message.error {
 }
 
 html[data-theme='dark'] .data-table th {
-  background-color: var(--card-bg-color); /* Ajustado para usar a var, assumindo que ela é adequada */
+  background-color: var(
+    --card-bg-color
+  ); /* Ajustado para usar a var, assumindo que ela é adequada */
   border-bottom: 2px solid var(--primary-accent-color);
   color: var(--text-color);
 }
@@ -1297,7 +1342,6 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   /* Estilos de fallback se .visually-hidden não funcionar ou para design */
 }
 
-
 /* === MODAL STYLES === */
 .modal-overlay {
   position: fixed;
@@ -1411,7 +1455,7 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   margin-bottom: 10px;
 }
 html[data-theme='dark'] .ticket-confirmation input[type='text'] {
-    background-color: var(--bg-color);
+  background-color: var(--bg-color);
 }
 
 .ticket-confirmation input[type='text']:focus {
@@ -1453,7 +1497,9 @@ html[data-theme='dark'] .ticket-confirmation input.input-error {
 html[data-theme='dark'] .modal-content .warning-text {
   background-color: rgba(var(--warning-color-dark-rgb), 0.1);
   border: 1px solid rgba(var(--warning-color-dark-rgb), 0.3);
-  color: var(--warning-color); /* Ajuste para que o texto herde a cor de warning do tema escuro */
+  color: var(
+    --warning-color
+  ); /* Ajuste para que o texto herde a cor de warning do tema escuro */
 }
 
 .modal-content .warning-text strong {
@@ -1500,9 +1546,17 @@ html[data-theme='dark'] .modal-content .warning-text {
   line-height: 1.5;
   padding-right: 30px;
 }
+.notification-banner p svg {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 
 .notification-success {
-  background-color: rgba(var(--success-color-rgb), 0.1); /* Usando success-color-rgb */
+  background-color: rgba(
+    var(--success-color-rgb),
+    0.1
+  ); /* Usando success-color-rgb */
   color: var(--success-color);
   border-color: rgba(var(--success-color-rgb), 0.3);
 }
@@ -1576,9 +1630,7 @@ html[data-theme='dark'] .notification-warning {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  max-height: calc(
-    100vh - 4rem - var(--header-height) - 20px
-  );
+  max-height: calc(100vh - 4rem - var(--header-height) - 20px);
   overflow: hidden;
 }
 
@@ -1719,7 +1771,10 @@ html[data-theme='dark'] .notification-warning {
 }
 
 .client-drive-status-message.success {
-  background-color: rgba(var(--success-color-rgb), 0.08); /* Usando success-color-rgb */
+  background-color: rgba(
+    var(--success-color-rgb),
+    0.08
+  ); /* Usando success-color-rgb */
   color: var(--success-color);
   border: 1px solid rgba(var(--success-color-rgb), 0.2);
 }
@@ -1805,12 +1860,512 @@ html[data-theme='dark'] .client-drive-status-message.partial-success {
 /* src/styles/global.css */
 /* ... (seu CSS existente) ... */
 
-
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-.spin-animation { /* Classe usada no botão de refresh, pode reusar para o ícone do timer */
+.spin-animation {
+  /* Classe usada no botão de refresh, pode reusar para o ícone do timer */
   animation: spin 1.5s linear infinite;
 }
+/* Estilo para o botão de Excluir */
+.action-button-danger {
+  background-color: transparent;
+  border: 1px solid var(--status-error-color);
+  color: var(--status-error-color);
+  /* Outros estilos de botão... */
+}
+
+.action-button-danger:hover {
+  background-color: var(--status-error-color);
+  color: #fff;
+}
+
+/* Estilo para o botão de Notas quando há conteúdo */
+.action-button-notes.has-notes {
+  color: var(--status-info-color);
+  border-color: var(--status-info-color);
+}
+
+.action-button-notes.has-notes:hover {
+    background-color: var(--status-info-color);
+    color: #fff;
+}
+
+
+/* === INÍCIO DOS NOVOS ESTILOS PARA A PÁGINA ADMIN CLIENT AREAS === */
+
+/* Layout do Cabeçalho da Página */
+.admin-areas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.admin-areas-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.admin-areas-header-actions .button-refresh svg {
+    margin-right: 5px;
+}
+
+/* Timestamp de Atualização */
+.grid-last-updated {
+  font-size: 0.8em;
+  color: var(--text-secondary-color);
+  text-align: right;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Mensagem de Carregamento */
+.loading-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary-color);
+  font-weight: 500;
+}
+
+/* Tabela e Células */
+.data-table .clickable-row {
+  cursor: pointer;
+}
+.data-table .client-name-cell {
+  font-weight: 500;
+}
+
+/* Célula da Pasta no Drive */
+.data-table .drive-folder-cell {
+  max-width: 250px; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.data-table .drive-folder-cell a {
+  color: var(--primary-accent-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+.data-table .drive-folder-cell a:hover {
+  text-decoration: underline;
+}
+
+/* Célula de Status (COM A CORREÇÃO) */
+.data-table .status-cell {
+  /* A propriedade vertical-align é o padrão para tabelas e é mais confiável aqui */
+  vertical-align: middle; 
+}
+
+
+/* Contêiner dos Botões de Ação na Tabela */
+.actions-container {
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+}
+
+/* Estilo Base para Botões de Ação (Ícones) */
+.action-btn-icon {
+  background-color: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary-color);
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+.action-btn-icon:hover {
+  background-color: var(--border-color);
+  color: var(--text-color);
+  transform: scale(1.1);
+}
+.action-btn-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  background-color: transparent;
+}
+
+/* Cores específicas para botões de ação */
+.action-btn-icon.download { color: var(--status-info-color); }
+.action-btn-icon.edit { color: var(--status-warning-color); }
+.action-btn-icon.notes.has-notes { color: var(--primary-accent-color); }
+.action-btn-icon.delete { color: var(--status-error-color); }
+
+/* Estilos de Status (Badge) (ALTERADO) */
+.status-badge {
+  font-weight: 500;
+  padding: 4px 8px; 
+  border-radius: var(--border-radius-small);
+  font-size: 0.9em;
+  white-space: nowrap;
+  line-height: 1.4;
+  display: inline-block; /* Garante que o badge se comporte como um bloco na linha */
+  vertical-align: middle; /* Alinha o meio do badge com o meio da linha de texto da célula */
+}
+.status-badge.status--success { color: var(--status-success-color); background-color: rgba(var(--success-color-rgb), 0.1); }
+html[data-theme='dark'] .status-badge.status--success { background-color: rgba(var(--success-color-dark-rgb), 0.15); }
+
+.status-badge.status--error { color: var(--status-error-color); background-color: rgba(var(--error-color-rgb), 0.1); }
+html[data-theme='dark'] .status-badge.status--error { background-color: rgba(var(--error-color-dark-rgb), 0.15); }
+
+.status-badge.status--info { color: var(--status-info-color); background-color: rgba(var(--info-color-rgb), 0.1); }
+html[data-theme='dark'] .status-badge.status--info { background-color: rgba(var(--info-color-dark-rgb), 0.15); }
+
+.status-badge.status--warning { color: var(--status-warning-color); background-color: rgba(var(--warning-color-rgb), 0.1); }
+html[data-theme='dark'] .status-badge.status--warning { background-color: rgba(var(--warning-color-dark-rgb), 0.15); }
+
+.status-badge.status--archived { color: var(--text-secondary-color); font-style: italic; background-color: rgba(var(--text-secondary-color-rgb), 0.1); }
+html[data-theme='dark'] .status-badge.status--archived { background-color: rgba(var(--text-secondary-color-rgb), 0.15); }
+
+
+/* Estilos para Modais (Refatorados) */
+.modal-content.modal-details {
+  max-width: 650px; /* Um pouco maior para detalhes */
+}
+
+.modal-header-flex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.modal-header-flex svg {
+  color: var(--primary-accent-color);
+}
+
+.modal-current-status {
+  margin-bottom: 20px;
+}
+.modal-current-status span {
+  font-weight: bold;
+}
+
+.modal-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.details-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+}
+.modal-details-container > .details-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.details-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px 20px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-item.full-width {
+  /* margin-top: 10px; */ /* Removido para consistência com o gap */
+}
+.detail-item strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  color: var(--text-secondary-color);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.detail-item span,
+.detail-item a {
+  font-size: 1em;
+  color: var(--text-color);
+  word-break: break-all;
+}
+.detail-item .status-badge {
+    align-self: flex-start; /* Garante que o badge não estique */
+}
+
+.detail-item a {
+  color: var(--primary-accent-color);
+  text-decoration: none;
+}
+.detail-item a:hover {
+  text-decoration: underline;
+}
+
+.details-notes-box {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-small);
+  padding: 15px;
+}
+.details-notes-box strong {
+  font-size: 0.9em;
+  color: var(--text-color);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+}
+.details-notes-box p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary-color);
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+.section-subtitle {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.details-backup-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.details-backup-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius-small);
+  border: 1px solid var(--border-color);
+}
+.backup-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.backup-name {
+  font-weight: 500;
+}
+.backup-alias {
+  font-size: 0.85em;
+  color: var(--text-secondary-color);
+}
+.backup-date {
+  font-size: 0.9em;
+  color: var(--text-secondary-color);
+}
+/* Barra de Filtro/Busca da Tabela */
+.table-filter-bar {
+  margin-bottom: 20px;
+  max-width: 450px; /* Define uma largura máxima para o campo */
+}
+
+.search-form-group {
+  position: relative;
+  margin-bottom: 0 !important; /* Sobrescreve a margem padrão de form-group */
+}
+
+/* Rótulo da busca (Pesquisar) */
+.search-form-group label {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none; /* Permite clicar através do rótulo */
+  font-size: 0.9em;
+}
+
+/* Campo de input da busca */
+.search-form-group input[type="search"] {
+  padding-left: 105px; /* Cria espaço para o rótulo "Pesquisar" */
+}
+
+/* Remove o ícone "x" padrão de inputs de busca em alguns navegadores */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance:none;
+}
+
+/* Ajuste no título da página para alinhar com o ícone */
+.admin-client-areas-page h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* === ESTILOS PARA MODAL DE DETALHES (ClientAreaDetailsModal) === */
+
+.modal-content.modal-details {
+  max-width: 750px; /* Um pouco mais largo para caber mais detalhes */
+  text-align: left;
+}
+
+.modal-details-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-details-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text-color);
+}
+
+.modal-details-header > svg {
+    color: var(--primary-accent-color);
+}
+
+.modal-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Espaço entre as seções */
+  max-height: calc(80vh - 120px); /* Altura máxima para permitir scroll */
+  overflow-y: auto;
+  padding-right: 15px; /* Espaço para a barra de rolagem */
+  margin-right: -15px; /* Compensa o padding */
+}
+
+.details-section h3 {
+  font-size: 1.1rem;
+  color: var(--primary-accent-color);
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.details-section .detail-item {
+  display: grid;
+  grid-template-columns: 200px 1fr; /* Coluna de label fixa e valor flexível */
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.details-section .detail-item dt {
+  font-weight: 600;
+  color: var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço entre ícone e texto do label */
+}
+
+.details-section .detail-item dd {
+  margin: 0;
+  color: var(--text-color);
+  word-break: break-word;
+}
+
+.details-section .detail-item dd a {
+  color: var(--primary-accent-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+.details-section .detail-item dd a:hover {
+  text-decoration: underline;
+}
+
+.details-section .notes-box {
+  background-color: var(--bg-color); /* Usa a cor de fundo geral */
+  border: 1px solid var(--border-color);
+  padding: 15px;
+  border-radius: var(--border-radius-small);
+  font-size: 0.9rem;
+  white-space: pre-wrap; /* Preserva quebras de linha e espaços */
+  color: var(--text-secondary-color);
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.processed-backups-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.processed-backups-list li {
+  background-color: var(--bg-color);
+  border-left: 4px solid var(--primary-accent-color);
+  padding: 15px;
+  border-radius: var(--border-radius-small);
+  border: 1px solid var(--border-color);
+  border-left-width: 4px; /* Garante a espessura da borda esquerda */
+}
+
+.backup-detail-item {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 5px;
+  font-size: 0.9rem;
+}
+
+.backup-detail-item:not(:last-child) {
+  margin-bottom: 8px;
+}
+
+.backup-detail-item dt {
+  font-weight: 500;
+  color: var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.backup-detail-item dd {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.no-data-message {
+  color: var(--text-secondary-color);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-color);
+  padding: 15px;
+  border-radius: var(--border-radius-small);
+}
+/* === FIM DOS ESTILOS === */
