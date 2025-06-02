@@ -2224,6 +2224,79 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* === ESTILOS PARA MODAL DE DETALHES (ClientAreaDetailsModal) === */
 
+.details-section h3 {
+  font-size: 1.1rem;
+  color: var(--text-color); /* No tema escuro, o texto branco fica melhor */
+  margin-top: 0;
+  margin-bottom: 20px; /* Mais espaço abaixo do título */
+  padding-bottom: 10px; /* Espaço entre o texto e a linha */
+  /* A linha verde que você usou na imagem, agora feita com CSS */
+  border-bottom: 2px solid var(--primary-accent-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+html[data-theme='dark'] .details-section h3 {
+    color: var(--text-color);
+}
+
+/* Ajuste no layout do grid para garantir alinhamento e responsividade */
+.details-grid-2col {
+  display: grid;
+  /* Cria duas colunas em telas maiores */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px 25px; /* Espaçamento vertical e horizontal */
+}
+
+.detail-item {
+  /* Remove margens e paddings extras para deixar o 'gap' do grid controlar o espaço */
+  padding: 8px 0; /* Apenas um leve padding vertical */
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Espaço entre o label (dt) e o valor (dd) */
+  border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5);
+}
+
+.details-grid-2col .detail-item {
+    border-bottom: none; /* Remove a borda quando dentro do grid */
+}
+
+/* Estilo para o Label (Ex: "Nome do Cliente:") */
+.detail-item dt {
+  font-weight: 500; /* Um pouco menos pesado que 600 */
+  color: var(--text-secondary-color);
+  font-size: 0.85em;
+  text-transform: uppercase; /* Mantém o estilo da imagem */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Estilo para o Valor (Ex: "CSROCHA") */
+.detail-item dd {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 0.95em;
+  font-weight: 500;
+  word-break: break-word; /* Garante que textos longos não quebrem o layout */
+}
+
+/* Estilo específico para links, para ficarem mais evidentes */
+.detail-item dd a {
+  color: var(--primary-accent-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.detail-item dd a:hover {
+  text-decoration: underline;
+}
+
+/* Garante que o status-badge se alinhe corretamente */
+.detail-item dd .status-badge {
+    align-self: flex-start;
+}
 .modal-content.modal-details {
   max-width: 750px; /* Um pouco mais largo para caber mais detalhes */
   text-align: left;
@@ -2251,16 +2324,21 @@ input[type="search"]::-webkit-search-results-decoration {
 .modal-details-body {
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Espaço entre as seções */
+  gap: 5px; /* Espaço entre as seções */
   max-height: calc(80vh - 120px); /* Altura máxima para permitir scroll */
   overflow-y: auto;
   padding-right: 15px; /* Espaço para a barra de rolagem */
   margin-right: -15px; /* Compensa o padding */
 }
 
+.modal-content h2.modal-title {
+  color: var(--primary-accent-color);
+  font-weight: 600; /* Um pouco mais de peso para o título principal */
+}
+
 .details-section h3 {
   font-size: 1.1rem;
-  color: var(--primary-accent-color);
+   color: var(--text-color); /* Mantém o texto da seção limpo (branco no tema escuro) */
   margin-top: 0;
   margin-bottom: 15px;
   padding-bottom: 5px;
@@ -2270,13 +2348,28 @@ input[type="search"]::-webkit-search-results-decoration {
   gap: 8px;
 }
 
-.details-section .detail-item {
+.details-section h3 svg {
+  color: var(--primary-accent-color);
+}
+
+.details-section .detail-item { /* Aplicando ao .detail-item dentro de .details-section */
   display: grid;
-  grid-template-columns: 200px 1fr; /* Coluna de label fixa e valor flexível */
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
+  /* Coluna do rótulo (dt) mais flexível, mínimo de 150px, máximo conteúdo. Valor (dd) toma o resto. */
+  grid-template-columns: minmax(150px, auto) 1fr; 
+  gap: 5px 10px; /* Espaço vertical e horizontal entre dt e dd */
+  align-items: baseline; /* Alinha o texto do rótulo e do valor pela sua linha de base */
+  padding: 8px 0; /* Espaçamento vertical DENTRO de cada item de detalhe */
+  border-bottom: 1px solid var(--border-color-soft); /* Linha separadora sutil entre itens */
+}
+
+.details-section:not(:last-child) { /* Adiciona mais espaço abaixo de cada seção, exceto a última */
+    margin-bottom: 25px;
+}
+
+/* Remove a borda do último item dentro de um .details-grid-2col ou de um .details-section genérico */
+.modal-details-body .details-grid-2col > .detail-item:last-child,
+.modal-details-body .details-section > .detail-item:last-of-type { /* Para o caso de não estar usando .details-grid-2col */
+  border-bottom: none;
 }
 
 .details-section .detail-item dt {
@@ -2285,15 +2378,22 @@ input[type="search"]::-webkit-search-results-decoration {
   display: flex;
   align-items: center;
   gap: 8px; /* Espaço entre ícone e texto do label */
+  font-size: 0.9em;
+  white-space: normal; /* PERMITE que o rótulo quebre linha se necessário, mas com o grid-template-columns ele tentará não quebrar */
+  text-transform: none; /* Removi uppercase para um visual mais limpo, mas pode voltar se preferir */
 }
 
 .details-section .detail-item dd {
   margin: 0;
   color: var(--text-color);
-  word-break: break-word;
+  word-break: break-word; /* Permite quebra de palavra para conteúdo longo */
+  line-height: 1.45; /* Pouco mais de espaço entre linhas */
+  font-size: 0.95em;
+  text-align: left;
+  min-width: 0; /* Importante para grid children permitir encolhimento e quebra de texto */
 }
 
-.details-section .detail-item dd a {
+.details-section .detail-item dd a { /* Estilo que já existia e é bom */
   color: var(--primary-accent-color);
   text-decoration: none;
   font-weight: 500;
@@ -2314,35 +2414,36 @@ input[type="search"]::-webkit-search-results-decoration {
   overflow-y: auto;
 }
 
+/* Seção de Backups Processados no Modal */
 .processed-backups-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 8px 0 0 0; /* Adiciona um pouco de margem acima */
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px; /* Espaço entre os itens de backup */
 }
 
 .processed-backups-list li {
   background-color: var(--bg-color);
   border-left: 4px solid var(--primary-accent-color);
-  padding: 15px;
+  padding: 12px 15px; /* Ajuste no padding */
   border-radius: var(--border-radius-small);
   border: 1px solid var(--border-color);
   border-left-width: 4px; /* Garante a espessura da borda esquerda */
 }
 
+/* Ajuste no backup-detail-item para melhor espaçamento */
 .backup-detail-item {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 5px;
-  font-size: 0.9rem;
+  grid-template-columns: 130px 1fr; /* Rótulo um pouco menor */
+  gap: 4px 8px; /* Espaçamento entre label e valor */
+  font-size: 0.85rem; /* Um pouco menor para mais densidade */
 }
 
 .backup-detail-item:not(:last-child) {
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Espaço menor entre os detalhes de um mesmo backup */
 }
-
 .backup-detail-item dt {
   font-weight: 500;
   color: var(--text-secondary-color);
@@ -2367,5 +2468,133 @@ input[type="search"]::-webkit-search-results-decoration {
   background-color: var(--bg-color);
   padding: 15px;
   border-radius: var(--border-radius-small);
+}
+/* === ESTILOS PARA A LISTA DE NOTAS PARSEADAS === */
+.styled-notes-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 8px; /* Ajuste se necessário */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-medium);
+  max-height: 250px; /* Altura máxima antes de mostrar scroll */
+  overflow-y: auto;
+  background-color: var(--bg-color); /* Pode ser --background-color-secondary se preferir contraste */
+}
+
+.note-entry {
+  padding: 10px 15px; /* Reduzido um pouco o padding vertical */
+  border-bottom: 1px solid var(--border-color-soft); /* Uma borda mais suave entre as notas */
+  font-size: 0.9rem; 
+}
+
+.note-entry:last-child {
+  border-bottom: none;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline; /* Alinha pela base do texto */
+  flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+  margin-bottom: 5px; /* Espaço entre header e mensagem */
+  color: var(--text-secondary-color);
+  font-size: 0.8rem; /* Menor para meta-informação */
+}
+
+.note-timestamp {
+  font-weight: 600;
+  color: var(--primary-accent-color); /* Cor de destaque para o timestamp */
+  margin-right: 10px; /* Espaço antes da fonte */
+  white-space: nowrap; /* Evita quebra de linha no timestamp */
+}
+
+.note-source {
+  font-style: italic;
+  text-align: right; /* Tenta alinhar à direita */
+  flex-grow: 1; /* Permite que o source ocupe o espaço restante */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Adiciona '...' se a fonte for muito longa */
+}
+
+.note-message {
+  margin: 0;
+  line-height: 1.5; /* Espaçamento entre linhas da mensagem */
+  white-space: pre-wrap; /* Mantém a formatação original da mensagem (quebras de linha) */
+  word-break: break-word; /* Evita overflow horizontal da mensagem */
+  color: var(--text-color);
+}
+
+/* Melhoria na barra de rolagem para a lista de notas (opcional, mas recomendado) */
+.styled-notes-list::-webkit-scrollbar {
+  width: 6px; /* Largura da barra de rolagem */
+}
+.styled-notes-list::-webkit-scrollbar-track {
+  background: rgba(var(--text-secondary-color-rgb), 0.1); /* Cor do trilho mais sutil */
+  border-radius: 3px;
+}
+.styled-notes-list::-webkit-scrollbar-thumb {
+  background-color: var(--border-color-strong); /* Usar uma cor de borda mais forte */
+  border-radius: 3px;
+}
+.styled-notes-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary-color); /* Cor ao passar o mouse */
+}
+
+.modal-content.modal-details .details-section {
+  /* Mantém como está ou ajuste o espaçamento se necessário */
+  /* border-top: 1px solid var(--border-color); */
+  /* padding-top: 20px; */
+}
+
+/* Ajustando o grid principal para os itens de detalhe */
+.modal-details-body .details-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr; /* Padrão para uma coluna em telas pequenas */
+  gap: 0px 20px; /* SEM gap vertical entre os .detail-item, apenas horizontal quando em 2 colunas */
+  align-items: start; /* Alinha os itens do grid ao topo de suas células */
+  margin-bottom: 15px; /* Espaço após um grupo de itens no grid */
+} 
+
+/* Media query para aplicar 2 colunas em telas maiores */
+@media (min-width: 700px) { /* Aumentei um pouco o breakpoint para dar mais espaço */
+  .modal-details-body .details-grid-2col {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Duas colunas de largura igual */
+  }
+}
+
+/* Estilo para cada item de detalhe (dt e dd) */
+.modal-details-body .detail-item {
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+  margin-bottom: 10px;
+}
+
+.modal-details-body .detail-item dt {
+  font-weight: 600;
+  color: var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em; 
+  text-transform: uppercase;
+  margin-bottom: 0;
+}
+
+.modal-details-body .detail-item dd {
+  margin: 0;
+  color: var(--text-color);
+  word-break: break-word; 
+  line-height: 1.4;     
+  font-size: 0.95em;    
+}
+
+/* Para garantir que a seção de notas não afete tanto o layout dos itens acima quando longa: */
+.modal-details-body .details-section .styled-notes-list {
+  margin-top: 5px;
+}
+.modal-details .details-grid-2col .detail-item:nth-child(odd):last-child {
+  grid-column: 1 / -1;
 }
 /* === FIM DOS ESTILOS === */

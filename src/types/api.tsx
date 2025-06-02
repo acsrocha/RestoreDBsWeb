@@ -77,3 +77,10 @@ export interface AdminClientUploadAreaDetail {
   upload_area_notes?: string;
   processed_backups: AdminProcessedBackupDetail[]; 
 }
+export interface ParsedNoteEntry {
+  id: string; // Para a chave 'key' do React, pode ser um índice ou hash
+  timestamp: string;
+  source: string; // Ex: "Sistema (Criação de Área)", "Monitor Drive", "Admin Web"
+  message: string;
+  rawLine: string; // A linha original, para fallback ou debug
+}
