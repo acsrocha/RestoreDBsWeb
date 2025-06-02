@@ -1,5 +1,5 @@
 // src/pages/ProcessedDatabasesPage.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ProcessedDatabasesTable from '../components/processedDatabases/ProcessedDatabasesTable';
 import {
   fetchProcessedDatabases,
@@ -7,21 +7,40 @@ import {
 } from '../services/api';
 import type { ProcessedDatabase } from '../types/api';
 import { useInterval } from '../hooks/useInterval';
-import { useLastUpdated } from '../contexts/LastUpdatedContext';
-import { FiDatabase, FiRefreshCw } from 'react-icons/fi';
+// --- IMPORTAÇÃO CORRIGIDA ---
+import { useLastUpdated } from '../contexts/LastUpdatedContext'; // Garanta que o caminho para seu contexto está correto
+// --- FIM DA IMPORTAÇÃO CORRIGIDA ---
+import { FiDatabase, FiRefreshCw, FiSearch, FiAlertCircle, FiLoader } from 'react-icons/fi';
 
 import DiscardConfirmationModal from '../components/shared/DiscardConfirmationModal';
 import NotificationBanner from '../components/shared/NotificationBanner';
 
 const REFRESH_PROCESSED_INTERVAL = 15000;
 
-const ProcessedDatabasesPage: React.FC = () => {
-  const [databases, setDatabases] = useState<ProcessedDatabase[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Estado de carregamento principal da página
-  const [isPollingLoading, setIsPollingLoading] = useState<boolean>(false); // Estado para loading sutil de polling
-  const [error, setError] = useState<string | null>(null);
+const getStatusClassNameForPage = (status?: string): string => {
+  if (!status) return 'status-badge status--desconhecido';
+  const lowerStatus = status.toLowerCase();
+  if (lowerStatus.includes('sucesso') || lowerStatus === 'ativo') return 'status-badge status--success status-ativo';
+  if (lowerStatus.includes('falha') || lowerStatus.includes('problema')) return 'status-badge status--error';
+  if (lowerStatus.includes('processamento') || lowerStatus.includes('download concluído')) return 'status-badge status--info';
+  if (lowerStatus.includes('aguardando') || lowerStatus.includes('upload concluído')) return 'status-badge status--warning';
+  if (lowerStatus === 'marcadoparadescarte') return 'status-badge status--warning status-marcadoparadescarte';
+  if (lowerStatus.includes('arquivado')) return 'status-badge status--archived';
+  if (lowerStatus === 'ativo') return 'status-badge status-ativo';
+  if (lowerStatus === 'marcadoparadescarte') return 'status-badge status-marcadoparadescarte';
+  return 'status-badge status--desconhecido';
+};
 
-  const { signalUpdate, addActivity } = useLastUpdated();
+const ProcessedDatabasesPage: React.FC = () => {
+  console.log("LOG DEBUG: ProcessedDatabasesPage RENDERIZOU");
+
+  const [databases, setDatabases] = useState<ProcessedDatabase[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isPollingLoading, setIsPollingLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Esta linha causava o erro "useLastUpdated is not defined"
+  const { lastUpdatedGlobal, signalUpdate, addActivity } = useLastUpdated();
 
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState<boolean>(false);
   const [dbToConfirmDiscard, setDbToConfirmDiscard] =
@@ -32,126 +51,144 @@ const ProcessedDatabasesPage: React.FC = () => {
   } | null>(null);
   const [isDiscarding, setIsDiscarding] = useState<boolean>(false);
 
-  const firstLoadProcessedRef = useRef(true); // Para controlar a primeira carga
+  const [searchQuery, setSearchQuery] = useState('');
+  const firstLoadProcessedRef = useRef(true);
 
   const loadDatabases = useCallback(
     async (isPollOperation = false, isTriggeredByManualAction = false) => {
-      // Define o estado de carregamento apropriado
       if (isTriggeredByManualAction && !isPollOperation) {
-        setIsLoading(true); // Loading principal para ação manual ou carga inicial
-        setError(null);     // Limpa erros anteriores em uma nova tentativa manual
-      } else if (isPollOperation && !isLoading /* Evita overlap com loading principal */) {
+        setIsLoading(true);
+        setError(null);
+      } else if (isPollOperation && !isLoading) {
         setIsPollingLoading(true);
       }
-
       try {
         const data = await fetchProcessedDatabases();
-        setDatabases(Array.isArray(data) ? data : []); // Garante que 'data' seja sempre um array
-        if (!isPollOperation || isTriggeredByManualAction) {
-          setError(null); // Limpa erro se a carga (manual/inicial) for bem-sucedida
-        }
+        const sortedData = (Array.isArray(data) ? data : []).sort(
+          (a, b) =>
+            new Date(b.restorationTimestamp).getTime() -
+            new Date(a.restorationTimestamp).getTime()
+        );
+        setDatabases(sortedData);
+        if (!isPollOperation || isTriggeredByManualAction) {setError(null);}
         signalUpdate();
       } catch (err) {
         console.error('Falha ao buscar bancos processados:', err);
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : 'Erro ao carregar bancos processados.';
-        
-        // Define erro e limpa dados apenas em carregamentos principais/manuais ou na primeira carga
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar bancos processados.';
         if (!isPollOperation || isTriggeredByManualAction || firstLoadProcessedRef.current) {
           setError(errorMessage);
-          setDatabases([]); // Garante que a tabela mostre "nenhum dado" em caso de erro crítico na carga
+          setDatabases([]);
         }
       } finally {
-        // Garante que os estados de loading sejam desativados corretamente
-        if (isTriggeredByManualAction || (!isPollOperation && firstLoadProcessedRef.current)) {
-          setIsLoading(false);
-        }
-        if (isPollOperation) {
-          setIsPollingLoading(false);
-        }
+        if (isTriggeredByManualAction || (!isPollOperation && firstLoadProcessedRef.current)) {setIsLoading(false);}
+        if (isPollOperation) {setIsPollingLoading(false);}
       }
     },
-    // Removido isLoading da lista de dependências para evitar recriações excessivas de loadDatabases.
-    // A lógica de setIsPollingLoading agora verifica !isLoading diretamente.
-    [signalUpdate] 
+    [signalUpdate, isLoading]
   );
 
   useEffect(() => {
     if (firstLoadProcessedRef.current) {
-      loadDatabases(false, true); // Considera a primeira carga como uma ação "manual" para setar isLoading
+      loadDatabases(false, true);
       firstLoadProcessedRef.current = false;
     }
   }, [loadDatabases]);
 
   useInterval(() => {
-    // Não faz polling se um loading principal estiver ativo, se o modal estiver aberto ou se já houver um polling em andamento.
     if (!isLoading && !isPollingLoading && !isDiscardModalOpen) {
       loadDatabases(true, false);
     }
   }, REFRESH_PROCESSED_INTERVAL);
 
+  const filteredDatabases = useMemo(() => {
+    const lowercasedQuery = searchQuery.toLowerCase().trim();
+    if (lowercasedQuery === '') {return databases;}
+    return databases.filter(db => 
+      db.originalBackupFileName?.toLowerCase().includes(lowercasedQuery) ||
+      db.restoredDbAlias?.toLowerCase().includes(lowercasedQuery) ||
+      db.uploadedByTicketID?.toLowerCase().includes(lowercasedQuery) ||
+      db.status?.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [searchQuery, databases]);
+
+  useEffect(() => {
+    if (feedbackMessage) {
+      const timer = setTimeout(() => {setFeedbackMessage(null);}, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedbackMessage]);
+
   const handleOpenDiscardModal = (dbId: string) => {
+    console.log(`LOG DEBUG: [ProcessedDatabasesPage] handleOpenDiscardModal INICIADO para dbId: ${dbId}`);
     const dbToProcess = databases.find(d => d.id === dbId);
+    
     if (dbToProcess) {
+      console.log("LOG DEBUG: [ProcessedDatabasesPage] Banco encontrado. DEFININDO dbToConfirmDiscard:", dbToProcess);
       setDbToConfirmDiscard(dbToProcess);
-      setIsDiscardModalOpen(true);
-      setFeedbackMessage(null);
     } else {
-      console.error(
-        `[handleOpenDiscardModal] Banco com ID ${dbId} NÃO encontrado.`
-      );
+      console.error("LOG DEBUG ERROR: [ProcessedDatabasesPage] Banco NÃO encontrado para dbId:", dbId);
       setFeedbackMessage({
         type: 'error',
         text: `Erro: Não foi possível encontrar o banco de dados com ID ${dbId} para descarte.`
       });
+      setDbToConfirmDiscard(null);
     }
   };
 
+  useEffect(() => {
+    if (dbToConfirmDiscard) {
+      console.log("LOG DEBUG: [ProcessedDatabasesPage] useEffect detectou dbToConfirmDiscard:", dbToConfirmDiscard, "ABRINDO MODAL.");
+      setIsDiscardModalOpen(true);
+      setFeedbackMessage(null);
+    }
+  }, [dbToConfirmDiscard]);
+
+
   const handleCloseDiscardModal = () => {
+    console.log("LOG DEBUG: [ProcessedDatabasesPage] handleCloseDiscardModal ACIONADO");
     if (addActivity && dbToConfirmDiscard && !isDiscarding) {
       addActivity(
         `Descarte para '${dbToConfirmDiscard.restoredDbAlias}' cancelado pelo usuário no modal.`
       );
     }
     setIsDiscardModalOpen(false);
-    setDbToConfirmDiscard(null);
+    setDbToConfirmDiscard(null); 
   };
 
   const handleConfirmDiscard = async (
     confirmationTicketValueFromModal?: string
   ) => {
-    if (!dbToConfirmDiscard) return;
+    console.log("LOG DEBUG: [ProcessedDatabasesPage] handleConfirmDiscard ACIONADO");
+    if (!dbToConfirmDiscard) {
+      console.error("LOG DEBUG ERROR: [ProcessedDatabasesPage] handleConfirmDiscard chamado sem dbToConfirmDiscard.");
+      return;
+    }
 
     setIsDiscarding(true);
     setFeedbackMessage(null);
     const aliasToDiscard = dbToConfirmDiscard.restoredDbAlias;
 
     try {
-      const message = await markDatabaseForDiscard(
+      const responseText = await markDatabaseForDiscard(
         dbToConfirmDiscard.id,
         confirmationTicketValueFromModal || ''
       );
-      setFeedbackMessage({ type: 'success', text: message });
-      if (addActivity) addActivity(message);
-      // Força recarregamento completo da lista após descarte bem-sucedido
-      // A flag isTriggeredByManualAction (segundo parâmetro true) fará com que setIsLoading(true) seja chamado.
+      let messageToShow = responseText;
+      try {
+        const jsonResponse = JSON.parse(responseText);
+        if (jsonResponse.message) messageToShow = jsonResponse.message;
+        else if (jsonResponse.warning) messageToShow = jsonResponse.warning;
+      } catch(e) { /* Usa texto original se não for JSON */ }
+      setFeedbackMessage({ type: 'success', text: messageToShow });
+      if (addActivity) addActivity(messageToShow);
       await loadDatabases(false, true); 
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : `Erro desconhecido ao marcar '${aliasToDiscard}' para descarte.`;
-      console.error(`Falha ao marcar para descarte '${aliasToDiscard}':`, err);
-      setFeedbackMessage({
-        type: 'error',
-        text: `Falha ao marcar '${aliasToDiscard}' para descarte: ${errorMessage}`
-      });
+      const errorMessage = err instanceof Error ? err.message : `Erro desconhecido ao marcar '${aliasToDiscard}' para descarte.`;
+      setFeedbackMessage({ type: 'error', text: `Falha: ${errorMessage}` });
     } finally {
       setIsDiscarding(false);
-      setIsDiscardModalOpen(false); // Garante que o modal feche em qualquer caso
-      setDbToConfirmDiscard(null);
+      setIsDiscardModalOpen(false); 
+      setDbToConfirmDiscard(null);  
     }
   };
   
@@ -159,65 +196,90 @@ const ProcessedDatabasesPage: React.FC = () => {
     setFeedbackMessage(null);
     loadDatabases(false, true);
   };
+  
+  console.log("LOG DEBUG: [ProcessedDatabasesPage] Estado de isDiscardModalOpen ANTES DO RETURN:", isDiscardModalOpen);
+  console.log("LOG DEBUG: [ProcessedDatabasesPage] Estado de dbToConfirmDiscard ANTES DO RETURN:", dbToConfirmDiscard ? dbToConfirmDiscard.id : null);
+
 
   return (
-    <div id='view-bancos-restaurados' className='view active'>
-      <section
-        className='list-card processed-databases-card'
-        id='processedDatabasesSection'
-        aria-labelledby='processedDatabasesHeader'
-      >
-        {/* --- TÍTULO AJUSTADO COM ÍCONE DIRETO --- */}
-        <h2 id='processedDatabasesHeader'>
-          <FiDatabase /> 
-          Bancos de Dados Processados
-        </h2>
-        <div className='table-actions'>
-          <button
-            id='refreshProcessedDBsBtn'
-            className='button-refresh'
-            title='Atualizar lista de bancos processados'
-            onClick={handleRefreshManual}
+    <div className='admin-client-areas-page list-card'> 
+      <div className="admin-areas-header">
+        <h2><FiDatabase /> Bancos de Dados Processados</h2>
+        <div className="admin-areas-header-actions">
+          <button 
+            onClick={handleRefreshManual} 
+            className="button-refresh" 
             disabled={isLoading || isPollingLoading || isDiscarding}
+            title="Atualizar a lista de bancos de dados"
           >
-            <FiRefreshCw />
-            {isLoading && !isPollingLoading && !isDiscarding // Mostra "Carregando..." se for o loading principal da página
+            <FiRefreshCw size={14} className={(isLoading || isPollingLoading) && !isDiscarding ? 'spin-animation' : ''} />
+            {isLoading && !isPollingLoading && !isDiscarding
               ? 'Carregando...'
-              : isPollingLoading && !isDiscarding // Mostra "Atualizando..." para o polling sutil
+              : isPollingLoading && !isDiscarding
               ? 'Atualizando...'
-              : isDiscarding // Mostra "Processando..." durante a ação de descarte
+              : isDiscarding
               ? 'Processando...'
               : 'Atualizar Lista'}
           </button>
         </div>
-
-        {feedbackMessage && (
-          <NotificationBanner
-            type={feedbackMessage.type}
-            message={feedbackMessage.text}
-            onDismiss={() => setFeedbackMessage(null)}
+      </div>
+      {lastUpdatedGlobal && <p className="grid-last-updated">Interface atualizada pela última vez às: {lastUpdatedGlobal}</p>}
+      
+      <div className="table-filter-bar">
+        <div className="form-group search-form-group">
+          <label htmlFor="processed-db-search"><FiSearch /> Pesquisar</label>
+          <input
+            type="search"
+            id="processed-db-search"
+            placeholder="Nome original, alias, ticket ou status..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={isLoading && databases.length === 0}
           />
-        )}
-
-        {/* Mostra erro principal de carregamento da lista se houver e não estiver em loading principal */}
-        {error && !isLoading && ( 
-          <div className='error-message' style={{ marginBottom: '15px' }}>
-            {`Erro ao carregar dados: ${error}`}
-          </div>
-        )}
+        </div>
+      </div>
         
-        <ProcessedDatabasesTable
-          databases={databases}
-          // Prop 'isLoading' para a tabela: true se for o loading principal E a lista estiver vazia.
-          // A tabela internamente mostrará "Nenhum banco" se databases.length === 0 e esta prop for false.
-          isLoading={isLoading && databases.length === 0 && !isDiscarding} 
-          onMarkForDiscard={handleOpenDiscardModal}
+      {feedbackMessage && (
+        <NotificationBanner
+          type={feedbackMessage.type}
+          message={feedbackMessage.text}
+          onDismiss={() => setFeedbackMessage(null)}
         />
-      </section>
+      )}
+
+      {error && !isLoading && ( 
+        <NotificationBanner
+            type="error"
+            message={`Erro ao carregar dados: ${error}`}
+            onDismiss={() => setError(null)}
+        />
+      )}
+      
+      <div className="table-wrapper">
+        {(isLoading && databases.length === 0 && !error) ? (
+          <div className="loading-message" style={{padding: '20px', textAlign: 'center'}}>
+            <FiLoader className="spin-animation" size={24} style={{marginRight: '10px'}} />
+            Carregando bancos de dados processados...
+          </div>
+        ) : (!isLoading && !error && filteredDatabases.length === 0) ? (
+          <div className="empty-list" style={{padding: '20px', textAlign: 'center'}}>
+            {searchQuery 
+              ? `Nenhum banco de dados encontrado para "${searchQuery}".` 
+              : 'Nenhum banco de dados processado no sistema.'}
+          </div>
+        ) : (!error) ? (
+          <ProcessedDatabasesTable
+            databases={filteredDatabases}
+            isLoading={false} 
+            onMarkForDiscard={handleOpenDiscardModal}
+            getStatusClassName={getStatusClassNameForPage}
+          />
+        ) : null } 
+      </div>
 
       <DiscardConfirmationModal
         isOpen={isDiscardModalOpen}
-        dbToDiscard={dbToConfirmDiscard}
+        dbToDiscard={dbToConfirmDiscard} 
         onClose={handleCloseDiscardModal}
         onConfirm={handleConfirmDiscard}
         isDiscarding={isDiscarding}

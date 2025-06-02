@@ -1,13 +1,13 @@
 // src/components/shared/DiscardConfirmationModal.tsx
 import React, { useState, useEffect } from 'react';
-import type { ProcessedDatabase } from '../../types/api'; // Ajuste o caminho se necessário
+import type { ProcessedDatabase } from '../../types/api'; 
 
 interface DiscardConfirmationModalProps {
   isOpen: boolean;
   dbToDiscard: ProcessedDatabase | null;
   onClose: () => void;
-  onConfirm: (confirmationTicket?: string) => Promise<void>; // Tornar async para lidar com loading
-  isDiscarding: boolean; // Para feedback de carregamento
+  onConfirm: (confirmationTicket?: string) => Promise<void>; 
+  isDiscarding: boolean; 
 }
 
 const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
@@ -17,53 +17,72 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
   onConfirm,
   isDiscarding,
 }) => {
+  // PONTO DE LOG A
+  console.log(
+    `LOG DEBUG: [DiscardConfirmationModal] RENDERIZANDO. Props recebidas: isOpen=${isOpen}, dbToDiscard ID=${dbToDiscard?.id}, dbToDiscard Alias=${dbToDiscard?.restoredDbAlias}, isDiscarding=${isDiscarding}`
+  );
+
   const [ticketInput, setTicketInput] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
 
-  // LOG E: Verifica as props recebidas pelo modal toda vez que ele tenta renderizar
-  // // console.log('[Modal Render] Props: isOpen:', isOpen, 'dbToDiscard:', dbToDiscard ? dbToDiscard.id : null, 'isDiscarding:', isDiscarding);
-
   useEffect(() => {
-    // Limpar input e erro quando o modal é reaberto para um novo DB
-    if (isOpen) {
-      // console.log('[Modal useEffect] Modal aberto, limpando ticketInput e inputError.'); // Log adicional no useEffect
+    if (isOpen && dbToDiscard) { 
+      // PONTO DE LOG B
+      console.log(
+        "LOG DEBUG: [DiscardConfirmationModal] useEffect EXECUTADO porque isOpen é true E dbToDiscard existe. Limpando ticketInput e inputError."
+      );
       setTicketInput('');
       setInputError(null);
     }
   }, [isOpen, dbToDiscard]);
 
-  if (!isOpen || !dbToDiscard) {
-    // LOG F: Indica por que o modal está retornando null (não renderizando sua UI)
-    // console.log('[Modal Render] Retornando null. Causa: isOpen é', isOpen, 'E/OU dbToDiscard é', dbToDiscard ? 'válido' : 'null');
+  if (!isOpen) {
+    // PONTO DE LOG C.1
+    console.log(
+      `LOG DEBUG: [DiscardConfirmationModal] RETORNANDO NULL porque !isOpen (${!isOpen})`
+    );
     return null;
   }
+  
+  if (!dbToDiscard) {
+    // PONTO DE LOG C.2
+    console.log(
+      `LOG DEBUG: [DiscardConfirmationModal] RETORNANDO NULL (ou loader) porque isOpen é true, MAS !dbToDiscard (${!dbToDiscard})`
+    );
+    // Mantendo a lógica de retornar um overlay com "Carregando..." se dbToDiscard for null mas isOpen for true
+    return (
+        <div className={`modal-overlay active`}> 
+            <div className="modal-content discard-modal">
+                <p>Carregando dados do banco...</p> 
+            </div>
+        </div>
+    );
+  }
+  
+  // PONTO DE LOG D
+  console.log(
+    "LOG DEBUG: [DiscardConfirmationModal] PASSOU DAS CONDIÇÕES DE SAÍDA. Modal deveria ser montado no DOM e visível. dbToDiscard.id:", 
+    dbToDiscard.id
+  );
 
   const hasOriginalTicket = dbToDiscard.uploadedByTicketID && dbToDiscard.uploadedByTicketID.trim() !== '';
 
   const handleConfirmClick = async () => {
-    // console.log('[Modal handleConfirmClick] Iniciado.'); // Log no início do clique de confirmação
     if (hasOriginalTicket && ticketInput.trim() === '') {
       setInputError(`Por favor, digite o Ticket ID ('${dbToDiscard.uploadedByTicketID}') para confirmar.`);
-      // console.log('[Modal handleConfirmClick] Erro: Ticket ID necessário não fornecido.');
       return;
     }
-    if (hasOriginalTicket && ticketInput.trim() !== dbToDiscard.uploadedByTicketID) {
+    // Corrigido para usar dbToDiscard.uploadedByTicketID na segunda condição também
+    if (hasOriginalTicket && ticketInput.trim() !== dbToDiscard.uploadedByTicketID) { 
         setInputError(`Ticket ID de confirmação ('${ticketInput.trim()}') não corresponde ao Ticket ID original ('${dbToDiscard.uploadedByTicketID}').`);
-        // console.log('[Modal handleConfirmClick] Erro: Ticket ID não corresponde.');
         return;
     }
     setInputError(null);
-    // console.log('[Modal handleConfirmClick] Chamando onConfirm com ticket:', hasOriginalTicket ? ticketInput.trim() : undefined);
     await onConfirm(hasOriginalTicket ? ticketInput.trim() : undefined);
-    // console.log('[Modal handleConfirmClick] onConfirm finalizado.');
   };
 
-  // LOG G: Se chegou aqui, o modal deveria estar renderizando sua UI
-  // console.log('[Modal Render] Modal deveria estar visível agora. dbToDiscard.id:', dbToDiscard.id);
-
-
   return (
-    <div className={`modal-overlay ${isOpen ? 'active' : ''}`}> {/* Adicionada classe 'active' */}
+    <div className={`modal-overlay ${isOpen ? 'active' : ''}`}> 
       <div className="modal-content discard-modal">
         <button className="modal-close-button" onClick={onClose} disabled={isDiscarding} aria-label="Fechar">
           &times;
@@ -88,11 +107,12 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
               value={ticketInput}
               onChange={(e) => {
                 setTicketInput(e.target.value);
-                if (inputError) setInputError(null); // Limpa erro ao digitar
+                if (inputError) setInputError(null); 
               }}
               placeholder={`Digite '${dbToDiscard.uploadedByTicketID}'`}
               disabled={isDiscarding}
               className={inputError ? 'input-error' : ''}
+              autoFocus
             />
             {inputError && <p className="error-text modal-input-error">{inputError}</p>}
           </div>
@@ -100,7 +120,6 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
         <p className="warning-text">
           <strong>Atenção:&nbsp;</strong> Esta ação é irreversível.
         </p>
-        {/* Espaço para mensagem de erro da API, se o onConfirm falhar e você quiser mostrar no modal */}
         <div className="modal-actions">
           <button onClick={onClose} className="button-secondary" disabled={isDiscarding}>
             Cancelar

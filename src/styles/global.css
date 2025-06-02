@@ -2597,4 +2597,11 @@ html[data-theme='dark'] .details-section h3 {
 .modal-details .details-grid-2col .detail-item:nth-child(odd):last-child {
   grid-column: 1 / -1;
 }
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; /* Ou o max-width que desejar para a célula */
+}
 /* === FIM DOS ESTILOS === */
