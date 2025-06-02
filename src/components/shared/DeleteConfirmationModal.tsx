@@ -5,11 +5,11 @@ import { FiAlertTriangle, FiTrash2 } from 'react-icons/fi';
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => Promise<void>; // A assinatura pode ser simplificada, já que a validação é interna
+  onConfirm: () => Promise<void>;
   isDeleting: boolean;
   itemName: string;
-  folderName: string;
-  ticketId: string; // NOVO: Prop para receber o Ticket ID para verificação
+  folderName?: string;
+  ticketId?: string;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
@@ -21,36 +21,30 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   folderName,
   ticketId,
 }) => {
-  // NOVO: Estados para controlar o input e o erro de validação
   const [ticketInput, setTicketInput] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
 
-  // Efeito para limpar o estado do input sempre que o modal for aberto
+  // Reset state when the modal is opened or the item changes
   useEffect(() => {
     if (isOpen) {
       setTicketInput('');
       setInputError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, itemName, ticketId]);
 
   if (!isOpen) {
     return null;
   }
 
   const hasTicketId = ticketId && ticketId.trim() !== '';
+  const folderDisplayName = folderName || 'N/A';
 
-  // NOVO: Lógica de confirmação que valida o input antes de chamar onConfirm
   const handleConfirmClick = async () => {
-    if (hasTicketId && ticketInput.trim() === '') {
-      setInputError(`Por favor, digite o Ticket ID ('${ticketId}') para confirmar.`);
+    if (hasTicketId && ticketInput.trim() !== ticketId) {
+      setInputError(`O Ticket ID digitado não corresponde ao da área ('${ticketId}').`);
       return;
     }
-    if (hasTicketId && ticketInput.trim() !== ticketId) {
-        setInputError(`O Ticket ID digitado não corresponde.`);
-        return;
-    }
     
-    // Se a validação passar (ou não for necessária), chama a função de confirmação
     setInputError(null);
     await onConfirm();
   };
@@ -70,19 +64,19 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           &times;
         </button>
         <h2>
-          <FiAlertTriangle style={{ color: 'var(--error-color)' }} /> Excluir
-          Área do Cliente
+          <FiAlertTriangle style={{ color: 'var(--error-color)', marginRight: '8px' }} />
+           Excluir Área do Cliente
         </h2>
         <p>
           Você tem certeza que deseja excluir permanentemente a área do cliente{' '}
-          <strong>&quot;{itemName}&quot;</strong>?
+          <strong>&quot;{itemName || 'Desconhecido'}&quot;</strong>?
         </p>
 
-        {/* NOVO: Seção de confirmação do Ticket ID, baseada no DiscardConfirmationModal */}
+        {/* Section for Ticket ID confirmation */}
         {hasTicketId && (
-          <div className="ticket-confirmation">
-            <p className="ticket-instruction">
-              Para confirmar o <strong>DESCARTE PERMANENTE</strong> desta área e de sua respectiva pasta no Google Drive, digite o Ticket ID <strong>({ticketId})</strong> abaixo:
+          <div className="ticket-confirmation" style={{ marginTop: '15px', marginBottom: '15px' }}>
+            <p className="ticket-instruction" style={{ fontSize: '0.9em' }}>
+              Para confirmar a <strong>EXCLUSÃO PERMANENTE</strong>, por favor, digite o Ticket ID associado a esta área: <strong>&quot;{ticketId}&quot;</strong>
             </p>
             <input
               type="text"
@@ -93,23 +87,29 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
               }}
               placeholder={`Digite '${ticketId}'`}
               disabled={isDeleting}
-              className={inputError ? 'input-error' : ''}
+              className={`input-field ${inputError ? 'input-error' : ''}`}
               autoFocus
+              style={{ marginTop: '5px', marginBottom: '5px', width: '100%', boxSizing: 'border-box' }}
             />
-            {inputError && <p className="modal-input-error">{inputError}</p>}
+            {inputError && <p className="error-text modal-input-error" style={{ fontSize: '0.85em', marginTop: '5px' }}>{inputError}</p>}
           </div>
         )}
-
-        <p>
-          Esta ação removerá a pasta{' '}
-          <strong>&quot;{folderName}&quot;</strong> do Google Drive e todos os
-          seus registros associados no sistema.
-        </p>
-        <div className='modal-content warning-text' style={{ marginTop: '15px' }}>
-          <strong>ESTA AÇÃO NÃO PODE SER DESFEITA.</strong>
+        
+        {/* Updated and more accurate description of the action */}
+        <div style={{ fontSize: '0.9em', marginTop: '15px', lineHeight: '1.5' }}>
+            <p>Esta ação irá:</p>
+            <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
+                <li>Remover a pasta <strong>&quot;{folderDisplayName}&quot;</strong> do Google Drive.</li>
+                <li>Excluir o registro desta área de upload do sistema.</li>
+            </ul>
+            <p><strong>Atenção:</strong> Backups já restaurados (.fdb) e seus aliases não serão removidos por esta ação. Eles devem ser descartados individualmente na tela "Bancos Restaurados".</p>
         </div>
 
-        <div className='modal-actions'>
+        <div className='warning-text' style={{ marginTop: '15px', fontWeight: 'bold' }}>
+          ESTA AÇÃO NÃO PODE SER DESFEITA.
+        </div>
+
+        <div className='modal-actions' style={{ marginTop: '25px' }}>
           <button
             onClick={onClose}
             className='button-secondary'
@@ -118,11 +118,11 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             Cancelar
           </button>
           <button
-            onClick={handleConfirmClick} // Alterado para a nova função com validação
+            onClick={handleConfirmClick}
             className='button-danger'
-            disabled={isDeleting}
+            disabled={isDeleting || (hasTicketId && ticketInput.trim() !== ticketId) }
           >
-            {isDeleting ? 'Excluindo...' : <><FiTrash2 /> Excluir Permanentemente</>}
+            {isDeleting ? 'Excluindo...' : <><FiTrash2 style={{ marginRight: '5px' }} /> Excluir Permanentemente</>}
           </button>
         </div>
       </div>

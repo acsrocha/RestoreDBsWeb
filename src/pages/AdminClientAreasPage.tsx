@@ -1,5 +1,5 @@
 // src/pages/AdminClientAreasPage.tsx
-import React, { useEffect, useState, useCallback, useRef } from 'react'; // Adicionado useRef
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   fetchAdminClientUploadAreaDetails,
   updateClientUploadAreaStatus,
@@ -12,15 +12,14 @@ import {
   FiEdit, FiAlertTriangle, FiRefreshCw, FiFileText,
   FiDownloadCloud, FiTrash2, FiUsers, FiSearch, FiSave
 } from 'react-icons/fi';
-import { isEqual } from 'lodash'; // Importar isEqual
+import { isEqual } from 'lodash';
 
 import DriveCycleIndicator from '../components/common/DriveCycleIndicator';
 import { useDriveCycle } from '../contexts/DriveCycleContext';
-import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal'; // Certifique-se que este é o seu modal corrigido
 import NotificationBanner from '../components/shared/NotificationBanner';
 import ClientAreaDetailsModal from '../components/shared/ClientAreaDetailsModal';
 
-// Função para obter a classe CSS com base no status da área (sem alterações)
 const getStatusClassName = (status: string): string => {
   const lowerStatus = status.toLowerCase();
   if (lowerStatus.includes('sucesso')) return 'status-badge status--success';
@@ -39,7 +38,6 @@ const AdminClientAreasPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   
-  // actionInProgress agora é um Set de IDs para melhor granularidade, ou um booleano simples se preferir
   const [actionInProgress, setActionInProgress] = useState<Set<string>>(new Set());
   
   const { timeLeftSeconds, cycleDurationMinutes } = useDriveCycle();
@@ -71,12 +69,12 @@ const AdminClientAreasPage: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteFeedback, setDeleteFeedback] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
-  // NOVO ESTADO PARA DESTAQUE
   const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
-  const previousAreasRef = useRef<AdminClientUploadAreaDetail[]>([]); // Usar ref para previousAreas
+  const previousAreasRef = useRef<AdminClientUploadAreaDetail[]>([]);
+  const driveCycleUpdateDoneRef = useRef<boolean>(false);
+
 
   useEffect(() => {
-    // Atualiza a referência para previousAreas sempre que 'areas' mudar
     previousAreasRef.current = areas;
   }, [areas]);
 
@@ -87,18 +85,12 @@ const AdminClientAreasPage: React.FC = () => {
 
   const loadData = useCallback(async (isPollOrManualRefresh = false) => {
     if (!isPollOrManualRefresh) {
-      setIsLoading(true); // Define o carregamento inicial apenas se não for um poll/refresh
+      setIsLoading(true);
     }
-    // Não definimos setError(null) aqui para evitar piscar se for um erro de poll
     
-    // Para um poll ou refresh manual, não queremos que a tela inteira mostre "Carregando..."
-    // O botão de refresh já mostra seu próprio estado de carregamento.
-    // Para poll, é uma atualização em segundo plano.
-
     try {
       const newData = await fetchAdminClientUploadAreaDetails();
       
-      // Lógica de Destaque de Linhas Alteradas
       if (isPollOrManualRefresh && previousAreasRef.current.length > 0) {
         const currentPreviousAreas = previousAreasRef.current;
         const newHighlights = new Set<string>();
@@ -106,13 +98,10 @@ const AdminClientAreasPage: React.FC = () => {
         newData.forEach(newArea => {
           const oldArea = currentPreviousAreas.find(pa => pa.upload_area_id === newArea.upload_area_id);
           if (oldArea) {
-            // Compara o objeto antigo com o novo. Se forem diferentes, destaca.
-            // isEqual da lodash faz uma comparação profunda.
             if (!isEqual(oldArea, newArea)) {
               newHighlights.add(newArea.upload_area_id);
             }
           } else {
-            // Se a área é nova (não existia antes), destaca também.
             newHighlights.add(newArea.upload_area_id);
           }
         });
@@ -120,25 +109,24 @@ const AdminClientAreasPage: React.FC = () => {
         if (newHighlights.size > 0) {
           setHighlightedRowIds(newHighlights);
           setTimeout(() => {
-            setHighlightedRowIds(new Set()); // Limpa o destaque após 3 segundos
+            setHighlightedRowIds(new Set());
           }, 3000);
         }
       }
       
-      setAreas(newData); // Atualiza as áreas principais
+      setAreas(newData);
       updateTimestamp();
-      if (error) setError(null); // Limpa o erro se a busca for bem-sucedida
+      if (error) setError(null); 
 
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Ocorreu um erro desconhecido ao buscar os dados.';
-      setError(errorMsg); // Define o erro apenas se a busca falhar
-      // Não limpamos 'areas' em caso de erro de poll para manter os dados antigos visíveis
+      setError(errorMsg);
     } finally {
       if (!isPollOrManualRefresh) {
-        setIsLoading(false); // Limpa o carregamento inicial
+        setIsLoading(false);
       }
     }
-  }, [error]); // Adicionado 'error' para limpar em caso de sucesso
+  }, [error]);
 
 
   useEffect(() => {
@@ -156,23 +144,29 @@ const AdminClientAreasPage: React.FC = () => {
     }
   }, [searchQuery, areas]);
 
-  // Efeito para carregamento inicial e polling
   useEffect(() => {
-    loadData(); // Carregamento inicial
-    // O polling de 15 segundos é definido aqui
-    // Pode ser ajustado se necessário, ex: para 10000 (10s)
+    loadData(); 
     const pollInterval = 15 * 1000; 
     const intervalId = setInterval(() => {
-      // Só faz poll se nenhum modal estiver aberto e nenhuma ação principal estiver em progresso
       if (!isStatusModalOpen && !isNotesModalOpen && !isDetailsModalOpen && !isDeleteModalOpen && actionInProgress.size === 0) {
-        loadData(true); // Passa true para indicar que é um poll/refresh
+        loadData(true);
       }
     }, pollInterval);
     return () => clearInterval(intervalId);
   }, [loadData, isStatusModalOpen, isNotesModalOpen, isDetailsModalOpen, isDeleteModalOpen, actionInProgress.size]);
 
+  useEffect(() => {
+    if (timeLeftSeconds <= 0 && !driveCycleUpdateDoneRef.current) {
+      console.log('AdminClientAreasPage: Fim do ciclo do Drive, atualizando dados...');
+      loadData(true); 
+      driveCycleUpdateDoneRef.current = true; 
+    }
+    else if (timeLeftSeconds > 0 && driveCycleUpdateDoneRef.current) {
+      driveCycleUpdateDoneRef.current = false;
+    }
+  }, [timeLeftSeconds, loadData]);
 
-  // Efeito para notificações que desaparecem (sem alterações)
+
   useEffect(() => {
     if (deleteFeedback) {
       const timer = setTimeout(() => {
@@ -184,7 +178,7 @@ const AdminClientAreasPage: React.FC = () => {
 
 
   const handleManualRefresh = async () => {
-    setIsLoading(true); // Mostra feedback no botão de refresh
+    setIsLoading(true); 
     await loadData(true);
     setIsLoading(false);
   };
@@ -225,7 +219,7 @@ const AdminClientAreasPage: React.FC = () => {
     try {
       const response = await updateClientUploadAreaStatus(currentAreaForStatusEdit.upload_area_id, newStatus);
       setStatusUpdateSuccess(response?.message || "Status atualizado com sucesso!");
-      await loadData(true); // Recarrega os dados para refletir a mudança e o destaque
+      await loadData(true); 
       setTimeout(handleCloseStatusModal, 2000);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Falha ao atualizar status.';
@@ -262,7 +256,7 @@ const AdminClientAreasPage: React.FC = () => {
     try {
       const response = await updateClientUploadAreaNotes(currentAreaForNotesEdit.upload_area_id, newNotesContent);
       setNotesUpdateSuccess(response?.message || "Notas atualizadas com sucesso!");
-      await loadData(true); // Recarrega os dados para refletir a mudança e o destaque
+      await loadData(true); 
       setTimeout(handleCloseNotesModal, 2000);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Falha ao atualizar notas.';
@@ -278,7 +272,7 @@ const AdminClientAreasPage: React.FC = () => {
     try {
       const response = await downloadFromDrive(areaId);
       setDeleteFeedback({ type: 'success', message: response.message || "Solicitação de download enviada com sucesso!" });
-      await loadData(true); // Recarrega os dados para refletir a mudança e o destaque
+      await loadData(true); 
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Falha ao iniciar o download.';
       setDeleteFeedback({ type: 'error', message: errorMsg });
@@ -315,16 +309,14 @@ const AdminClientAreasPage: React.FC = () => {
       await deleteClientUploadArea(areaToDelete.upload_area_id);
       setDeleteFeedback({ type: 'success', message: `Área "${areaToDelete.gdrive_folder_name}" (Cliente: ${areaToDelete.client_name}) excluída com sucesso.` });
       handleCloseDeleteModal();
-      await loadData(true); // Recarrega os dados após a exclusão
+      await loadData(true); 
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Falha ao excluir a área.';
-      // Não fechar o modal de delete em caso de erro, para o usuário ver
       setDeleteFeedback({ type: 'error', message: errorMsg });
     } finally {
       setIsDeleting(false);
       setActionInProgress(prev => {
         const next = new Set(prev);
-        // Verifique se areaToDelete ainda é válido, pois pode ser limpo por handleCloseDeleteModal
         if (areaToDelete) { 
             next.delete(`delete_${areaToDelete.upload_area_id}`);
         }
@@ -334,11 +326,10 @@ const AdminClientAreasPage: React.FC = () => {
   };
 
 
-  if (isLoading && areas.length === 0) { // Exibe carregamento inicial
+  if (isLoading && areas.length === 0) { 
     return <div className="loading-message">Carregando dados das áreas de cliente...</div>;
   }
 
-  // Mostra erro apenas se for um erro de carregamento inicial e não houver dados para mostrar
   if (error && areas.length === 0 && !isLoading) {
     return <div className="error-message">Erro ao carregar dados: {error} <button onClick={() => loadData(false)} className="button-secondary">Tentar Novamente</button></div>;
   }
@@ -379,11 +370,10 @@ const AdminClientAreasPage: React.FC = () => {
           />
         )}
 
-        {/* Mostra erro de poll de forma não obstrutiva se já houver dados na tela */}
         {error && areas.length > 0 && !deleteFeedback && (
              <div className="notification-banner notification-error">
-                <p><FiAlertTriangle />Falha ao buscar atualizações da grid: {error}</p>
-            </div>
+               <p><FiAlertTriangle />Falha ao buscar atualizações da grid: {error}</p>
+             </div>
         )}
 
         <div className="table-wrapper">
@@ -404,7 +394,6 @@ const AdminClientAreasPage: React.FC = () => {
                   <tr 
                     key={area.upload_area_id} 
                     onClick={() => handleOpenDetailsModal(area)} 
-                    // ADICIONADA CLASSE PARA DESTAQUE
                     className={`clickable-row ${highlightedRowIds.has(area.upload_area_id) ? 'row-highlight-animation' : ''}`}
                   >
                     <td data-label="Cliente" className="client-name-cell">{area.client_name || 'N/A'}</td>
@@ -462,13 +451,17 @@ const AdminClientAreasPage: React.FC = () => {
         </div>
       </div>
       
+      {/* ==================================================================== */}
+      {/* A CHAMADA ABAIXO PARA O MODAL DE EXCLUSÃO JÁ ESTÁ CORRETA         */}
+      {/* ==================================================================== */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
         isDeleting={isDeleting}
-        itemName={areaToDelete?.client_name || ''} // Ajustado para mostrar nome do cliente
-        customMessage={`Você tem certeza que deseja excluir permanentemente a área de upload do cliente "${areaToDelete?.client_name || 'Desconhecido'}" (Pasta: ${areaToDelete?.gdrive_folder_name || 'N/A'})? Esta ação também tentará excluir a pasta correspondente no Google Drive.`}
+        itemName={areaToDelete?.client_name || ''} 
+        folderName={areaToDelete?.gdrive_folder_name || ''}
+        ticketId={areaToDelete?.ticket_id || ''}
       />
 
       <ClientAreaDetailsModal
@@ -477,41 +470,9 @@ const AdminClientAreasPage: React.FC = () => {
         area={currentAreaForDetails}
       />
 
-      {isStatusModalOpen && currentAreaForStatusEdit && (
-        <div className="modal-overlay active" onClick={handleCloseStatusModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button onClick={handleCloseStatusModal} className="modal-close-button" title="Fechar Modal" disabled={isSubmittingStatus}>
-              &times;
-            </button>
-            <h2>Alterar Status da Área</h2>
-            <p>Cliente: <strong>{currentAreaForStatusEdit.client_name}</strong> (Ticket: {currentAreaForStatusEdit.ticket_id || 'N/A'})</p>
-            
-            <div className="form-group">
-                <label htmlFor="status-select">Novo Status</label>
-                <select 
-                    id="status-select" 
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    disabled={isSubmittingStatus}
-                >
-                    {statusOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                    ))}
-                </select>
-            </div>
-            
-            {statusUpdateError && <p className="modal-error-message">{statusUpdateError}</p>}
-            {statusUpdateSuccess && <p className="modal-success-message">{statusUpdateSuccess}</p>}
-
-            <div className="modal-actions">
-              <button onClick={handleCloseStatusModal} className="button-secondary" disabled={isSubmittingStatus}>Cancelar</button>
-              <button onClick={handleSubmitStatusUpdate} className="button-primary" disabled={isSubmittingStatus}>
-                {isSubmittingStatus ? 'Salvando...' : <><FiSave /> Salvar Status</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* {isStatusModalOpen && currentAreaForStatusEdit && (
+        // ... (código do modal de status comentado conforme sua última modificação) ...
+      )} */}
 
       {isNotesModalOpen && currentAreaForNotesEdit && (
         <div className="modal-overlay active" onClick={handleCloseNotesModal}>
@@ -528,7 +489,7 @@ const AdminClientAreasPage: React.FC = () => {
                     id="notes-textarea"
                     value={newNotesContent}
                     onChange={(e) => setNewNotesContent(e.target.value)}
-                    rows={10} // Aumentado para mais espaço
+                    rows={10} 
                     placeholder='Digite aqui as notas internas para esta área...'
                     disabled={isSubmittingNotes}
                 ></textarea>
