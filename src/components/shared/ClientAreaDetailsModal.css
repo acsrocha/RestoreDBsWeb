@@ -1,0 +1,287 @@
+/* ClientAreaDetailsModal.css */
+
+.modal-overlay.active {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.modal-content.modal-details {
+  background-color: var(--card-bg-color); /* Nível 1: Fundo principal do modal */
+  color: var(--text-color);
+  padding: 25px 30px;
+  border-radius: var(--border-radius-medium);
+  width: 100%;
+  max-width: 750px;
+  position: relative;
+  text-align: left;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow), 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary-color);
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.modal-close-button:hover {
+  color: var(--error-color);
+  transform: scale(1.1);
+}
+.modal-close-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.modal-details-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+.modal-details-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+.modal-details-header > svg {
+  color: var(--primary-accent-color);
+}
+
+.modal-body {
+  color: var(--text-color);
+}
+
+/* Estilo para seções informativas gerais (ex: Detalhes do Google Drive, Info Cliente) */
+.details-section:not(.notes-section):not([aria-label="Backups Processados"]) {
+  margin-bottom: 1.5rem;
+  padding: 20px;
+  background-color: transparent; /* Herda do --card-bg-color do modal */
+  border-radius: var(--border-radius-small);
+  border: 1px solid var(--border-color);
+}
+
+/* Estilo para seções de LOG/DADOS (Notas, Backups) - esta é a área ao redor da lista de logs */
+.details-section.notes-section,
+.details-section[aria-label="Backups Processados"] {
+  margin-bottom: 1.5rem;
+  padding: 20px; /* Padding para o título da seção e espaçamento ao redor da lista escura */
+  background-color: var(--bg-color); /* Nível 2: Fundo da seção de logs (ex: #1a1e29) */
+  border-radius: var(--border-radius-small);
+  border: 1px solid var(--border-color);
+}
+
+/* Títulos H3 dentro de QUALQUER .details-section */
+.details-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-color);
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0; /* Espaço abaixo do H3 antes da lista de logs escura */
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+}
+.details-section h3 svg {
+  color: var(--primary-accent-color);
+}
+
+/* A LISTA DE LOGS EM SI - Esta área terá o fundo MAIS ESCURO */
+.details-section.notes-section .styled-notes-list,
+.details-section[aria-label="Backups Processados"] .processed-backups-list {
+  background-color: #0D1117; /* Nível 3: Cor BEM escura para a lista de logs */
+  border-radius: var(--border-radius-small); /* Cantos arredondados para a caixa de logs */
+  padding: 15px; /* Padding interno da caixa de logs */
+  margin-top: 15px; /* Espaço entre o H3 da seção e esta caixa escura */
+  max-height: 280px; /* Aumentado um pouco, ajuste conforme necessário */
+  overflow-y: auto;
+}
+
+/* Cada entrada de log individual dentro da caixa escura */
+.details-section.notes-section .note-entry,
+.details-section[aria-label="Backups Processados"] .backup-item {
+  background-color: transparent; /* Herda o fundo #0D1117 da lista pai */
+  padding: 10px 5px;
+  /* Borda entre as entradas de log, visível no fundo #0D1117 */
+  border-bottom: 1px solid rgba(var(--text-secondary-color-rgb), 0.2); /* Borda sutil e clara */
+}
+
+.details-section.notes-section .note-entry:last-child,
+.details-section[aria-label="Backups Processados"] .backup-item:last-child {
+  border-bottom: none;
+}
+
+/* Estilos de texto dentro das entradas de log (garantir contraste com #0D1117) */
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+  font-size: 0.8rem;
+}
+.note-timestamp {
+  color: var(--primary-accent-color); /* Deve ter bom contraste */
+  font-weight: 600;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+.note-source {
+  color: var(--text-secondary-color); /* Checar contraste, pode precisar ser mais claro */
+  font-style: italic;
+  text-align: right;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note-message {
+  margin: 0;
+  color: var(--text-color); /* Cor principal do texto, deve ter bom contraste */
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Estilos de texto para itens de backup na caixa escura */
+.details-section[aria-label="Backups Processados"] .backup-detail-item dt {
+  color: var(--text-secondary-color); /* Ajustar se necessário para contraste */
+  /* ... outros estilos dt ... */
+}
+.details-section[aria-label="Backups Processados"] .backup-detail-item dd {
+  color: var(--text-color); /* Ajustar se necessário para contraste */
+  /* ... outros estilos dd ... */
+}
+
+
+/* Grid para outros detalhes (em seções que não são de log) */
+.details-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px 25px;
+  margin: 0;
+}
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+.detail-item dt {
+  color: var(--text-secondary-color);
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-item dd {
+  margin: 0;
+  color: var(--text-color);
+  font-weight: 500;
+  word-break: break-word;
+  font-size: 0.95em;
+  line-height: 1.45;
+}
+.drive-link {
+  color: var(--primary-accent-color);
+  /* ... outros estilos drive-link ... */
+}
+
+/* Badges de Status */
+.status-badge {
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--border-radius-small);
+  font-size: 0.9em;
+  /* ... outros estilos status-badge ... */
+}
+.status-badge.status--success { color: var(--status-success-color); background-color: rgba(var(--success-color-dark-rgb, var(--success-color-rgb)), 0.15); }
+.status-badge.status--error { color: var(--status-error-color); background-color: rgba(var(--error-color-dark-rgb, var(--error-color-rgb)), 0.15); }
+/* ... outros status ... */
+
+
+/* Mensagem de "Nenhum dado" dentro da caixa escura de logs */
+.details-section.notes-section .styled-notes-list .no-data-message,
+.details-section[aria-label="Backups Processados"] .processed-backups-list .no-data-message {
+  padding: 15px;
+  text-align: center;
+  color: var(--text-secondary-color); /* Ajustar para contraste com #0D1117 */
+  font-style: italic;
+  background-color: transparent; /* Herda #0D1117 */
+}
+.details-section.notes-section .styled-notes-list .no-data-message svg,
+.details-section[aria-label="Backups Processados"] .processed-backups-list .no-data-message svg {
+    margin-right: 8px; /* Espaçamento do ícone */
+    vertical-align: middle; /* Alinhamento do ícone */
+}
+
+/* Estilos da barra de rolagem para a caixa de logs escura */
+.details-section.notes-section .styled-notes-list::-webkit-scrollbar,
+.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.details-section.notes-section .styled-notes-list::-webkit-scrollbar-track,
+.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-track {
+  background: rgba(var(--white-color-rgb), 0.05); /* Fundo da trilha sutilmente visível no #0D1117 */
+  border-radius: 4px;
+}
+.details-section.notes-section .styled-notes-list::-webkit-scrollbar-thumb,
+.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-thumb {
+  background: var(--border-color); /* Cor do polegar da scrollbar */
+  border-radius: 4px;
+}
+.details-section.notes-section .styled-notes-list::-webkit-scrollbar-thumb:hover,
+.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary-color);
+}
+
+/* Barra de rolagem principal do modal (se o conteúdo exceder max-height) */
+.modal-content.modal-details::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+.modal-content.modal-details::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+.modal-content.modal-details::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary-color);
+}
+
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .modal-content.modal-details {
+    width: 95%;
+    padding: 20px;
+  }
+  .details-grid-2col,
+  .backup-item {
+    grid-template-columns: 1fr;
+  }
+}

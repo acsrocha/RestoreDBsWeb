@@ -1,40 +1,56 @@
-import React, { createContext, useState, useEffect, useContext, type ReactNode } from 'react';
-
-export type Theme = 'light' | 'dark';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface ThemeContextType {
-  theme: Theme;
+  isDarkMode: boolean;
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  isDarkMode: false,
+  toggleTheme: () => {},
+});
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+export const useTheme = () => useContext(ThemeContext);
+
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark';
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.setAttribute('data-theme', 'dark');
+      document.body.style.setProperty('--card-bg', '#ffffff');
+      document.body.style.setProperty('--dark-card-bg', '#1a2234');
+      document.body.style.setProperty('--text-primary', '#e2e8f0');
+      document.body.style.setProperty('--text-secondary', '#a0aec0');
+      document.body.style.setProperty('--bg-primary', '#111827');
+      document.body.style.setProperty('--bg-secondary', '#1f2937');
+      document.body.style.setProperty('--border-color', '#374151');
+    } else {
+      root.removeAttribute('data-theme');
+      document.body.style.setProperty('--card-bg', '#ffffff');
+      document.body.style.setProperty('--dark-card-bg', '#ffffff');
+      document.body.style.setProperty('--text-primary', '#2d3748');
+      document.body.style.setProperty('--text-secondary', '#4a5568');
+      document.body.style.setProperty('--bg-primary', '#ffffff');
+      document.body.style.setProperty('--bg-secondary', '#f7fafc');
+      document.body.style.setProperty('--border-color', '#e2e8f0');
+    }
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+    setIsDarkMode(prev => !prev);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+export default ThemeContext;

@@ -1,0 +1,159 @@
+.activity-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #1e2531;
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  background: #1a2234;
+  border: 1px solid #2d3748;
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+}
+
+.search-box input:hover {
+  border-color: #3b4659;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+.search-box input::placeholder {
+  color: #64748b;
+}
+
+/* Filters Section */
+.filters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filters-labels {
+  display: flex; /* Mantido como flex, agora só tem um filho principal */
+  align-items: center;
+}
+
+.filter-group { /* Estilo geral para qualquer grupo de filtro restante */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+/* Removida a regra .filter-group:last-child que causava o problema de alinhamento para "Período"
+   e que agora afetaria indevidamente o "Filtrar por tipo" se permanecesse. */
+
+.filter-icon {
+  color: #60a5fa;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Filters Controls */
+.filters-controls {
+  display: flex; /* Mantido como flex, agora só tem .filter-buttons como filho principal */
+  align-items: center;
+  /* gap: 1.5rem; Removido pois era para o espaçamento com period-inputs */
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.filter-btn {
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  border: 1px solid #2d3748;
+  color: #94a3b8;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  background: #2d3748;
+  border-color: #3b4659;
+  color: #e2e8f0;
+}
+
+.filter-btn.active {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+  color: #fff;
+}
+
+.filter-btn.success.active {
+  background: #065f46;
+  border-color: #34d399;
+}
+
+.filter-btn.error.active {
+  background: #7f1d1d;
+  border-color: #f87171;
+}
+
+.filter-btn.warning.active {
+  background: #854d0e;
+  border-color: #fbbf24;
+}
+
+.filter-btn.info.active {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+}
+
+/* Estilos para .period-inputs, .period-inputs input, .period-separator foram removidos */
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .filters-controls {
+    flex-wrap: wrap; /* Permite que .filter-buttons quebre linha se necessário */
+    gap: 1rem; /* Mantém um gap se .filter-buttons for largo e quebrar */
+  }
+
+  .filter-buttons { /* Se .filter-buttons precisar ocupar toda a largura e quebrar internamente */
+    flex: 1; /* Opcional, dependendo se quer que ele expanda */
+    min-width: 100%; /* Garante que ele possa ocupar toda a largura se .filters-controls quebrar */
+    /* flex-wrap: wrap; já está implícito pelo display: flex e o gap interno, ou pode ser adicionado se os botões em si precisarem quebrar linha */
+  }
+
+  /* Regras responsivas para .period-inputs e .filter-group:last-child relacionadas ao "Período" foram removidas ou não são mais necessárias */
+  /* A regra original .filter-group:last-child { margin-left:0; padding-right:0; } não é mais necessária aqui */
+}
+
+@media (max-width: 640px) {
+  .filters-labels { /* Se o único rótulo ("Filtrar por tipo") precisar de algum ajuste específico */
+    flex-direction: column; /* Se ainda quiser empilhar com outros elementos futuros, ou remover se desnecessário */
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .filter-buttons {
+    min-width: 100%; /* Garante que os botões ocupem a largura total */
+    flex-wrap: wrap; /* Permite que os botões quebrem para a próxima linha */
+  }
+  /* Regras para .period-inputs foram removidas */
+}

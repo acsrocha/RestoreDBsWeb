@@ -1,8 +1,9 @@
 // src/components/monitoring/FailedRestoresList.tsx
-import React, { useState } from 'react';
+import React, { memo } from 'react';
 import type { FailedRestoreItem } from '../../types/api';
 // import { escapeHTML } from '../../utils/helpers'; // React já escapa
 import { FiAlertOctagon } from 'react-icons/fi';
+import { ARIA_ROLES, ARIA_LABELS } from '../../hooks/useA11y';
 
 interface FailedRestoresListProps {
   errors: FailedRestoreItem[];
@@ -10,68 +11,110 @@ interface FailedRestoresListProps {
 }
 
 const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoading }) => {
-  const [visibleErrorDetail, setVisibleErrorDetail] = useState<string | null>(null); // Usar uma chave única, como fullFilePath ou id
+  const listId = 'failed-restores-list';
+  const headerId = 'failed-restores-header';
 
-  const toggleErrorDetail = (errorKey: string) => {
-    setVisibleErrorDetail(visibleErrorDetail === errorKey ? null : errorKey);
+  const renderError = (error: FailedRestoreItem, index: number) => {
+    const fileName = error.filePath.split(/[\\/]/).pop();
+    const errorItemId = `error-${index}`;
+    const detailsId = `details-${index}`;
+    
+    return (
+      <li 
+        key={error.filePath} 
+        className="error-item"
+        role={ARIA_ROLES.ALERT}
+        aria-labelledby={errorItemId}
+      >
+        <div 
+          className="error-header"
+          id={errorItemId}
+        >
+          <span 
+            className="error-file" 
+            title={error.filePath}
+            aria-label={`Arquivo com erro: ${fileName}`}
+          >
+            {fileName}
+          </span>
+          <span 
+            className="error-time"
+            aria-label={`Ocorrido em ${error.timestamp}`}
+          >
+            {error.timestamp}
+          </span>
+        </div>
+        <div 
+          className="error-message"
+          aria-label="Mensagem de erro"
+        >
+          {error.error}
+        </div>
+        {error.details && (
+          <div className="error-details">
+            <details>
+              <summary 
+                id={detailsId}
+                aria-expanded="false"
+                role={ARIA_ROLES.BUTTON}
+                tabIndex={0}
+              >
+                Detalhes adicionais
+              </summary>
+              <pre 
+                aria-labelledby={detailsId}
+                role="region"
+              >
+                {error.details}
+              </pre>
+            </details>
+          </div>
+        )}
+      </li>
+    );
   };
 
-  if (isLoading) {
-    return (
-      <div className="list-card errors-list-card" id="failedRestoresSection">
-        <h2><span className="icon"><FiAlertOctagon /></span>Detalhes das Falhas</h2>
-        <ul id="failedRestoresList" aria-live="polite">
-          <li className="empty-list"><em>Carregando falhas...</em></li>
-        </ul>
-      </div>
-    );
-  }
-
   return (
-    <div className="list-card errors-list-card" id="failedRestoresSection">
-      <h2><span className="icon"><FiAlertOctagon /></span>Detalhes das Falhas</h2>
-      <ul id="failedRestoresList" aria-live="polite">
-        {errors && errors.length > 0 ? (
-          errors.map((errorItem, index) => { // Adicionado index para o caso de não haver chave melhor
-            const errorKey = errorItem.fullFilePath || errorItem.fileName || `error-${index}`;
-            const errorTimestamp = errorItem.timestamp ? 
-                                   new Date(errorItem.timestamp).toLocaleString('pt-BR', {
-                                      dateStyle: 'short',
-                                      timeStyle: 'medium',
-                                    }) : 'N/A';
-            return (
-              <li
-                key={errorKey} 
-                className="failed-restore-item"
-                title={`Clique para ver detalhes. Arquivo: ${errorItem.fileName}`}
-                onClick={() => toggleErrorDetail(errorKey)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleErrorDetail(errorKey);}}
-              >
-                <div className="error-summary">
-                  <span className="error-filename">{errorItem.fileName}</span>
-                  <span className="error-timestamp">{errorTimestamp}</span>
-                </div>
-                {visibleErrorDetail === errorKey && (
-                  // ID deve ser único e válido para HTML
-                  <div className="error-details visible" id={`error-detail-${errorKey.replace(/[^a-zA-Z0-9_-]/g, '')}`}> 
-                    <strong>Arquivo Original:</strong> {errorItem.fileName}<br />
-                    <strong>Caminho Completo:</strong> {errorItem.fullFilePath}<br />
-                    <strong>Ocorrência:</strong> {errorTimestamp}<br />
-                    <strong>Mensagem:</strong><br />
-                    <pre>{errorItem.errorMessage}</pre>
-                  </div>
-                )}
-              </li>
-            );
-          })
+    <div 
+      className="list-card error-list" 
+      role={ARIA_ROLES.REGION}
+      aria-labelledby={headerId}
+    >
+      <h2 id={headerId}>
+        <span className="icon" aria-hidden="true">
+          <FiAlertOctagon />
+        </span>
+        Falhas na Restauração
+      </h2>
+      <ul 
+        id={listId}
+        role={ARIA_ROLES.LIST}
+        aria-busy={isLoading}
+        aria-live="assertive"
+      >
+        {isLoading ? (
+          <li 
+            className="empty-list"
+            role={ARIA_ROLES.LISTITEM}
+            aria-label={ARIA_LABELS.LOADING}
+          >
+            <em>Carregando falhas...</em>
+          </li>
+        ) : errors.length > 0 ? (
+          errors.map(renderError)
         ) : (
-          <li className="empty-list"><em>Nenhuma falha registrada</em></li>
+          <li 
+            className="empty-list"
+            role={ARIA_ROLES.LISTITEM}
+            aria-label="Nenhuma falha registrada"
+          >
+            <em>Nenhuma falha registrada</em>
+          </li>
         )}
       </ul>
     </div>
   );
 };
 
-export default FailedRestoresList;
+// Memoize o componente para evitar re-renderizações desnecessárias
+export default memo(FailedRestoresList);

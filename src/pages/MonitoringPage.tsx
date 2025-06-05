@@ -1,5 +1,5 @@
 // src/pages/MonitoringPage.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import HighlightCard from '../components/common/HighlightCard'; // Ajuste o caminho se necessário
 import RecentActivityList from '../components/monitoring/RecentActivityList';
 import FailedRestoresList from '../components/monitoring/FailedRestoresList';
@@ -7,7 +7,12 @@ import { fetchStatusData, fetchErrorsData } from '../services/api'; // Presume q
 import type { StatusData, FailedRestoreItem } from '../types/api'; // Presume que types/api.ts está corrigido
 import { useInterval } from '../hooks/useInterval'; // Presume que este hook existe
 import { useLastUpdated } from '../contexts/LastUpdatedContext'; // Presume que este contexto existe
+import { useNotification } from '../hooks/useNotification';
 import { FiCpu, FiArchive, FiAlertTriangle, FiClock, FiList, FiFileText } from 'react-icons/fi';
+
+import '../styles/components/HighlightCard.css';
+import '../styles/components/RecentActivityList.css';
+import '../styles/components/FailedRestoresList.css';
 
 const REFRESH_INTERVAL = 3000;
 
@@ -21,12 +26,25 @@ const MonitoringPage: React.FC = () => {
   const [errorLoading, setErrorLoading] = useState<string | null>(null);
 
   const { signalUpdate } = useLastUpdated();
+  const { showError } = useNotification();
+  const isMountedRef = useRef(false);
+
+  // Memoize a função de extração de timestamp
+  const extractTimestamp = useCallback((activityLog: string): string => {
+    const timeMatch = activityLog.match(/^(\d{2}:\d{2}:\d{2})/);
+    return timeMatch && timeMatch[1] ? timeMatch[1] : '--:--:--';
+  }, []);
+
+  // Memoize a função de processamento de nome de arquivo
+  const processFilename = useCallback((path: string): string => {
+    return path.split(/[\\/]/).pop() || 'Nome inválido';
+  }, []);
 
   const fetchData = useCallback(async (isPollRequest = false) => {
     if (!isPollRequest && !isMountedRef.current) {
-        setInitialLoading(true);
+      setInitialLoading(true);
     } else if (isPollRequest) {
-        setIsPolling(true);
+      setIsPolling(true);
     }
     
     let combinedErrorMessages: string[] = [];
@@ -42,12 +60,10 @@ const MonitoringPage: React.FC = () => {
 
       if (statusResult.status === 'fulfilled') {
         setStatusData(statusResult.value);
-        // *** CORRIGIDO PARA USAR CHAVES MINÚSCULAS ***
-        if (statusResult.value?.recentActivity?.length > 0) { 
-          const lastActivityLog = statusResult.value.recentActivity[0]; 
+        if (statusResult.value?.recentActivity?.length > 0) {
+          const lastActivityLog = statusResult.value.recentActivity[0];
           if (typeof lastActivityLog === 'string') {
-            const timeMatch = lastActivityLog.match(/^(\d{2}:\d{2}:\d{2})/);
-            setLastActivityTimestamp(timeMatch && timeMatch[1] ? timeMatch[1] : '--:--:--');
+            setLastActivityTimestamp(extractTimestamp(lastActivityLog));
           } else {
             setLastActivityTimestamp('--:--:--');
           }
@@ -72,7 +88,11 @@ const MonitoringPage: React.FC = () => {
       }
 
       if (combinedErrorMessages.length > 0) {
-        setErrorLoading(combinedErrorMessages.join('; '));
+        const errorMessage = combinedErrorMessages.join('; ');
+        setErrorLoading(errorMessage);
+        if (!isPollRequest) {
+          showError(errorMessage);
+        }
       } else {
         setErrorLoading(null);
         signalUpdate();
@@ -82,10 +102,13 @@ const MonitoringPage: React.FC = () => {
       console.error('Falha crítica geral ao buscar dados:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro inesperado ao carregar dados.';
       setErrorLoading(errorMessage);
+      if (!isPollRequest) {
+        showError(errorMessage);
+      }
       if (!isPollRequest && initialLoading) {
-          setStatusData(null);
-          setErrorsData([]);
-          setLastActivityTimestamp('Erro');
+        setStatusData(null);
+        setErrorsData([]);
+        setLastActivityTimestamp('Erro');
       }
     } finally {
       if (initialLoading) { 
@@ -95,9 +118,8 @@ const MonitoringPage: React.FC = () => {
         setIsPolling(false);
       }
     }
-  }, [signalUpdate, initialLoading]);
+  }, [signalUpdate, initialLoading, showError, extractTimestamp]);
 
-  const isMountedRef = useRef(false);
   useEffect(() => {
     if (!isMountedRef.current) {
       fetchData(); 
@@ -107,29 +129,36 @@ const MonitoringPage: React.FC = () => {
 
   useInterval(() => {
     if (!initialLoading && !isPolling) {
-        fetchData(true);
+      fetchData(true);
     }
   }, REFRESH_INTERVAL);
 
-  let displayProcessingFilename: string;
-  if (initialLoading) {
-    displayProcessingFilename = 'Carregando...';
-  } else if (errorLoading && !statusData) { 
-    displayProcessingFilename = 'Erro Dados';
-  } else if (statusData?.currentProcessing) { // *** CORRIGIDO ***
-    displayProcessingFilename = statusData.currentProcessing.split(/[\\/]/).pop() || 'Nome inválido';
-  } else {
-    displayProcessingFilename = 'Nenhum';
-  }
+  // Memoize os valores calculados
+  const displayProcessingFilename = useMemo(() => {
+    if (initialLoading) return 'Carregando...';
+    if (errorLoading && !statusData) return 'Erro Dados';
+    if (statusData?.currentProcessing) return processFilename(statusData.currentProcessing);
+    return 'Nenhum';
+  }, [initialLoading, errorLoading, statusData, processFilename]);
 
-  const queueCount = initialLoading && !statusData ? 0 : (statusData?.queueCount ?? 0); // *** CORRIGIDO ***
-  const errorCount = initialLoading && errorsData.length === 0 && !errorLoading ? 0 : (errorsData?.length ?? 0);
+  const queueCount = useMemo(() => 
+    initialLoading && !statusData ? 0 : (statusData?.queueCount ?? 0),
+    [initialLoading, statusData]
+  );
 
-  const processingTitle = initialLoading && !statusData 
-    ? 'Carregando...' 
-    : statusData?.currentProcessing // *** CORRIGIDO ***
-      ? statusData.currentProcessing 
-      : 'Nenhum arquivo em processamento';
+  const errorCount = useMemo(() => 
+    initialLoading && errorsData.length === 0 && !errorLoading ? 0 : (errorsData?.length ?? 0),
+    [initialLoading, errorsData.length, errorLoading]
+  );
+
+  const processingTitle = useMemo(() => 
+    initialLoading && !statusData 
+      ? 'Carregando...' 
+      : statusData?.currentProcessing
+        ? statusData.currentProcessing 
+        : 'Nenhum arquivo em processamento',
+    [initialLoading, statusData]
+  );
 
   return (
     <div id="view-monitoramento" className="view active">
@@ -145,12 +174,6 @@ const MonitoringPage: React.FC = () => {
         <HighlightCard icon={<FiAlertTriangle />} label="Falhas" value={String(errorCount)} type="errors" />
         <HighlightCard icon={<FiClock />} label="Última Atividade" value={lastActivityTimestamp} type="activity-summary" />
       </section>
-
-      {errorLoading && !initialLoading && (
-          <div className="error-message" style={{ color: 'red', textAlign: 'center', padding: '10px', border: '1px solid red', margin: '10px 0' }}>
-              Erro ao carregar dados: {errorLoading}
-          </div>
-      )}
 
       <section className="monitor-detailed-lists-grid" aria-label="Listas Detalhadas de Monitoramento">
         <div className="list-card" id="queuedFilesListSection">

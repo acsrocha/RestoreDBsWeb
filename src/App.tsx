@@ -6,6 +6,7 @@ import {
   Route,
   Navigate
 } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -14,12 +15,16 @@ import UploadPage from './pages/UploadPage';
 import ProcessedDatabasesPage from './pages/ProcessedDatabasesPage';
 import CreateClientDriveAreaPage from './pages/CreateClientDriveAreaPage';
 import AdminClientAreasPage from './pages/AdminClientAreasPage';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import SkipLink from './components/common/SkipLink';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // GARANTA QUE A IMPORTAÇÃO DO DriveCycleProvider FOI REMOVIDA DAQUI
 // import { DriveCycleProvider } from './contexts/DriveCycleContext'; 
 
 import './styles/global.css';
+import './styles/components/ErrorBoundary.css';
+import './styles/components/SkipLink.css';
 
 const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -46,48 +51,57 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      {/* GARANTA QUE NÃO HÁ DriveCycleProvider ENVOLVENDO O Router AQUI */}
-      <Router>
-        <div className='app-layout'>
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            setCurrentViewTitle={setCurrentViewTitle}
-          />
-          <div
-            className={`main-content-wrapper ${
-              sidebarCollapsed ? 'sidebar-collapsed' : ''
-            }`}
-          >
-            <Header
-              toggleSidebar={toggleSidebar}
-              viewTitle={currentViewTitle}
+      <ErrorBoundary>
+        <Router>
+          <SkipLink targetId="main-content" />
+          <div className='app-layout'>
+            <Sidebar
+              collapsed={sidebarCollapsed}
+              setCurrentViewTitle={setCurrentViewTitle}
             />
-            <main className='content-area'>
-              <Routes>
-                <Route
-                  path='/'
-                  element={<Navigate to='/monitoramento' replace />}
-                />
-                <Route path='/monitoramento' element={<MonitoringPage />} />
-                <Route path='/upload' element={<UploadPage />} />
-                <Route
-                  path='/bancos-restaurados'
-                  element={<ProcessedDatabasesPage />}
-                />
-                <Route
-                  path='/provisionar-pasta-cliente'
-                  element={<CreateClientDriveAreaPage />}
-                />
-                <Route
-                  path='/admin/client-areas'
-                  element={<AdminClientAreasPage />}
-                />
-              </Routes>
-            </main>
-            <Footer />
+            <div
+              className={`main-content-wrapper ${
+                sidebarCollapsed ? 'sidebar-collapsed' : ''
+              }`}
+            >
+              <Header
+                toggleSidebar={toggleSidebar}
+                viewTitle={currentViewTitle}
+              />
+              <main 
+                id="main-content" 
+                className='content-area'
+                tabIndex={-1}
+                role="main"
+                aria-label={currentViewTitle}
+              >
+                <Routes>
+                  <Route
+                    path='/'
+                    element={<Navigate to='/monitoramento' replace />}
+                  />
+                  <Route path='/monitoramento' element={<MonitoringPage />} />
+                  <Route path='/upload' element={<UploadPage />} />
+                  <Route
+                    path='/bancos-restaurados'
+                    element={<ProcessedDatabasesPage />}
+                  />
+                  <Route
+                    path='/provisionar-pasta-cliente'
+                    element={<CreateClientDriveAreaPage />}
+                  />
+                  <Route
+                    path='/admin/client-areas'
+                    element={<AdminClientAreasPage />}
+                  />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
           </div>
-        </div>
-      </Router>
+        </Router>
+        <Toaster />
+      </ErrorBoundary>
     </ThemeProvider>
   );
 };
