@@ -41,24 +41,28 @@ const ActivityFilters: React.FC<ActivityFiltersProps> = ({
             <button
               className={`filter-btn ${selectedTypes.includes('success') ? 'active' : ''}`}
               onClick={() => onTypeChange('success')}
+              data-type="success"
             >
               Sucesso
             </button>
             <button
               className={`filter-btn ${selectedTypes.includes('error') ? 'active' : ''}`}
               onClick={() => onTypeChange('error')}
+              data-type="error"
             >
               Erro
             </button>
             <button
               className={`filter-btn ${selectedTypes.includes('info') ? 'active' : ''}`}
               onClick={() => onTypeChange('info')}
+              data-type="info"
             >
               Info
             </button>
             <button
               className={`filter-btn ${selectedTypes.includes('warning') ? 'active' : ''}`}
               onClick={() => onTypeChange('warning')}
+              data-type="warning"
             >
               Aviso
             </button>
