@@ -1,0 +1,141 @@
+/* SendBackupForm.css - Refatorado */
+
+/* O .send-backup-card define a área principal da página "Enviar Backup".
+   Ele deve usar variáveis de tema para seu estilo. */
+.send-backup-card {
+  background-color: var(--bg-primary); /* Fundo da página/área principal */
+  /* Se houver um card container geral para a página, ele pode vir de uma classe global,
+     ou ser estilizado aqui para preencher a área de conteúdo.
+     Nas imagens, a área de conteúdo principal é --bg-primary, e o formulário está num card interno.
+     Vamos assumir que .send-backup-card é o contêiner da view que já tem o --bg-primary
+     e o formulário em si é o "card" interno.
+     Se .send-backup-card fosse um card destacado na página, usaria var(--card-bg).
+     Para esta refatoração, vamos focar no formulário interno.
+  */
+  padding: 1.5rem; /* Espaçamento da view, se necessário */
+  max-width: 1000px; /* Mantido do original */
+  margin: 0 auto; /* Mantido do original */
+  min-height: calc(100vh - var(--header-height) - 3rem); /* Considera header e padding */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título da página/card (H2) - Estilos base de H2 virão de global.css */
+.send-backup-card h2 {
+  /* global.css já estiliza H2. Adicionar aqui apenas se houver necessidade
+     de um gap ou alinhamento específico para ESTE H2. */
+  /* Ex: display: flex; align-items: center; gap: 0.75rem; */
+  margin-bottom: 1.5rem; /* Espaço antes do formulário */
+}
+/* .send-backup-card h2 svg { ... } - Estilizar SVG se houver um ícone no título */
+
+/* Tooltip icon - Estilo deve vir de uma classe global para tooltips, se houver,
+   ou definido de forma consistente aqui usando vars de tema. */
+.tooltip-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 0.5rem;
+  color: var(--text-secondary);
+  cursor: help;
+  transition: color 0.2s;
+}
+.tooltip-icon:hover { color: var(--primary-color); }
+.tooltip-icon svg { width: 1em; height: 1em; }
+
+.page-description { /* Descrição abaixo do título */
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5; /* Melhorado */
+}
+
+/* O formulário em si, dentro do .send-backup-card */
+.send-backup-form {
+  background-color: var(--card-bg); /* Usando o fundo de card padrão do tema */
+  /* Original era #111827, que no tema escuro é var(--bg-primary).
+     Se o form deve ser *mais escuro* que um card normal, usar var(--bg-primary).
+     Se deve ser como outros cards/seções internas, usar var(--card-bg).
+     A imagem original sugere um painel mais escuro para o formulário.
+     O global.css tem um exemplo em .upload-card form { background-color: var(--bg-primary-darker, #111827); }
+     Vamos usar var(--bg-secondary) que nas imagens escuras é #1f2937 (um pouco mais claro que #111827),
+     ou var(--card-bg) que é #1a2234.
+     Considerando as imagens, um fundo como --card-bg ou --bg-secondary parece adequado para o container do form.
+     Para o exemplo, usarei --card-bg que é #1a2234 no tema escuro das imagens.
+  */
+  border-radius: var(--border-radius-md); /* Raio de borda do tema */
+  padding: 2rem; /* Mais espaçamento interno */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espaçamento entre seções do formulário ou form-groups */
+  margin-bottom: 1rem; /* Espaço abaixo do formulário */
+  border: 1px solid var(--border-color); /* Borda sutil, como outros cards */
+  /* box-shadow: var(--shadow); se este formulário deve ter sombra */
+  flex: 1; /* Para ocupar espaço se .send-backup-card for flex column */
+}
+
+/* .form-fields-wrapper, .form-row, .form-group, label, input, textarea
+   Agora devem depender primariamente dos estilos de global.css para .form-group,
+   label, input[type="text"], textarea.
+   Removeremos definições redundantes daqui.
+*/
+
+/* Removido: .form-fields-wrapper - O gap do .send-backup-form deve cuidar disso */
+/* Removido: .form-row - Usar estrutura de .form-group ou flex/grid no .send-backup-form */
+/* Removido: .form-group - Estilos base vêm de global.css */
+/* Removido: .form-group label - Estilos base vêm de global.css */
+/* Removido: .form-group input, .form-group textarea - Estilos base vêm de global.css */
+/* (Assegure-se que global.css tem estilos adequados para input, textarea, label
+   que correspondem à elegância das suas imagens originais) */
+
+/* Estilo específico para o container do input de arquivo customizado, se necessário,
+   mas o ideal é que o input[type="file"] global seja bem estilizado
+   ou que haja uma classe global para inputs de arquivo customizados.
+   global.css já tem .custom-file-button e .custom-file-input-container.
+   Este CSS deve apenas ajustar o layout se necessário.
+*/
+.custom-file-input-wrapper { /* Um wrapper para o input e o nome do arquivo */
+  /* Se .custom-file-input-container de global.css for usado: */
+  /* composes: custom-file-input-container; */
+  /* Ou aplicar display: flex; align-items: center; gap: 1rem; aqui */
+  margin-top: 0.25rem; /* Pequena margem acima do botão/nome do arquivo */
+}
+
+/* O botão .custom-file-button e .selected-file-name devem ser estilizados por global.css */
+/* Se precisar de ajustes específicos para ESTE custom file button: */
+/* .send-backup-form .custom-file-button { ... } */
+/* .send-backup-form .selected-file-name { ... } */
+
+
+/* Status de upload (.upload-status-message e suas variantes .success, .error, .pending)
+   Devem ser completamente removidos daqui.
+   O HTML deve usar as classes globais definidas em global.css.
+   Ex: <div class="upload-status-message success">...</div>
+*/
+
+/* Botão de envio (.button-primary)
+   Deve ser removido daqui. O HTML deve usar a classe global .button-primary.
+   Ex: <button type="submit" class="button-primary">...</button>
+*/
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .send-backup-card {
+    padding: 1rem; /* Menos padding em telas menores */
+    margin: 0.5rem;
+    min-height: calc(100vh - var(--header-height) - 1rem);
+  }
+
+  .send-backup-form {
+    padding: 1.5rem; /* Menos padding interno no formulário */
+  }
+
+  /* .form-row já não existe mais aqui, o layout responsivo dos form-groups
+     deve ser tratado pela forma como são arranjados (ex: flex-wrap)
+     ou por media queries em global.css para .form-group se necessário. */
+
+  .custom-file-input-wrapper { /* Se o wrapper for flex */
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  /* .send-backup-form .selected-file-name { padding: 0.5rem 0; text-align: center; } */
+}

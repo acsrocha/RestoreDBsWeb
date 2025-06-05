@@ -1,0 +1,173 @@
+/* CreateClientDriveArea.module.css */
+
+/*
+  Este card principal define o contêiner da página.
+  As cores de fundo e texto agora vêm do theme.css.
+*/
+.clientDriveAreaCard {
+  /* ANTES: background-color: #1a2234; */
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-lg); /* Usando variável de tema */
+  padding: 2rem; /* Um pouco mais de respiro */
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.clientDriveAreaCard h2 {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+
+  /* --- Início da Correção --- */
+  display: flex;
+  /* Esta propriedade alinha verticalmente o ícone e o texto ao centro. */
+  align-items: center;
+  gap: 0.85rem; /* Aumenta um pouco o espaço entre o ícone e o texto */
+  /* --- Fim da Correção --- */
+}
+
+.clientDriveAreaCard h2 svg {
+  /* --- Início da Correção --- */
+  /* Define a cor do ícone para usar a cor primária do nosso tema. */
+  color: var(--primary-color);
+  /* Garante que o ícone não seja comprimido se o texto for longo. */
+  width: 1.2em;
+  height: 1.2em;
+  flex-shrink: 0;
+} /* --- Fim da Correção --- */
+
+.pageDescription {
+  /* ANTES: color: #a0aec0; */
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  max-width: 80ch; /* Melhora a legibilidade do parágrafo */
+}
+
+/*
+  O formulário em si, agora com um wrapper que tem fundo diferente para criar profundidade.
+*/
+.createClientDriveAreaForm {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Faz o formulário ocupar o espaço vertical disponível */
+}
+
+.formFieldsWrapper {
+  /* O wrapper dos campos não precisa de cor de fundo se o card já tiver */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espaçamento entre as linhas do form */
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/*
+  Os estilos de .form-group, label e input foram unificados
+  com os estilos globais para maior consistência.
+  As classes vêm do seu global.css e serão aplicadas diretamente.
+  Não precisamos redeclará-las aqui.
+*/
+
+/*
+  A área de ações na parte inferior, com a mensagem de status.
+*/
+.formActionsStickyBottom {
+  position: sticky;
+  bottom: 0;
+  background-color: var(
+    --bg-secondary
+  ); /* Usa a mesma cor do fundo para um efeito "flutuante" limpo */
+  padding: 1.5rem 0 0 0; /* Apenas padding superior */
+  margin-top: auto; /* Empurra para o final do flex container */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* Estica os itens filhos */
+  gap: 1rem;
+  border-top: 1px solid var(--border-color); /* Separador sutil */
+}
+
+/*
+  A mensagem de status foi refatorada para usar as classes globais
+  que já definimos em global.css, apenas ajustando o nome da classe
+  para ser mais específico aqui.
+*/
+.clientDriveStatusMessage {
+  padding: 1rem 1.25rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent; /* Borda base transparente */
+  font-weight: 500;
+}
+
+.clientDriveStatusMessage.success {
+  background-color: rgba(var(--success-color-rgb), 0.1);
+  border-color: rgba(var(--success-color-rgb), 0.3);
+  color: var(--success-color);
+}
+
+.clientDriveStatusMessage.error {
+  background-color: rgba(var(--error-color-rgb), 0.1);
+  border-color: rgba(var(--error-color-rgb), 0.3);
+  color: var(--error-color);
+}
+
+.clientDriveStatusMessage.pending,
+.clientDriveStatusMessage.partialSuccess {
+  background-color: rgba(var(--warning-color-rgb), 0.1);
+  border-color: rgba(var(--warning-color-rgb), 0.3);
+  color: var(--warning-color);
+}
+
+.statusHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.statusIcon {
+  font-size: 1.3em;
+  flex-shrink: 0;
+}
+
+.messageText {
+  flex-grow: 1;
+  color: var(--text-primary); /* Texto principal sempre legível */
+}
+
+.folderLinkContainer {
+  margin-top: 0.75rem;
+  padding-left: calc(1.3em + 0.75rem); /* Alinha com o texto acima do ícone */
+  font-size: 0.9em;
+}
+
+.folderLinkContainer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.folderLinkContainer a:hover {
+  text-decoration: underline;
+}
+
+.warningDetails {
+  margin-top: 0.75rem;
+  padding-left: calc(1.3em + 0.75rem); /* Alinha com o texto acima do ícone */
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  opacity: 0.9;
+}
+
+/*
+  O botão principal (.button-primary) foi REMOVIDO deste arquivo.
+  O formulário usará a classe global ".button-primary" e herdará
+  os estilos corretos do global.css, garantindo consistência.
+*/

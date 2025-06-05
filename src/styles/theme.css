@@ -1,0 +1,77 @@
+:root {
+  /* Cores Principais */
+  --primary-color: #01c38e;
+  --primary-color-rgb: 1, 195, 142;
+  --primary-color-dark: #00a578;
+  --primary-color-light: #34d399;
+
+  /* Cores de Status */
+  --success-color: #34d399;
+  --success-color-rgb: 52, 211, 153;
+  --error-color: #dc3545;
+  --error-color-rgb: 220, 53, 69;
+  --warning-color: #ffc107;
+  --warning-color-rgb: 255, 193, 7;
+  --info-color: #0dcaf0;
+  --info-color-rgb: 13, 202, 240;
+
+  /* Cores de Interface - Tema Claro */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7fafc;
+  --card-bg: #ffffff;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+  --border-color-rgb: 226, 232, 240;
+
+  /* Cores da Sidebar - Tema Claro */
+  --sidebar-bg: #2c3e50;
+  --sidebar-bg-rgb: 44, 62, 80;
+  --sidebar-text: #ecf0f1;
+  --sidebar-icon: #95a5a6;
+  --sidebar-hover: #34495e;
+  --sidebar-active: var(--primary-color);
+  --sidebar-active-text: #ffffff;
+
+  /* Utilitários */
+  --white: #ffffff;
+  --white-rgb: 255, 255, 255;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+/* Tema Escuro */
+html[data-theme='dark'] {
+  /* Cores de Interface - Tema Escuro */
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --card-bg: #1a2234;
+  --text-primary: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --border-color: #374151;
+  --border-color-rgb: 55, 65, 81;
+
+  /* Cores da Sidebar - Tema Escuro */
+  --sidebar-bg: #132d46;
+  --sidebar-bg-rgb: 19, 45, 70;
+  --sidebar-text: #bdc3c7;
+  --sidebar-icon: #7f8c8d;
+  --sidebar-hover: #1a3e5c;
+  --sidebar-active: var(--primary-color);
+  --sidebar-active-text: #ffffff;
+
+  /* Ajustes de Cores de Status para Tema Escuro */
+  --success-color: #48bb78;
+  --success-color-rgb: 72, 187, 120;
+  --error-color: #f56565;
+  --error-color-rgb: 245, 101, 101;
+  --warning-color: #ecc94b;
+  --warning-color-rgb: 236, 201, 75;
+  --info-color: #4299e1;
+  --info-color-rgb: 66, 153, 225;
+
+  /* Utilitários */
+  --shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+} 
