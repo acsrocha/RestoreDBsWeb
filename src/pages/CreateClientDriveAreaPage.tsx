@@ -7,7 +7,7 @@ import styles from './CreateClientDriveArea.module.css';
 
 const CreateClientDriveAreaPage: React.FC = () => {
   return (
-    <div id="view-create-client-gdrive-area" className="view active">
+    <div id="view-cdddreate-client-gdrive-area" className="view active">
       <section
         className={styles.clientDriveAreaCard}
         id="createClientDriveAreaSection"
