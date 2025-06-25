@@ -58,6 +58,7 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
 
   const filteredActivities = useMemo(() => {
     return activities.filter(activity => {
+      if (!activity || typeof activity !== 'string') return false;
       const lowerActivity = activity.toLowerCase();
       const matchesSearch = searchQuery === '' || lowerActivity.includes(searchQuery.toLowerCase());
       
@@ -210,7 +211,7 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
             {renderLoadingState()}
           </li>
         ) : paginatedActivities.length > 0 ? (
-          paginatedActivities.map(renderActivity)
+          paginatedActivities.filter(activity => activity && typeof activity === 'string').map(renderActivity)
         ) : (
           <li 
             className="empty-list"

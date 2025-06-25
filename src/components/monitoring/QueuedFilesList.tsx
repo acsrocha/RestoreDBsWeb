@@ -8,13 +8,13 @@ interface QueuedFilesListProps {
 }
 
 const QueuedFilesList: React.FC<QueuedFilesListProps> = ({ files }) => {
-    if (!files || files.length === 0) {
+    if (!files || !Array.isArray(files) || files.length === 0) {
         return <p className="empty-list-message"><em>Fila vazia</em></p>;
     }
 
     return (
         <ul className={styles.list} aria-live="polite">
-            {files.map((file, index) => {
+            {files.filter(file => file && typeof file === 'string').map((file, index) => {
                 const fileName = escapeHTML(file.split(/[\\/]/).pop() || file);
                 return (
                     <li key={index} className={styles.listItem} title={`Caminho completo: ${escapeHTML(file)}`}>

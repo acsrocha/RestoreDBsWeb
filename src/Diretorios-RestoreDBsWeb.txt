@@ -1,0 +1,96 @@
+Listagem de caminhos de pasta para o volume Windows-SSD
+O número de série do volume é 36B2-AE4A
+C:.
+¦   App.tsx
+¦   Diretorios-RestoreDBsWeb.txt
+¦   main.tsx
+¦   vite-env.d.ts
+¦   Árvore_do_Projeto.txt
+¦   
++---assets
+¦       firebird-logo.png
+¦       
++---components
+¦   ¦   ActivityFilters.tsx
+¦   ¦   
+¦   +---clientDriveArea
+¦   ¦       CreateClientDriveAreaForm.tsx
+¦   ¦       
+¦   +---common
+¦   ¦       DriveCycleIndicator.tsx
+¦   ¦       ErrorBoundary.tsx
+¦   ¦       HighlightCard.tsx
+¦   ¦       SkipLink.tsx
+¦   ¦       
+¦   +---layout
+¦   ¦       AppLayout.tsx
+¦   ¦       Footer.tsx
+¦   ¦       Header.tsx
+¦   ¦       Sidebar.tsx
+¦   ¦       
+¦   +---monitoring
+¦   ¦       ActivityFilters.tsx
+¦   ¦       FailedRestoresList.tsx
+¦   ¦       QueuedFilesList.tsx
+¦   ¦       RecentActivityList.tsx
+¦   ¦       StatusHighlightCard.tsx
+¦   ¦       
+¦   +---processedDatabases
+¦   ¦       ProcessedDatabasesTable.tsx
+¦   ¦       
+¦   +---shared
+¦   ¦       ClientAreaDetailsModal.css
+¦   ¦       ClientAreaDetailsModal.tsx
+¦   ¦       ConfirmationModal.tsx
+¦   ¦       DeleteConfirmationModal.css
+¦   ¦       DeleteConfirmationModal.tsx
+¦   ¦       DiscardConfirmationModal.tsx
+¦   ¦       NotificationBanner.tsx
+¦   ¦       
+¦   +---upload
+¦           UploadForm.tsx
+¦           
++---contexts
+¦       DriveCycleContext.tsx
+¦       LastUpdatedContext.tsx
+¦       ThemeContext.tsx
+¦       
++---hooks
+¦       useA11y.ts
+¦       useInterval.ts
+¦       useNotification.ts
+¦       
++---pages
+¦       AdminClientAreasPage.tsx
+¦       CreateClientDriveArea.module.css
+¦       CreateClientDriveAreaPage.tsx
+¦       MonitoringPage.tsx
+¦       ProcessedDatabasesPage.tsx
+¦       UploadPage.tsx
+¦       
++---services
+¦       api.ts
+¦       
++---styles
+¦   ¦   global.css
+¦   ¦   PageMessages.css
+¦   ¦   theme.css
+¦   ¦   
+¦   +---components
+¦           ActivityFilters.css
+¦           CreateClientDriveAreaForm.css
+¦           ErrorBoundary.css
+¦           FailedRestoresList.css
+¦           HighlightCard.css
+¦           QueueList.css
+¦           RecentActivityList.css
+¦           SendBackupForm.css
+¦           SkipLink.css
+¦           
++---types
+¦       api.ts
+¦       api.tsx
+¦       
++---utils
+        helpers.tsx
+        

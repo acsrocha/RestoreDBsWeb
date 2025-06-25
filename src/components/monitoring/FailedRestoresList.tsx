@@ -15,13 +15,16 @@ const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoadi
   const headerId = 'failed-restores-header';
 
   const renderError = (error: FailedRestoreItem, index: number) => {
-    const fileName = error.filePath.split(/[\\/]/).pop();
+    const fileName = error.fileName || 'Arquivo desconhecido';
+    const formattedTimestamp = typeof error.timestamp === 'string' 
+      ? error.timestamp 
+      : new Date(error.timestamp).toLocaleString('pt-BR');
     const errorItemId = `error-${index}`;
     const detailsId = `details-${index}`;
     
     return (
       <li 
-        key={error.filePath} 
+        key={error.fullFilePath || `error-${index}`} 
         className="error-item"
         role={ARIA_ROLES.ALERT}
         aria-labelledby={errorItemId}
@@ -32,23 +35,23 @@ const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoadi
         >
           <span 
             className="error-file" 
-            title={error.filePath}
+            title={error.fullFilePath}
             aria-label={`Arquivo com erro: ${fileName}`}
           >
             {fileName}
           </span>
           <span 
             className="error-time"
-            aria-label={`Ocorrido em ${error.timestamp}`}
+            aria-label={`Ocorrido em ${formattedTimestamp}`}
           >
-            {error.timestamp}
+            {formattedTimestamp}
           </span>
         </div>
         <div 
           className="error-message"
           aria-label="Mensagem de erro"
         >
-          {error.error}
+          {error.errorMessage}
         </div>
         {error.details && (
           <div className="error-details">
@@ -101,7 +104,7 @@ const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoadi
             <em>Carregando falhas...</em>
           </li>
         ) : errors.length > 0 ? (
-          errors.map(renderError)
+          errors.filter(error => error && typeof error === 'object').map(renderError)
         ) : (
           <li 
             className="empty-list"

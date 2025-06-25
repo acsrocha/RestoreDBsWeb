@@ -6,9 +6,9 @@ export interface StatusData {
 }
 
 export interface FailedRestoreItem {
-  filePath: string;
-  fileName?: string;
+  fileName: string;
+  fullFilePath: string;
+  errorMessage: string;
   timestamp: string;
-  error: string;
   details?: string;
 } 
