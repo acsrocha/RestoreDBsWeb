@@ -78,6 +78,8 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
             
             const statusDisplayClasses = getStatusClassName(db.status);
 
+            // Verificar se foi processado via arquivo .bt
+            const isBTFile = db.notes && db.notes.includes('Processado via arquivo .bt');
             const originalName =
               db.originalBackupFileName ||
               (db.internalFileName
@@ -133,9 +135,10 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
               <tr key={db.id}>
                 <td
                   className="truncate" 
-                  title={`Original: ${escapeHTML(db.originalBackupFileName || '')}\nInterno: ${escapeHTML(db.internalFileName || '')}`}
+                  title={`Original: ${escapeHTML(db.originalBackupFileName || '')}\nInterno: ${escapeHTML(db.internalFileName || '')}${isBTFile ? '\nProcessado via arquivo .bt' : ''}`}
                 >
                   {escapeHTML(originalName)}
+                  {isBTFile && <span className="bt-indicator" title="Processado via arquivo .bt"> 🔧</span>}
                 </td>
                 <td className="truncate" title={escapeHTML(alias)}>{escapeHTML(alias)}</td>
                 <td>{escapeHTML(originalTicketIdDisplay)}</td>

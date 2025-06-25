@@ -2502,4 +2502,18 @@ html[data-theme='dark'] .details-section h3 {
   text-overflow: ellipsis;
   max-width: 150px; /* Ou o max-width que desejar para a célula */
 }
+
+/* Indicador para arquivos processados via .bt */
+.bt-indicator {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 1.1em;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.bt-indicator:hover {
+  opacity: 1;
+}
+
 /* === FIM DOS ESTILOS === */

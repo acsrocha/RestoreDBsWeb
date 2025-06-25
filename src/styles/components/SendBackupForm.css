@@ -92,6 +92,26 @@
    global.css já tem .custom-file-button e .custom-file-input-container.
    Este CSS deve apenas ajustar o layout se necessário.
 */
+.file-types-info {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid var(--primary-color);
+}
+
+.file-types-info small {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.file-types-info strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .custom-file-input-wrapper { /* Um wrapper para o input e o nome do arquivo */
   /* Se .custom-file-input-container de global.css for usado: */
   /* composes: custom-file-input-container; */

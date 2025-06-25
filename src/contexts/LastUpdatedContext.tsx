@@ -5,7 +5,8 @@ import React, { createContext, useState, useContext, type ReactNode, useCallback
 interface LastUpdatedContextType {
   lastUpdateTime: Date | null;
   signalUpdate: () => void;
-  addActivity: (message: string) => void; // Adicionada a função addActivity
+  addActivity: (message: string) => void;
+  lastUpdatedGlobal: Date | null;
 }
 
 const LastUpdatedContext = createContext<LastUpdatedContextType | undefined>(undefined);
@@ -31,7 +32,7 @@ export const LastUpdatedProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   return (
     // 3. Incluir addActivity no valor do Provider
-    <LastUpdatedContext.Provider value={{ lastUpdateTime, signalUpdate, addActivity }}>
+    <LastUpdatedContext.Provider value={{ lastUpdateTime, signalUpdate, addActivity, lastUpdatedGlobal: lastUpdateTime }}>
       {children}
     </LastUpdatedContext.Provider>
   );

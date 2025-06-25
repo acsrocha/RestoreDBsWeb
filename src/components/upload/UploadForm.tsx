@@ -60,7 +60,14 @@ const UploadForm: React.FC = () => {
   return (
     <form id="uploadForm" encType="multipart/form-data" onSubmit={handleSubmit} ref={formRef}>
       <div className="form-group">
-        <label htmlFor="backupFileFieldActualInput">Arquivo de Backup (.fbk, .gbk, .bt):</label>
+        <label htmlFor="backupFileFieldActualInput">Arquivo de Backup:</label>
+        <div className="file-types-info">
+          <small>
+            <strong>Tipos suportados:</strong>
+            <br />• .fbk/.gbk - Backups tradicionais do Firebird
+            <br />• .bt - Arquivos de configuração de banco (processamento especial)
+          </small>
+        </div>
         {/* Input de arquivo real, escondido visualmente mas funcional */}
         <input
           type="file"

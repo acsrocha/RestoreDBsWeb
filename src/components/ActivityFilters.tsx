@@ -1,5 +1,5 @@
 import React from 'react'; // Mantido useState se for usar para search futuramente, removido por enquanto
-import { FiFilter, FiX } from 'react-icons/fi'; // FiClock removido
+import { FiFilter } from 'react-icons/fi';
 // DatePicker e imports relacionados removidos
 
 interface ActivityFiltersProps {

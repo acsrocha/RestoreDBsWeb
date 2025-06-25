@@ -10,7 +10,7 @@ interface DeleteConfirmationModalProps {
   itemName: string;      
   folderName?: string;    
   ticketId?: string;      
-  shouldCascadeDelete: boolean;
+  shouldCascadeDelete: boolean | string | undefined;
   onCascadeDeleteChange: (shouldCascade: boolean) => void;
   canCascadeDelete: boolean; // << NOVA PROP: Indica se a opção de cascata deve estar habilitada
 }
@@ -126,9 +126,9 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             <label style={{ display: 'flex', alignItems: 'flex-start', cursor: canCascadeDelete ? 'pointer' : 'not-allowed', fontSize: '0.9em', userSelect: 'none', gap: '10px' }}>
               <input 
                 type="checkbox" 
-                checked={shouldCascadeDelete}
+                checked={!!shouldCascadeDelete}
                 onChange={(e) => onCascadeDeleteChange(e.target.checked)}
-                disabled={isDeleting || !canCascadeDelete} // << DESABILITADO SE NÃO PUDER CASCATEAR >>
+                disabled={!!isDeleting || !canCascadeDelete} // << DESABILITADO SE NÃO PUDER CASCATEAR >>
                 style={{ marginTop: '3px', transform: 'scale(1.2)', cursor: canCascadeDelete ? 'pointer' : 'not-allowed', flexShrink: 0 }}
               />
               <div>

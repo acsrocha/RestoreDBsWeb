@@ -10,7 +10,7 @@ import { useInterval } from '../hooks/useInterval';
 // --- IMPORTAÇÃO CORRIGIDA ---
 import { useLastUpdated } from '../contexts/LastUpdatedContext'; // Garanta que o caminho para seu contexto está correto
 // --- FIM DA IMPORTAÇÃO CORRIGIDA ---
-import { FiDatabase, FiRefreshCw, FiSearch, FiAlertCircle, FiLoader } from 'react-icons/fi';
+import { FiDatabase, FiRefreshCw, FiSearch, FiLoader } from 'react-icons/fi';
 
 import DiscardConfirmationModal from '../components/shared/DiscardConfirmationModal';
 import NotificationBanner from '../components/shared/NotificationBanner';
@@ -223,7 +223,7 @@ const ProcessedDatabasesPage: React.FC = () => {
           </button>
         </div>
       </div>
-      {lastUpdatedGlobal && <p className="grid-last-updated">Interface atualizada pela última vez às: {lastUpdatedGlobal}</p>}
+      {lastUpdatedGlobal && <p className="grid-last-updated">Interface atualizada pela última vez às: {lastUpdatedGlobal.toLocaleString()}</p>}
       
       <div className="table-filter-bar">
         <div className="form-group search-form-group">
