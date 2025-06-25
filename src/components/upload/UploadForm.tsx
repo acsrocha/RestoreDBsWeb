@@ -60,13 +60,13 @@ const UploadForm: React.FC = () => {
   return (
     <form id="uploadForm" encType="multipart/form-data" onSubmit={handleSubmit} ref={formRef}>
       <div className="form-group">
-        <label htmlFor="backupFileFieldActualInput">Arquivo de Backup (.fbk, .gbk):</label>
+        <label htmlFor="backupFileFieldActualInput">Arquivo de Backup (.fbk, .gbk, .bt):</label>
         {/* Input de arquivo real, escondido visualmente mas funcional */}
         <input
           type="file"
           id="backupFileFieldActualInput" // ID único para o input real
           name="backupFile"
-          accept=".fbk,.gbk,.FBK,.GBK"
+          accept=".fbk,.gbk,.bt,.FBK,.GBK,.BT"
           required
           ref={fileInputRef}
           onChange={handleFileChange}
