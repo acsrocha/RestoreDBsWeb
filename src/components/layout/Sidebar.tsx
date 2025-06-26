@@ -11,7 +11,11 @@ import {
   FiDatabase,
   FiMoon,
   FiSun,
-  FiUsers // <<< NOVO ÍCONE ADICIONADO PARA GERENCIAMENTO
+  FiUsers,
+  FiSettings,
+  FiActivity,
+  FiChevronDown,
+  FiChevronRight
 } from 'react-icons/fi';
 import { SiGoogledrive } from 'react-icons/si';
 
@@ -20,38 +24,66 @@ interface SidebarProps {
   setCurrentViewTitle: (title: string) => void;
 }
 
-// Atualizando navItems com o novo ícone para "Área Cliente (Drive)" e o novo item de menu
-const navItems = [
+interface NavItem {
+  path?: string;
+  icon: React.ReactNode;
+  text: string;
+  submenu?: NavItem[];
+}
+
+const navItems: NavItem[] = [
   { path: '/monitoramento', icon: <FiBarChart2 />, text: 'Monitoramento' },
   { path: '/upload', icon: <FiUploadCloud />, text: 'Enviar Backup' },
   { path: '/bancos-restaurados', icon: <FiDatabase />, text: 'Bancos Restaurados' },
-  { path: '/provisionar-pasta-cliente', icon: <SiGoogledrive />, text: 'Criar Área Cliente' }, // Mantém o formulário de criação
-  { path: '/admin/client-areas', icon: <FiUsers />, text: 'Gerenciar Áreas Cliente' }, // <<< NOVO ITEM DE MENU ADICIONADO
+  { path: '/provisionar-pasta-cliente', icon: <SiGoogledrive />, text: 'Criar Área Cliente' },
+  { path: '/admin/client-areas', icon: <FiUsers />, text: 'Gerenciar Áreas Cliente' },
+  {
+    icon: <FiSettings />,
+    text: 'Configurações',
+    submenu: [
+      { path: '/configuracoes/monitoramento-sistema', icon: <FiActivity />, text: 'Monitoramento do Serviço' }
+    ]
+  }
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const [openSubmenus, setOpenSubmenus] = React.useState<string[]>([]);
+
+  const findActiveItem = (items: NavItem[], path: string): NavItem | null => {
+    for (const item of items) {
+      if (item.path === path) return item;
+      if (item.submenu) {
+        const found = findActiveItem(item.submenu, path);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const toggleSubmenu = (text: string) => {
+    setOpenSubmenus(prev => 
+      prev.includes(text) 
+        ? prev.filter(item => item !== text)
+        : [...prev, text]
+    );
+  };
 
   React.useEffect(() => {
-    const activeItem = navItems.find(item => item.path === location.pathname);
+    const activeItem = findActiveItem(navItems, location.pathname);
     if (activeItem) {
       setCurrentViewTitle(activeItem.text);
     } else {
-      // Se a rota atual não está nos navItems (ex: rota inicial '/')
-      // define um título padrão ou baseado na rota '/' se necessário.
       if (location.pathname === '/') {
-        // Para a rota '/', redirecionamos para /monitoramento no App.tsx
-        // então o título de Monitoramento deve ser pego.
-        const defaultItem = navItems.find(item => item.path === '/monitoramento');
+        const defaultItem = findActiveItem(navItems, '/monitoramento');
         if (defaultItem) {
           setCurrentViewTitle(defaultItem.text);
         } else {
-          setCurrentViewTitle('RestoreDB'); // Fallback genérico
+          setCurrentViewTitle('RestoreDB');
         }
       } else {
-        // Para outras rotas não listadas (ex: uma futura página 404 ou sub-rotas não primárias)
-        setCurrentViewTitle('RestoreDB'); // Ou um título mais específico se puder ser determinado
+        setCurrentViewTitle('RestoreDB');
       }
     }
   }, [location.pathname, setCurrentViewTitle]);
@@ -65,14 +97,48 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
       <nav className="sidebar-nav">
         <ul>
           {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                {!collapsed && <span className="nav-text">{item.text}</span>}
-              </NavLink>
+            <li key={item.path || item.text}>
+              {item.path ? (
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  {!collapsed && <span className="nav-text">{item.text}</span>}
+                </NavLink>
+              ) : (
+                <>
+                  <button
+                    className={`nav-link submenu-toggle ${openSubmenus.includes(item.text) ? 'open' : ''}`}
+                    onClick={() => toggleSubmenu(item.text)}
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    {!collapsed && (
+                      <>
+                        <span className="nav-text">{item.text}</span>
+                        <span className="submenu-arrow">
+                          {openSubmenus.includes(item.text) ? <FiChevronDown /> : <FiChevronRight />}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                  {item.submenu && openSubmenus.includes(item.text) && !collapsed && (
+                    <ul className="submenu">
+                      {item.submenu.map((subItem) => (
+                        <li key={subItem.path}>
+                          <NavLink
+                            to={subItem.path!}
+                            className={({ isActive }) => (isActive ? 'nav-link submenu-link active' : 'nav-link submenu-link')}
+                          >
+                            <span className="nav-icon">{subItem.icon}</span>
+                            <span className="nav-text">{subItem.text}</span>
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )}
             </li>
           ))}
         </ul>

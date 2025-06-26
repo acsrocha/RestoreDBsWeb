@@ -15,6 +15,7 @@ import UploadPage from './pages/UploadPage';
 import ProcessedDatabasesPage from './pages/ProcessedDatabasesPage';
 import CreateClientDriveAreaPage from './pages/CreateClientDriveAreaPage';
 import AdminClientAreasPage from './pages/AdminClientAreasPage';
+import SystemMonitoringPage from './pages/SystemMonitoringPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SkipLink from './components/common/SkipLink';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -93,6 +94,10 @@ const App: React.FC = () => {
                   <Route
                     path='/admin/client-areas'
                     element={<AdminClientAreasPage />}
+                  />
+                  <Route
+                    path='/configuracoes/monitoramento-sistema'
+                    element={<SystemMonitoringPage />}
                   />
                 </Routes>
               </main>

@@ -78,3 +78,31 @@ export function useApiCache<T>(
   
   return { data, loading, error, refetch: fetchData };
 }
+
+// Hook genérico para requisições HTTP
+export function useApi() {
+  const get = useCallback(async <T>(url: string): Promise<T> => {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }, []);
+
+  const post = useCallback(async <T>(url: string, data?: any): Promise<T> => {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: data ? JSON.stringify(data) : undefined,
+      cache: 'no-store'
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }, []);
+
+  return { get, post };
+}

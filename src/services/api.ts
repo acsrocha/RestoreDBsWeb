@@ -27,6 +27,8 @@ const UPLOAD_API_URL = '/api/upload';
 const CREATE_CLIENT_DRIVE_AREA_URL = '/api/client_upload_area/create';
 const ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL = '/api/admin/client_upload_areas_details';
 const ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL = '/api/admin/client_upload_areas';
+const HEALTH_API_URL = '/api/health';
+const SYSTEM_ACTIVITY_API_URL = '/api/system_activity';
 
 // Função auxiliar para construir cabeçalhos, incluindo a API Key
 const buildHeaders = (includeContentTypeJson = false): HeadersInit => {
@@ -178,4 +180,24 @@ export const deleteClientUploadArea = async (areaId: string): Promise<void> => {
         cache: 'no-store',
     });
     await handleResponse<void>(response, false); // Backend retorna 204 No Content
+};
+
+// Novos endpoints para monitoramento do sistema
+export const fetchHealthData = async (): Promise<any> => {
+  console.log('Fazendo chamada para:', HEALTH_API_URL);
+  const response = await fetch(HEALTH_API_URL, { 
+    cache: 'no-store',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  });
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+  return handleResponse<any>(response);
+};
+
+export const fetchSystemActivity = async (): Promise<string[]> => {
+  const response = await fetch(SYSTEM_ACTIVITY_API_URL, { cache: 'no-store' });
+  return handleResponse<string[]>(response);
 };
