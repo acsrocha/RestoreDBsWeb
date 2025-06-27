@@ -54,7 +54,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ healthData }) => {
   return (
     <div className="status-highlight-grid">
       {/* Overall Health */}
-      <div className="highlight-card">
+      <div className="highlight-card status">
         <div className="card-icon">
           {healthData ? getStatusIcon(healthData.status) : <FiServer />}
         </div>
@@ -68,8 +68,8 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ healthData }) => {
           </div>
           <div className="card-label">Status Geral</div>
           {healthData?.timestamp && (
-            <div className="card-subtitle">
-              {formatTimestamp(healthData.timestamp)}
+            <div className="card-subtitle" style={{color: 'white', fontWeight: '500'}}>
+              Última atualização: {formatTimestamp(healthData.timestamp)}
             </div>
           )}
         </div>
@@ -92,7 +92,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ healthData }) => {
       </div>
 
       {/* Firebird Status */}
-      <div className="highlight-card">
+      <div className="highlight-card firebird">
         <div className="card-icon">
           <FiDatabase />
         </div>
@@ -113,7 +113,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ healthData }) => {
       </div>
 
       {/* Google Drive Status */}
-      <div className="highlight-card">
+      <div className="highlight-card drive">
         <div className="card-icon">
           <FiCloud />
         </div>

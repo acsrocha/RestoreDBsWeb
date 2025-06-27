@@ -190,9 +190,7 @@ export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
         : null,
         isSyncing,
         syncError,
-        // instanceKey não é mais necessária para a lógica, mas podemos manter se algum componente depender dela para animações.
-        // Se não, pode ser removida. Vou mantê-la por enquanto.
-        instanceKey: 0 
+ 
     }
   }, [
       timeLeftSeconds, cycleDurationMinutes, isCycling, forceSync, 

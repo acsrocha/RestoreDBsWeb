@@ -150,13 +150,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => 
         </label>}
         <input
           type="checkbox"
-          id="themeToggleCheckbox" // O id era "themeToggle" no seu global.css para o switch estilizado, mudei para consistência com o label
+          id="themeToggleCheckbox"
           title="Alternar tema claro/escuro"
           checked={theme === 'dark'}
           onChange={toggleTheme}
-          className="visually-hidden" // Esconde o checkbox padrão, o label estilizado fará o trabalho
+          className="visually-hidden"
         />
-         {/* Se você tiver um switch customizado que usa o label, pode precisar ajustar o htmlFor e id */}
       </div>
     </aside>
   );

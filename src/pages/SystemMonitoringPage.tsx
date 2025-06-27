@@ -4,11 +4,14 @@ import {
   FiActivity, 
   FiRefreshCw, 
   FiHardDrive, 
-  FiAlertTriangle
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiX
 } from 'react-icons/fi';
 import { useInterval } from '../hooks/useInterval';
 import { fetchHealthData, fetchSystemActivity } from '../services/api';
 import SystemHealthCard from '../components/monitoring/SystemHealthCard';
+import '../styles/components/StickyCards.css';
 
 interface HealthCheckData {
   status: string;
@@ -26,11 +29,19 @@ interface SystemActivity {
   message: string;
 }
 
+interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error';
+  removing?: boolean;
+}
+
 const SystemMonitoringPage: React.FC = () => {
   const [healthData, setHealthData] = useState<HealthCheckData | null>(null);
   const [systemActivity, setSystemActivity] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
   
   const fetchHealthDataLocal = async () => {
     try {
@@ -68,12 +79,41 @@ const SystemMonitoringPage: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchHealthDataLocal(), fetchSystemActivityLocal()]);
+    // Delay para mostrar o efeito
+    await new Promise(resolve => setTimeout(resolve, 1500));
     setIsRefreshing(false);
   };
 
   useEffect(() => {
     handleRefresh();
   }, []);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      // Adiciona classe de remoção
+      setToasts(prev => prev.map(toast => 
+        toast.id === id ? { ...toast, removing: true } : toast
+      ));
+      // Remove após animação
+      setTimeout(() => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+      }, 300);
+    }, 3000);
+  };
+
+  const testAPI = async () => {
+    try {
+      const response = await fetch('/api/health');
+      const data = await response.json();
+      console.log('Teste direto da API:', data);
+      showToast(`API funcionando! Status: ${data.status}`, 'success');
+    } catch (error) {
+      console.error('Erro no teste da API:', error);
+      showToast(`Erro na API: ${error.message}`, 'error');
+    }
+  };
 
   useInterval(() => {
     handleRefresh();
@@ -82,106 +122,113 @@ const SystemMonitoringPage: React.FC = () => {
 
 
   return (
-    <div className="view active">
-      {/* Header */}
-      <div className="admin-areas-header">
-        <h2>
-          <FiActivity />
-          Monitoramento do Sistema
-        </h2>
-        <div className="admin-areas-header-actions">
-          <button
-            className={`button-refresh ${isRefreshing ? 'spin-animation' : ''}`}
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <FiRefreshCw />
-            {isRefreshing ? 'Atualizando...' : 'Atualizar'}
-          </button>
-          <button
-            className="button-refresh"
-            onClick={async () => {
-              try {
-                const response = await fetch('/api/health');
-                const data = await response.json();
-                console.log('Teste direto da API:', data);
-                alert(`API funcionando! Status: ${data.status}`);
-              } catch (error) {
-                console.error('Erro no teste da API:', error);
-                alert(`Erro na API: ${error.message}`);
-              }
-            }}
-          >
-            Testar API
-          </button>
+    <>
+      {/* Toast Container */}
+      <div className="toast-container">
+        {toasts.map(toast => (
+          <div key={toast.id} className={`toast ${toast.type} ${toast.removing ? 'removing' : ''}`}>
+            {toast.type === 'success' ? <FiCheckCircle /> : <FiX />}
+            <span>{toast.message}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Fixed Header + Cards Container */}
+      <div className="monitoring-fixed-header">
+        {/* Header */}
+        <div className="admin-areas-header">
+          <h2>
+            <FiActivity />
+            Monitoramento do Sistema
+          </h2>
+          <div className="admin-areas-header-actions">
+            <button
+              className={`button-refresh ${isRefreshing ? 'refreshing' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <FiRefreshCw />
+              {isRefreshing ? 'Atualizando...' : 'Atualizar'}
+            </button>
+            <button
+              className="button-refresh"
+              onClick={testAPI}
+            >
+              Testar API
+            </button>
+          </div>
+        </div>
+
+        {/* Cards Container */}
+        <div className="cards-container">
+
+          
+          {/* Health Status Cards */}
+          <SystemHealthCard healthData={healthData} />
         </div>
       </div>
 
-      {lastUpdated && (
-        <div className="grid-last-updated">
-          Última atualização: {lastUpdated.toLocaleString('pt-BR')}
-        </div>
-      )}
-
-      {/* Health Status Cards */}
-      <SystemHealthCard healthData={healthData} />
-
-      {/* Problems Section */}
-      {healthData?.problems && healthData.problems.length > 0 && (
-        <div className="list-card">
-          <h2>
-            <FiAlertTriangle />
-            Problemas Detectados
-          </h2>
-          <ul>
-            {healthData.problems.map((problem, index) => (
-              <li key={index} className="error-summary">
-                <span className="error-filename">{problem}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Disk Space Section */}
-      {healthData?.disk_space && (
-        <div className="list-card">
-          <h2>
-            <FiHardDrive />
-            Espaço em Disco
-          </h2>
-          <ul>
-            {Object.entries(healthData.disk_space).map(([path, space]) => (
-              <li key={path}>
-                <div className="error-summary">
-                  <span className="error-filename">{path.split('\\').pop()}</span>
-                  <span className="error-timestamp">{space}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* System Activity */}
-      <div className="list-card">
-        <h2>
-          <FiActivity />
-          Atividade do Sistema
-        </h2>
-        <ul>
-          {systemActivity.length > 0 ? (
-            systemActivity.map((activity, index) => (
-              <li key={index} className="log-default">
-                {activity}
-              </li>
-            ))
-          ) : (
-            <li className="empty-list">Nenhuma atividade do sistema registrada</li>
+      <div className="view active monitoring-view">
+        {/* Scrollable Content */}
+        <div className="scrollable-content">
+          {/* Problems Section */}
+          {healthData?.problems && healthData.problems.length > 0 && (
+            <div className="list-card">
+              <h2>
+                <FiAlertTriangle />
+                Problemas Detectados
+              </h2>
+              <ul>
+                {healthData.problems.map((problem, index) => (
+                  <li key={index} className="error-summary">
+                    <span className="error-filename">{problem}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-        </ul>
+
+          {/* Disk Space Section */}
+          {healthData?.disk_space && (
+            <div className="list-card">
+              <h2>
+                <FiHardDrive />
+                Espaço em Disco
+              </h2>
+              <ul>
+                {Object.entries(healthData.disk_space).map(([path, space]) => (
+                  <li key={path}>
+                    <div className="error-summary">
+                      <span className="error-filename">{path.split('\\').pop()}</span>
+                      <span className="error-timestamp">{space}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* System Activity */}
+          <div className="list-card">
+            <h2>
+              <FiActivity />
+              Atividade do Sistema
+            </h2>
+            <ul>
+              {systemActivity.length > 0 ? (
+                systemActivity.map((activity, index) => (
+                  <li key={index} className="log-default">
+                    {activity}
+                  </li>
+                ))
+              ) : (
+                <li className="empty-list">Nenhuma atividade do sistema registrada</li>
+              )}
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

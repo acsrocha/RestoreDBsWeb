@@ -1,0 +1,17 @@
+/* Customização do react-hot-toast */
+.Toastify__toast--success {
+  background: linear-gradient(135deg, rgba(var(--success-color-rgb), 0.4), #356335) !important;
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #356335) !important;
+}
+
+/* Para react-hot-toast */
+[data-sonner-toast][data-type="success"] {
+  background: linear-gradient(135deg, rgba(var(--success-color-rgb), 0.4), #356335) !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #356335) !important;
+}

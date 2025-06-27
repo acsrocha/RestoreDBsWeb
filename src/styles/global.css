@@ -641,32 +641,40 @@ html[data-theme='dark'] .theme-switcher-sidebar {
   display: flex;
   flex-direction: column;
   transition: margin-left 0.25s ease-in-out;
-  background-color: var(--bg-color);
+  background-color: var(--bg-primary);
   min-width: 0;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 .sidebar.collapsed ~ .main-content-wrapper {
   margin-left: var(--sidebar-width-collapsed);
 }
 
+.sidebar.collapsed ~ .main-content-wrapper header.main-header {
+  left: var(--sidebar-width-collapsed);
+}
+
 /* --- MAIN HEADER --- */
 header.main-header {
-  background-color: var(--card-bg-color);
+  background-color: var(--sidebar-bg-color);
   padding: 0 25px;
   display: flex;
   align-items: center;
   height: var(--header-height);
   box-shadow: var(--shadow);
   border-bottom: 1px solid var(--border-color);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: var(--sidebar-width);
+  right: 0;
   z-index: 900;
   flex-shrink: 0;
+  transition: left 0.25s ease-in-out;
 }
 #sidebarToggleBtn {
   background: none;
   border: none;
-  color: var(--text-secondary-color);
+  color: var(--sidebar-text-color);
   font-size: 1.7em;
   cursor: pointer;
   margin-right: 20px;
@@ -678,7 +686,7 @@ header.main-header {
   color: var(--primary-accent-color);
 }
 .main-header h1 {
-  color: var(--text-color);
+  color: var(--sidebar-text-color);
   margin: 0;
   font-size: 1.5em;
   font-weight: 600;
@@ -688,6 +696,7 @@ header.main-header {
 /* --- CONTENT AREA --- */
 .content-area {
   padding: 25px;
+  padding-top: calc(var(--header-height) + 25px);
   flex-grow: 1;
   overflow-y: auto;
   display: flex;
@@ -775,9 +784,10 @@ header.main-header {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-width: calc(100% - 60px); /* Considerando o ícone + margem */
+  max-width: calc(100% - 60px); /* Considerando o ícone + margem
 }
-
+ */
+ 
 .highlight-card .card-title {
   font-size: 1rem;
   font-weight: 500;
@@ -1245,6 +1255,7 @@ html[data-theme='dark'] ::-webkit-scrollbar-track {
   header.main-header {
     padding: 0 15px;
     height: calc(var(--header-height) - 10px);
+    left: var(--sidebar-width-collapsed);
   }
   header.main-header h1 {
     font-size: 1.25em;
@@ -1256,6 +1267,7 @@ html[data-theme='dark'] ::-webkit-scrollbar-track {
   }
   .content-area {
     padding: 20px 15px;
+    padding-top: calc(var(--header-height) - 10px + 20px);
   }
   .status-highlight-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1312,6 +1324,7 @@ html[data-theme='dark'] ::-webkit-scrollbar-track {
   }
   .content-area {
     padding: 15px 10px;
+    padding-top: calc(var(--header-height) - 10px + 15px);
   }
   .status-highlight-grid {
     grid-template-columns: 1fr;
@@ -1800,19 +1813,7 @@ html[data-theme='dark'] .client-drive-status-message.partial-success {
 /* src/styles/global.css */
 /* ... (seu CSS existente) ... */
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.spin-animation {
-  /* Classe usada no botão de refresh, pode reusar para o ícone do timer */
-  animation: spin 1.5s linear infinite;
-}
+/* Removido - usando novo efeito de pulse-glow */
 /* Estilo para o botão de Excluir */
 .action-button-danger {
   background-color: transparent;
@@ -2669,6 +2670,28 @@ html[data-theme='dark'] .details-section h3 {
     width: 100%;
     justify-content: flex-end;
   }
+}
+
+/* === ESTILOS PARA REACT-HOT-TOAST === */
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] {
+  background: linear-gradient(135deg, rgba(var(--success-color-rgb), 0.4), #233823) !important;
+  color: #155724 !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] {
+  background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #233823) !important;
+  color: #721c24 !important;
+}
+
+/* Para react-hot-toast padrão */
+.go3958317564 {
+  background: linear-gradient(135deg, rgba(var(--success-color-rgb), 0.4), #233823) !important;
+  color: #155724 !important;
+}
+
+.go2072408551 {
+  background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #233823) !important;
+  color: #721c24 !important;
 }
 
 /* === FIM DOS ESTILOS === */

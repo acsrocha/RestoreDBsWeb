@@ -10,7 +10,7 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <DriveCycleProvider> {/* ÚNICO DriveCycleProvider aqui, no topo */}
+      <DriveCycleProvider>
         <LastUpdatedProvider>
           <App />
         </LastUpdatedProvider>

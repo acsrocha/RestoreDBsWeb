@@ -181,8 +181,8 @@ const MonitoringPage: React.FC = () => {
           <ul id="queuedFiles" aria-live="polite">
             {initialLoading && !statusData ? (
               <li className="empty-list"><em>Carregando fila...</em></li>
-            ) : statusData?.queuedFiles && statusData.queuedFiles.length > 0 ? ( // *** CORRIGIDO ***
-              statusData.queuedFiles.map((file: string, index: number) => {      // *** CORRIGIDO *** (tipos explícitos)
+            ) : statusData?.queuedFiles && statusData.queuedFiles.length > 0 ? (
+              statusData.queuedFiles.map((file: string, index: number) => {
                 const fileName = file.split(/[\\/]/).pop();
                 return (
                     <li key={file || index} title={`Caminho completo: ${file}`}>
@@ -198,7 +198,7 @@ const MonitoringPage: React.FC = () => {
         </div>
 
         <RecentActivityList
-            activities={statusData?.recentActivity || []} // *** CORRIGIDO ***
+            activities={statusData?.recentActivity || []}
             isLoading={initialLoading && !statusData}
         />
       </section>
@@ -211,4 +211,4 @@ const MonitoringPage: React.FC = () => {
   );
 };
 
-export default MonitoringPage; // Assumindo que o nome real do componente é MonitoringPage
+export default MonitoringPage;

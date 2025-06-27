@@ -20,12 +20,12 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import SkipLink from './components/common/SkipLink';
 import { ThemeProvider } from './contexts/ThemeContext';
 
-// GARANTA QUE A IMPORTAÇÃO DO DriveCycleProvider FOI REMOVIDA DAQUI
-// import { DriveCycleProvider } from './contexts/DriveCycleContext'; 
+ 
 
 import './styles/global.css';
 import './styles/components/ErrorBoundary.css';
 import './styles/components/SkipLink.css';
+import './styles/toast-custom.css';
 
 const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
