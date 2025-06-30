@@ -336,7 +336,7 @@ const AdminClientAreasPage: React.FC = () => {
   return (
     <>
       {/* Header fixo */}
-      <div className="admin-areas-fixed-header">
+      <div className="grid-view-fixed-header">
         <div className="admin-areas-header">
           <h2><FiUsers /> Gerenciamento de Áreas de Upload de Cliente</h2>
           <div className="admin-areas-header-actions">
@@ -375,7 +375,7 @@ const AdminClientAreasPage: React.FC = () => {
       </div>
 
       {/* Container da tabela com scroll */}
-      <div className="admin-areas-table-container">
+      <div className="grid-view-table-container">
         <div className="table-wrapper">
           {filteredAreas.length > 0 ? (
             <table className="data-table">

@@ -148,7 +148,7 @@ html[data-theme='dark'] .toast.success {
 
 .toast.error {
     border-left: 4px solid var(--error-color);
-    background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #768d81);
+    background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #ffffff);
     color: #721c24;
     font-weight: 700;
 }
@@ -225,72 +225,138 @@ html[data-theme='dark'] .toast.error {
 }
 
 
-/* Admin Client Areas - Header fixo */
+/*
+  ==========================================================================
+   PADRÃO PARA GRIDS COM CABEÇALHO FIXO E CONTEÚDO ROLÁVEL
+   (Use estas classes no seu HTML para estruturar as views de grid)
+  ==========================================================================
+*/
+
+
+/* 1. O contêiner do cabeçalho da sua view (que contém título, busca, botões, etc.) */
+
 .admin-areas-fixed-header {
     position: fixed !important;
+    /* Fixa o header em relação à viewport. */
     top: var(--header-height) !important;
+    /* Posiciona abaixo do header principal da aplicação. */
     left: var(--sidebar-width) !important;
+    /* Alinha com o início da área de conteúdo. */
     right: 0 !important;
+    /* Estica até o final da tela. */
     z-index: 999 !important;
+    /* Garante que fique acima do conteúdo que rola. */
     background: var(--bg-primary) !important;
+    /* Usa a cor de fundo primária do tema para se mesclar. */
     border-bottom: 1px solid var(--border-color);
+    /* Linha sutil de separação. */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* Sombra para dar profundidade. */
     padding: 25px;
     transition: left 0.25s ease-in-out;
+    /* Anima a transição quando a sidebar colapsa. */
 }
+
+
+/* 2. Ajuste de posição para quando a sidebar estiver colapsada */
 
 .sidebar.collapsed~.main-content-wrapper .admin-areas-fixed-header {
     left: var(--sidebar-width-collapsed) !important;
 }
 
+
+/* 3. O contêiner da sua tabela */
+
 .admin-areas-table-container {
+    /* Define uma margem no topo para empurrar a tabela para baixo,
+       evitando que ela fique escondida atrás do header fixo.
+       O valor de 140px é um exemplo calculado da altura do .admin-areas-fixed-header.
+       (Ex: 25px padding-top + ~90px de conteúdo + 25px padding-bottom = 140px).
+       Ajuste este valor se a altura do seu header fixo mudar. */
     margin-top: 140px;
-    height: calc(100vh - var(--header-height) - 140px);
-    overflow-y: auto;
     padding: 0 25px;
+    /* Padding lateral para o contêiner da tabela. */
 }
 
+
+/* 4. A Tabela de Dados (`<table class="data-table">`) */
+
 .admin-areas-table-container .data-table {
+    display: block;
+    /* Essencial: Trata a tabela como um bloco para permitir controle de overflow no tbody. */
+    width: 100%;
+}
+
+
+/* 5. O Cabeçalho da Tabela (`<thead>`) */
+
+.admin-areas-table-container .data-table thead {
+    display: block;
+    /* Mantém o thead visível e estático, pois não terá overflow. */
     position: relative;
 }
 
-.admin-areas-table-container .data-table thead {
-    position: sticky !important;
-    top: 40px !important;
-    z-index: 500 !important;
-    background: var(--card-bg-color) !important;
+
+/* 6. As Linhas (`<tr>`) do Cabeçalho e Corpo - A CORREÇÃO DE ALINHAMENTO */
+
+.admin-areas-table-container .data-table thead tr,
+.admin-areas-table-container .data-table tbody tr {
+    display: table;
+    /* Faz as linhas se comportarem como tabelas. */
+    width: 100%;
+    /* Garante que ocupem todo o espaço. */
+    table-layout: fixed;
+    /* Força as colunas a terem larguras consistentes, alinhando a cabeça e o corpo. */
 }
 
-.admin-areas-table-container .data-table thead th {
-    background: var(--card-bg-color) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-    position: sticky !important;
-    top: 40px !important;
-    z-index: 501 !important;
+
+/* 7. O Corpo da Tabela (`<tbody>`) - A ÁREA ROLÁVEL */
+
+.admin-areas-table-container .data-table tbody {
+    display: block;
+    /* Essencial: Permite que o tbody tenha uma altura definida e overflow. */
+    overflow-y: auto;
+    /* Adiciona a barra de rolagem vertical QUANDO o conteúdo ultrapassar a altura. */
+    width: 100%;
+    /*
+     * CÁLCULO DA ALTURA: Preenche o restante da altura da viewport.
+     * 100vh = Altura total da tela.
+     * var(--header-height) = Altura do header principal (ex: 60px).
+     * 140px = A `margin-top` que demos ao `.admin-areas-table-container` (altura do header fixo).
+     * 40px = Um espaço extra para o footer da página e paddings. AJUSTE CONFORME NECESSÁRIO.
+    */
+    height: calc(100vh - var(--header-height) - 140px - 40px);
 }
+
+
+/*
+  ==========================================================================
+   FIM DO PADRÃO DE GRIDS
+  ==========================================================================
+*/
+
 
 /* Responsividade */
 
 @media (max-width: 768px) {
-    .monitoring-fixed-header {
+    .monitoring-fixed-header,
+    .admin-areas-fixed-header {
         left: var(--sidebar-width-collapsed);
         top: calc(var(--header-height) - 10px);
+        /* Ajusta para header menor em mobile. */
         padding: 20px 15px;
     }
     .scrollable-content {
         margin-top: 300px;
         padding: 0 15px;
     }
-    
-    .admin-areas-fixed-header {
-        left: var(--sidebar-width-collapsed);
-        top: calc(var(--header-height) - 10px);
-        padding: 20px 15px;
-    }
-    
     .admin-areas-table-container {
+        /* Ajusta a margem e padding para telas menores */
         margin-top: 120px;
         padding: 0 15px;
-        height: calc(100vh - var(--header-height) + 10px - 120px);
+    }
+    .admin-areas-table-container .data-table tbody {
+        /* Recalcula a altura do tbody para telas menores */
+        height: calc(100vh - (var(--header-height) - 10px) - 120px - 30px);
     }
 }

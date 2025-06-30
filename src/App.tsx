@@ -26,6 +26,7 @@ import './styles/global.css';
 import './styles/components/ErrorBoundary.css';
 import './styles/components/SkipLink.css';
 import './styles/toast-custom.css';
+import './styles/grid-views.css';
 
 const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {

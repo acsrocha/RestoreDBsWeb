@@ -1,0 +1,85 @@
+/* SISTEMA PADRONIZADO PARA VIEWS COM GRIDS */
+
+.grid-view-fixed-header {
+    position: fixed !important;
+    top: var(--header-height) !important;
+    left: var(--sidebar-width) !important;
+    right: 0 !important;
+    z-index: 999 !important;
+    background: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    transition: left 0.25s ease-in-out;
+}
+
+.sidebar.collapsed~.main-content-wrapper .grid-view-fixed-header {
+    left: var(--sidebar-width-collapsed) !important;
+}
+
+.grid-view-table-container {
+    margin-top: 180px;
+    padding: 0 25px;
+    height: calc(100vh - var(--header-height) - 180px - 80px);
+}
+
+.grid-view-table-container .data-table {
+    width: 100%;
+    display: block;
+}
+
+.grid-view-table-container .data-table thead {
+    display: block;
+    background: var(--card-bg-color);
+    border-bottom: 2px solid var(--primary-accent-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.grid-view-table-container .data-table thead tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.grid-view-table-container .data-table tbody {
+    display: block;
+    height: calc(100vh - var(--header-height) - 260px);
+    overflow-y: auto;
+    width: 100%;
+}
+
+.grid-view-table-container .data-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+footer.content-footer {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: var(--sidebar-width) !important;
+    right: 0 !important;
+    z-index: 998 !important;
+    transition: left 0.25s ease-in-out;
+}
+
+.sidebar.collapsed ~ .main-content-wrapper footer.content-footer {
+    left: var(--sidebar-width-collapsed) !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .grid-view-fixed-header {
+        left: var(--sidebar-width-collapsed);
+        top: calc(var(--header-height) - 10px);
+        padding: 20px 15px;
+    }
+    
+    .grid-view-table-container {
+        margin-top: 160px;
+        padding: 0 15px;
+        height: calc(100vh - var(--header-height) + 10px - 160px - 60px);
+    }
+}
