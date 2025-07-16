@@ -12,6 +12,7 @@ import { useInterval } from '../hooks/useInterval';
 import { fetchHealthData, fetchSystemActivity } from '../services/api';
 import SystemHealthCard from '../components/monitoring/SystemHealthCard';
 import '../styles/components/StickyCards.css';
+import '../styles/components/MonitoringCards.css';
 
 interface HealthCheckData {
   status: string;
@@ -105,10 +106,16 @@ const SystemMonitoringPage: React.FC = () => {
 
   const testAPI = async () => {
     try {
-      const response = await fetch('/api/health');
-      const data = await response.json();
-      console.log('Teste direto da API:', data);
-      showToast(`API funcionando! Status: ${data.status}`, 'success');
+      const data = await fetchHealthData();
+      console.log('Teste da API:', data);
+      
+      // Traduzir o status para português
+      let statusPt = data.status;
+      if (data.status === 'healthy') statusPt = 'saudável';
+      else if (data.status === 'warning') statusPt = 'atenção';
+      else if (data.status === 'error') statusPt = 'erro';
+      
+      showToast(`API funcionando! Status: ${statusPt}`, 'success');
     } catch (error) {
       console.error('Erro no teste da API:', error);
       showToast(`Erro na API: ${error.message}`, 'error');

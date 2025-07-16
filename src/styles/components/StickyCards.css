@@ -9,7 +9,7 @@
     background: var(--bg-primary) !important;
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 25px;
+    padding: 15px 25px;
     transition: left 0.25s ease-in-out;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .cards-container {
-    padding: 0.5rem 0 0 0;
+    padding: 0.25rem 0 0 0;
 }
 
 .grid-last-updated {
@@ -30,9 +30,12 @@
 }
 
 .scrollable-content {
-    margin-top: 320px;
+    margin-top: 190px; /* AJUSTE: Reduzido de 260px para 190px */
     flex: 1;
     padding: 0 25px;
+    padding-bottom: 60px; /* Adiciona espaço na parte inferior para evitar que o conteúdo fique escondido pelo rodapé */
+    overflow-y: auto; /* Garante que o conteúdo possa rolar */
+    height: calc(100vh - var(--header-height) - 190px); /* Define altura para permitir rolagem */
 }
 
 
@@ -205,6 +208,8 @@ html[data-theme='dark'] .toast.error {
 .highlight-card.firebird,
 .highlight-card.drive {
     border-top: 3px solid;
+    padding: 0.75rem;
+    min-height: 60px;
 }
 
 .highlight-card.status {

@@ -20,25 +20,45 @@ if (!API_KEY) {
   );
 }
 
-const STATUS_API_URL = '/api/status';
-const ERRORS_API_URL = '/api/errors';
-const PROCESSED_API_URL = '/api/processed_databases';
-const UPLOAD_API_URL = '/api/upload';
-const CREATE_CLIENT_DRIVE_AREA_URL = '/api/client_upload_area/create';
+// Função para obter URL base do servidor
+const getServerUrl = () => {
+  const stored = localStorage.getItem('restoredb_server_url');
+  console.log(`[DEBUG] localStorage value: '${stored}'`);
+  return stored || '';
+};
+
+const getApiUrl = (endpoint: string) => {
+  const serverUrl = getServerUrl();
+  const finalUrl = serverUrl ? `${serverUrl}${endpoint}` : endpoint;
+  console.log(`API URL: ${finalUrl} (servidor: ${serverUrl || 'proxy local'})`);
+  return finalUrl;
+};
+
+const STATUS_API_URL = () => getApiUrl('/api/status');
+const ERRORS_API_URL = () => getApiUrl('/api/errors');
+const PROCESSED_API_URL = () => getApiUrl('/api/processed_databases');
+const UPLOAD_API_URL = () => getApiUrl('/api/upload');
+const CREATE_CLIENT_DRIVE_AREA_URL = () => getApiUrl('/api/client_upload_area/create');
 const ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL = '/api/admin/client_upload_areas_details';
 const ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL = '/api/admin/client_upload_areas';
-const HEALTH_API_URL = '/api/health';
-const SYSTEM_ACTIVITY_API_URL = '/api/system_activity';
+const HEALTH_API_URL = () => getApiUrl('/api/health');
+const SYSTEM_ACTIVITY_API_URL = () => getApiUrl('/api/system_activity');
 
 // Função auxiliar para construir cabeçalhos, incluindo a API Key
 const buildHeaders = (includeContentTypeJson = false): HeadersInit => {
   const headers: HeadersInit = {};
+  
+  // Sempre incluir API Key se disponível
   if (API_KEY) {
     headers['X-API-Key'] = API_KEY;
+    console.log(`[DEBUG] API Key incluída: ${API_KEY.substring(0, 8)}...`);
+  } else {
+    console.log('[DEBUG] API Key NÃO encontrada!');
   }
   if (includeContentTypeJson) {
     headers['Content-Type'] = 'application/json';
   }
+  console.log('[DEBUG] Headers:', headers);
   return headers;
 };
 
@@ -82,17 +102,17 @@ async function handleResponse<T>(response: Response, isJsonExpected = true): Pro
 
 // Endpoints Públicos (não precisam de API Key)
 export const fetchStatusData = async (): Promise<StatusData> => {
-  const response = await fetch(STATUS_API_URL, { cache: 'no-store' });
+  const response = await fetch(STATUS_API_URL(), { cache: 'no-store' });
   return handleResponse<StatusData>(response);
 };
 
 export const fetchErrorsData = async (): Promise<FailedRestoreItem[]> => {
-  const response = await fetch(ERRORS_API_URL, { cache: 'no-store' });
+  const response = await fetch(ERRORS_API_URL(), { cache: 'no-store' });
   return handleResponse<FailedRestoreItem[]>(response);
 };
 
 export const fetchProcessedDatabases = async (): Promise<ProcessedDatabase[]> => {
-  const response = await fetch(PROCESSED_API_URL, { cache: 'no-store' });
+  const response = await fetch(PROCESSED_API_URL(), { cache: 'no-store' });
   return handleResponse<ProcessedDatabase[]>(response);
 };
 
@@ -107,7 +127,7 @@ export const uploadBackup = async (formData: FormData): Promise<string> => {
 };
 
 export const markDatabaseForDiscard = async (dbId: string, confirmationTicketID: string): Promise<string> => {
-  const response = await fetch(`${PROCESSED_API_URL}/${dbId}/mark_for_discard`, {
+  const response = await fetch(`${PROCESSED_API_URL()}/${dbId}/mark_for_discard`, {
     method: 'POST',
     headers: buildHeaders(true),
     body: JSON.stringify({ confirmationTicketID: confirmationTicketID }),
@@ -129,7 +149,7 @@ export const createClientDriveArea = async (
 };
 
 export const fetchAdminClientUploadAreaDetails = async (): Promise<AdminClientUploadAreaDetail[]> => {
-  const response = await fetch(ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL, {
+  const response = await fetch(getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL), {
     headers: buildHeaders(),
     cache: 'no-store',
   });
@@ -140,7 +160,7 @@ export const updateClientUploadAreaStatus = async (
   areaId: string,
   newStatus: string
 ): Promise<{ message: string }> => {
-  const response = await fetch(`${ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL}/${areaId}/status`, {
+  const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}/status`, {
     method: 'PUT',
     headers: buildHeaders(true),
     body: JSON.stringify({ status: newStatus }),
@@ -153,7 +173,7 @@ export const updateClientUploadAreaNotes = async (
   areaId: string,
   newNotes: string
 ): Promise<{ message: string }> => {
-  const response = await fetch(`${ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL}/${areaId}/notes`, {
+  const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}/notes`, {
     method: 'PUT',
     headers: buildHeaders(true),
     body: JSON.stringify({ notes: newNotes }),
@@ -165,7 +185,7 @@ export const updateClientUploadAreaNotes = async (
 export const downloadFromDrive = async (
   areaId: string
 ): Promise<{ message: string }> => {
-  const response = await fetch(`${ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL}/${areaId}/download`, {
+  const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}/download`, {
     method: 'POST',
     headers: buildHeaders(),
     cache: 'no-store',
@@ -174,7 +194,7 @@ export const downloadFromDrive = async (
 };
 
 export const deleteClientUploadArea = async (areaId: string): Promise<void> => {
-    const response = await fetch(`${ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL}/${areaId}`, {
+    const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}`, {
         method: 'DELETE',
         headers: buildHeaders(),
         cache: 'no-store',
@@ -184,8 +204,9 @@ export const deleteClientUploadArea = async (areaId: string): Promise<void> => {
 
 // Novos endpoints para monitoramento do sistema
 export const fetchHealthData = async (): Promise<any> => {
-  console.log('Fazendo chamada para:', HEALTH_API_URL);
-  const response = await fetch(HEALTH_API_URL, { 
+  const url = HEALTH_API_URL();
+  console.log('Fazendo chamada para:', url);
+  const response = await fetch(url, { 
     cache: 'no-store',
     headers: {
       'Accept': 'application/json',
@@ -198,6 +219,25 @@ export const fetchHealthData = async (): Promise<any> => {
 };
 
 export const fetchSystemActivity = async (): Promise<string[]> => {
-  const response = await fetch(SYSTEM_ACTIVITY_API_URL, { cache: 'no-store' });
+  const response = await fetch(SYSTEM_ACTIVITY_API_URL(), { cache: 'no-store' });
   return handleResponse<string[]>(response);
+};
+
+// Funções para gerenciar CORS
+export const fetchCORSConfig = async (): Promise<{allowed_origins: string[]}> => {
+  const response = await fetch(getApiUrl('/api/admin/cors/config'), {
+    headers: buildHeaders(),
+    cache: 'no-store'
+  });
+  return handleResponse<{allowed_origins: string[]}>(response);
+};
+
+export const updateCORSConfig = async (allowedOrigins: string): Promise<{message: string, allowed_origins: string[]}> => {
+  const response = await fetch(getApiUrl('/api/admin/cors/update'), {
+    method: 'POST',
+    headers: buildHeaders(true),
+    body: JSON.stringify({ allowed_origins: allowedOrigins }),
+    cache: 'no-store'
+  });
+  return handleResponse<{message: string, allowed_origins: string[]}>(response);
 };

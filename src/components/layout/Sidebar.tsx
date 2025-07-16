@@ -41,7 +41,8 @@ const navItems: NavItem[] = [
     icon: <FiSettings />,
     text: 'Configurações',
     submenu: [
-      { path: '/configuracoes/monitoramento-sistema', icon: <FiActivity />, text: 'Monitoramento do Serviço' }
+      { path: '/configuracoes/monitoramento-sistema', icon: <FiActivity />, text: 'Monitoramento do Serviço' },
+      { path: '/configuracoes/servidor', icon: <FiSettings />, text: 'Servidor Backend' }
     ]
   }
 ];

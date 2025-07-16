@@ -43,7 +43,6 @@ const AREA_PROCESSING_STATUSES: string[] = [
 ];
 
 const AdminClientAreasPage: React.FC = () => {
-  console.log("LOG DEBUG: AdminClientAreasPage RENDERIZOU (UX Melhorias Delete)");
   const [areas, setAreas] = useState<AdminClientUploadAreaDetail[]>([]);
   const [filteredAreas, setFilteredAreas] = useState<AdminClientUploadAreaDetail[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

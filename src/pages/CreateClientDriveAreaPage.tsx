@@ -7,14 +7,14 @@ import styles from './CreateClientDriveArea.module.css';
 
 const CreateClientDriveAreaPage: React.FC = () => {
   return (
-    <div id="view-cdddreate-client-gdrive-area" className="view active">
+    <div id="view-create-client-gdrive-area" className={`view active ${styles.pageContainer}`}>
       <section
         className={styles.clientDriveAreaCard}
         id="createClientDriveAreaSection"
         aria-labelledby="createClientDriveAreaHeader"
       >
         <h2 id="createClientDriveAreaHeader">
-          <SiGoogledrive  style={{ fill: '#01c38e' }}/>
+          <SiGoogledrive />
           Preparar Área de Upload para Cliente (Google Drive)
         </h2>
         <p className={styles.pageDescription}>

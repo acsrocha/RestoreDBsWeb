@@ -13,6 +13,8 @@ import { FiCpu, FiArchive, FiAlertTriangle, FiClock, FiList, FiFileText } from '
 import '../styles/components/HighlightCard.css';
 import '../styles/components/RecentActivityList.css';
 import '../styles/components/FailedRestoresList.css';
+import '../styles/components/MonitoringCards.css';
+import '../styles/components/StickyCards.css';
 
 const REFRESH_INTERVAL = 3000;
 
@@ -161,21 +163,24 @@ const MonitoringPage: React.FC = () => {
   );
 
   return (
-    <div id="view-monitoramento" className="view active">
-      <section className="status-highlight-grid" aria-label="Status de Destaque">
-        <HighlightCard
-          icon={<FiCpu />} // Passando o ícone diretamente
-          label="Em Processamento"
-          value={displayProcessingFilename}
-          type="processing" // Para classe CSS, se houver
-          title={processingTitle}
-        />
-        <HighlightCard icon={<FiArchive />} label="Arquivos na Fila" value={String(queueCount)} type="queue" />
-        <HighlightCard icon={<FiAlertTriangle />} label="Falhas" value={String(errorCount)} type="errors" />
-        <HighlightCard icon={<FiClock />} label="Última Atividade" value={lastActivityTimestamp} type="activity-summary" />
-      </section>
-
-      <section className="monitor-detailed-lists-grid" aria-label="Listas Detalhadas de Monitoramento">
+    <div id="view-monitoramento" className="view active monitoring-view">
+      <div className="monitoring-fixed-header">
+        <section className="status-highlight-grid" aria-label="Status de Destaque">
+          <HighlightCard
+            icon={<FiCpu />} // Passando o ícone diretamente
+            label="Em Processamento"
+            value={displayProcessingFilename}
+            type="processing status" // Adicionando classe status para aplicar os estilos compactos
+            title={processingTitle}
+          />
+          <HighlightCard icon={<FiArchive />} label="Arquivos na Fila" value={String(queueCount)} type="queue status" />
+          <HighlightCard icon={<FiAlertTriangle />} label="Falhas" value={String(errorCount)} type="errors status" />
+          <HighlightCard icon={<FiClock />} label="Última Atividade" value={lastActivityTimestamp} type="activity-summary status" />
+        </section>
+      </div>
+      
+      <div className="scrollable-content">
+        <section className="monitor-detailed-lists-grid" aria-label="Listas Detalhadas de Monitoramento">
         <div className="list-card" id="queuedFilesListSection">
           <h2><span className="icon"><FiList /></span>Fila de Espera</h2>
           <ul id="queuedFiles" aria-live="polite">
@@ -207,6 +212,7 @@ const MonitoringPage: React.FC = () => {
           errors={errorsData}
           isLoading={initialLoading && errorsData.length === 0 && !errorLoading}
        />
+      </div>
     </div>
   );
 };

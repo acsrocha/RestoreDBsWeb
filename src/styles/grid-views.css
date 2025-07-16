@@ -63,6 +63,10 @@ footer.content-footer {
     right: 0 !important;
     z-index: 998 !important;
     transition: left 0.25s ease-in-out;
+    background: var(--bg-primary) !important;
+    border-top: 1px solid var(--border-color) !important;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
 }
 
 .sidebar.collapsed ~ .main-content-wrapper footer.content-footer {

@@ -1,5 +1,6 @@
 // src/components/monitoring/SystemHealthCard.tsx
 import React from 'react';
+import '../../styles/components/MonitoringCards.css';
 import { 
   FiCheckCircle, 
   FiAlertTriangle, 

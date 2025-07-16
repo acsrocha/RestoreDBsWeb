@@ -1,0 +1,80 @@
+/* Estilos específicos para os cards de monitoramento */
+
+/* Reduzindo tamanho apenas dos cards fixos (sticky) */
+.status-highlight-grid .highlight-card.status,
+.status-highlight-grid .highlight-card.queue.status,
+.status-highlight-grid .highlight-card.errors.status,
+.status-highlight-grid .highlight-card.processing.status,
+.status-highlight-grid .highlight-card.activity-summary.status {
+  padding: 0.75rem;
+  min-height: 60px;
+  gap: 0.5rem;
+}
+
+/* Reduzindo tamanho dos ícones */
+.highlight-card.status .card-icon,
+.highlight-card.queue .card-icon,
+.highlight-card.errors.status .card-icon,
+.highlight-card.processing.status .card-icon,
+.highlight-card.activity-summary.status .card-icon,
+.highlight-card.firebird .card-icon,
+.highlight-card.drive .card-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 0.9em;
+}
+
+/* Reduzindo tamanho das fontes */
+.highlight-card.status .card-value,
+.highlight-card.queue .card-value,
+.highlight-card.errors.status .card-value,
+.highlight-card.processing.status .card-value,
+.highlight-card.activity-summary.status .card-value,
+.highlight-card.firebird .card-value,
+.highlight-card.drive .card-value {
+  font-size: 1.1em;
+  margin-bottom: 2px;
+}
+
+.highlight-card.status .card-title,
+.highlight-card.queue .card-title,
+.highlight-card.errors.status .card-title,
+.highlight-card.processing.status .card-title,
+.highlight-card.activity-summary.status .card-title,
+.highlight-card.firebird .card-title,
+.highlight-card.drive .card-title {
+  font-size: 0.65em;
+  letter-spacing: 0.2px;
+}
+
+.highlight-card.status .card-subtitle,
+.highlight-card.queue .card-subtitle,
+.highlight-card.errors.status .card-subtitle,
+.highlight-card.processing.status .card-subtitle,
+.highlight-card.activity-summary.status .card-subtitle,
+.highlight-card.firebird .card-subtitle,
+.highlight-card.drive .card-subtitle {
+  font-size: 0.75em;
+}
+
+/* Ajustando status badges */
+.highlight-card .status-badge {
+  padding: 3px 6px;
+  font-size: 0.85em;
+}
+
+/* Botões menores na página de monitoramento */
+.monitoring-fixed-header .button-refresh {
+  padding: 0.5rem 1rem;
+  font-size: 0.9em;
+}
+
+/* Título menor */
+.monitoring-fixed-header .admin-areas-header h2 {
+  font-size: 1.2rem;
+}
+
+/* Removendo espaço vertical redundante - agora controlado pela classe .scrollable-content */
+.monitor-detailed-lists-grid {
+  /* margin-top removido para evitar duplicação com .scrollable-content */
+}

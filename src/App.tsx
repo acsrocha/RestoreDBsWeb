@@ -16,9 +16,11 @@ import ProcessedDatabasesPage from './pages/ProcessedDatabasesPage';
 import CreateClientDriveAreaPage from './pages/CreateClientDriveAreaPage';
 import AdminClientAreasPage from './pages/AdminClientAreasPage';
 import SystemMonitoringPage from './pages/SystemMonitoringPage';
+import ServerConfigPage from './pages/ServerConfigPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SkipLink from './components/common/SkipLink';
 import { ThemeProvider } from './contexts/ThemeContext';
+// import { ServerProvider } from './contexts/ServerContext';
 
  
 
@@ -27,6 +29,7 @@ import './styles/components/ErrorBoundary.css';
 import './styles/components/SkipLink.css';
 import './styles/toast-custom.css';
 import './styles/grid-views.css';
+import './styles/components/NotificationBanner.css';
 
 const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -99,6 +102,10 @@ const App: React.FC = () => {
                   <Route
                     path='/configuracoes/monitoramento-sistema'
                     element={<SystemMonitoringPage />}
+                  />
+                  <Route
+                    path='/configuracoes/servidor'
+                    element={<ServerConfigPage />}
                   />
                 </Routes>
               </main>

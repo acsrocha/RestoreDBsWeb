@@ -1,18 +1,27 @@
 /* CreateClientDriveArea.module.css */
 
+/* NOVA CLASSE: Garante que o contêiner da página não seja flex e tenha padding adequado */
+.pageContainer {
+  width: 100%;
+  padding-top: 5rem; /* Aumentado de 2rem para 5rem para descer mais o card */
+  padding-bottom: 5rem;
+}
+
 /*
   Este card principal define o contêiner da página.
   As cores de fundo e texto agora vêm do theme.css.
 */
 .clientDriveAreaCard {
-  /* ANTES: background-color: #1a2234; */
   background-color: var(--bg-secondary);
-  border-radius: var(--border-radius-lg); /* Usando variável de tema */
-  padding: 2rem; /* Um pouco mais de respiro */
-  max-width: 1000px;
+  border-radius: var(--border-radius-lg);
+  padding: 2.5rem; /* Um pouco mais de padding interno */
+  /* Aumento de 25% sobre uma base de 1000px */
+  max-width: 1250px;
+  /* 'margin: auto' agora vai funcionar perfeitamente graças ao .pageContainer */
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .clientDriveAreaCard h2 {
@@ -30,14 +39,13 @@
 }
 
 .clientDriveAreaCard h2 svg {
-  /* --- Início da Correção --- */
-  /* Define a cor do ícone para usar a cor primária do nosso tema. */
-  color: var(--primary-color);
-  /* Garante que o ícone não seja comprimido se o texto for longo. */
+  /* Usando a variável correta para a cor verde */
+  fill: var(--primary-accent-color);
+  /* Garante que o ícone não seja comprimido se o texto for longo */
   width: 1.2em;
   height: 1.2em;
   flex-shrink: 0;
-} /* --- Fim da Correção --- */
+}
 
 .pageDescription {
   /* ANTES: color: #a0aec0; */
