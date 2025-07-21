@@ -1,0 +1,31 @@
+/* src/styles/components/ConnectionStatus.css */
+
+.connection-status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.connection-status.checking {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.connection-status.connected {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.connection-status.disconnected {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.last-checked {
+  font-size: 0.8rem;
+  margin-top: 4px;
+  opacity: 0.8;
+}

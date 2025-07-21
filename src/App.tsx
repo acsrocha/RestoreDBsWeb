@@ -12,6 +12,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import MonitoringPage from './pages/MonitoringPage';
 import UploadPage from './pages/UploadPage';
+import RobustUploadPage from './pages/RobustUploadPage';
 import ProcessedDatabasesPage from './pages/ProcessedDatabasesPage';
 import CreateClientDriveAreaPage from './pages/CreateClientDriveAreaPage';
 import AdminClientAreasPage from './pages/AdminClientAreasPage';
@@ -30,6 +31,7 @@ import './styles/components/SkipLink.css';
 import './styles/toast-custom.css';
 import './styles/grid-views.css';
 import './styles/components/NotificationBanner.css';
+import './styles/components/UploadProgress.css';
 
 const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -87,6 +89,7 @@ const App: React.FC = () => {
                   />
                   <Route path='/monitoramento' element={<MonitoringPage />} />
                   <Route path='/upload' element={<UploadPage />} />
+                  <Route path='/upload-robusto' element={<RobustUploadPage />} />
                   <Route
                     path='/bancos-restaurados'
                     element={<ProcessedDatabasesPage />}

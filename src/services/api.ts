@@ -22,9 +22,8 @@ if (!API_KEY) {
 
 // Função para obter URL base do servidor
 const getServerUrl = () => {
-  const stored = localStorage.getItem('restoredb_server_url');
-  console.log(`[DEBUG] localStorage value: '${stored}'`);
-  return stored || '';
+  // Usar URL vazia para usar o proxy do Vite
+  return '';
 };
 
 const getApiUrl = (endpoint: string) => {
@@ -118,12 +117,28 @@ export const fetchProcessedDatabases = async (): Promise<ProcessedDatabase[]> =>
 
 // Endpoints Protegidos (agora incluem API Key)
 export const uploadBackup = async (formData: FormData): Promise<string> => {
-  const response = await fetch(UPLOAD_API_URL, {
-    method: 'POST',
-    headers: buildHeaders(), // FormData define Content-Type automaticamente
-    body: formData,
-  });
-  return handleResponse<string>(response, false); // Resposta é texto plano
+  console.log('Iniciando upload para:', UPLOAD_API_URL());
+  console.log('FormData contém backupFile:', formData.has('backupFile'));
+  
+  try {
+    const response = await fetch(UPLOAD_API_URL(), {
+      method: 'POST',
+      headers: buildHeaders(), // FormData define Content-Type automaticamente
+      body: formData,
+    });
+    
+    console.log('Resposta do servidor:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro detalhado do servidor:', errorText);
+    }
+    
+    return handleResponse<string>(response, false); // Resposta é texto plano
+  } catch (error) {
+    console.error('Erro na chamada fetch:', error);
+    throw error;
+  }
 };
 
 export const markDatabaseForDiscard = async (dbId: string, confirmationTicketID: string): Promise<string> => {
@@ -139,7 +154,7 @@ export const markDatabaseForDiscard = async (dbId: string, confirmationTicketID:
 export const createClientDriveArea = async (
   data: CreateClientUploadAreaRequest
 ): Promise<CreateClientUploadAreaResponse> => {
-  const response = await fetch(CREATE_CLIENT_DRIVE_AREA_URL, {
+  const response = await fetch(CREATE_CLIENT_DRIVE_AREA_URL(), {
     method: 'POST',
     headers: buildHeaders(true),
     body: JSON.stringify(data),

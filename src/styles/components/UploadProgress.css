@@ -1,0 +1,48 @@
+/* Estilos para o componente de progresso de upload */
+
+.upload-progress {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-medium);
+  border: 1px solid var(--border-color);
+}
+
+.progress-bar {
+  height: 10px;
+  background-color: rgba(var(--text-secondary-color-rgb), 0.2);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--primary-accent-color);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  color: var(--text-secondary-color);
+  font-weight: 500;
+}
+
+/* Animação de rotação para o ícone de loading */
+.spin-animation {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

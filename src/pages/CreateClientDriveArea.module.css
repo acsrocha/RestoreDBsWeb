@@ -1,10 +1,15 @@
 /* CreateClientDriveArea.module.css */
 
-/* NOVA CLASSE: Garante que o contêiner da página não seja flex e tenha padding adequado */
+/* Contêiner da página com flexbox para centralização vertical */
 .pageContainer {
   width: 100%;
-  padding-top: 5rem; /* Aumentado de 2rem para 5rem para descer mais o card */
-  padding-bottom: 5rem;
+  min-height: calc(100vh - var(--header-height) - 60px); /* Altura total menos header e footer */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+  margin-top: -10px; /* Sobe o card em 10px */
 }
 
 /*

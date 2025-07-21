@@ -33,7 +33,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/monitoramento', icon: <FiBarChart2 />, text: 'Monitoramento' },
-  { path: '/upload', icon: <FiUploadCloud />, text: 'Enviar Backup' },
+  { 
+    icon: <FiUploadCloud />, 
+    text: 'Upload',
+    submenu: [
+      { path: '/upload', icon: <FiUploadCloud />, text: 'Upload Padrão' },
+      { path: '/upload-robusto', icon: <FiUploadCloud />, text: 'Upload (50GB+)' }
+    ]
+  },
   { path: '/bancos-restaurados', icon: <FiDatabase />, text: 'Bancos Restaurados' },
   { path: '/provisionar-pasta-cliente', icon: <SiGoogledrive />, text: 'Criar Área Cliente' },
   { path: '/admin/client-areas', icon: <FiUsers />, text: 'Gerenciar Áreas Cliente' },
@@ -50,7 +57,7 @@ const navItems: NavItem[] = [
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCurrentViewTitle }) => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const [openSubmenus, setOpenSubmenus] = React.useState<string[]>([]);
+  const [openSubmenus, setOpenSubmenus] = React.useState<string[]>(['Upload']); // Upload submenu aberto por padrão
 
   const findActiveItem = (items: NavItem[], path: string): NavItem | null => {
     for (const item of items) {
