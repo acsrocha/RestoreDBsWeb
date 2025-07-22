@@ -1,13 +1,13 @@
 /* src/styles/components/HighlightCard.css */
 .highlight-card {
-  background: #1f2937;
-  border-radius: 8px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius-md);
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
   transition: all 0.3s ease;
   min-height: 90px;
   box-sizing: border-box;
-  border: 1px solid #374151;
+  border: 1px solid var(--border-color);
   width: 100%;
   display: flex;
   align-items: flex-start;
@@ -55,7 +55,7 @@
 .highlight-card .card-title {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
@@ -63,7 +63,7 @@
 .highlight-card .card-value {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-primary);
   word-wrap: break-word;
   word-break: break-all;
   white-space: normal;
@@ -113,7 +113,7 @@
 
 /* Loading state */
 .highlight-card.loading .card-value {
-  background: linear-gradient(90deg, #1a2234 25%, #2d3748 50%, #1a2234 75%);
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--border-color) 50%, var(--bg-secondary) 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
@@ -137,15 +137,15 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 0.5rem 1rem;
-  background: #111827;
-  color: #e2e8f0;
-  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-sm);
   font-size: 0.875rem;
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   z-index: 10;
 }
 
@@ -157,7 +157,7 @@
   transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;
-  border-color: #111827 transparent transparent transparent;
+  border-color: var(--bg-secondary) transparent transparent transparent;
 }
 
 .highlight-card:hover .tooltip {

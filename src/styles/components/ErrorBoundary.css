@@ -1,52 +1,57 @@
 .error-boundary-fallback {
   padding: 2rem;
   text-align: center;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow);
   margin: 2rem auto;
   max-width: 600px;
+  border: 1px solid var(--border-color);
 }
 
 .error-boundary-fallback h2 {
-  color: #e53e3e;
+  color: var(--error-color);
   margin-bottom: 1rem;
 }
 
 .error-boundary-fallback details {
   margin: 1rem 0;
   padding: 1rem;
-  background-color: #f7fafc;
-  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
   text-align: left;
+  border: 1px solid var(--border-color);
 }
 
 .error-boundary-fallback summary {
   cursor: pointer;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .error-boundary-fallback pre {
   margin-top: 1rem;
   padding: 1rem;
-  background-color: #edf2f7;
-  border-radius: 4px;
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
   overflow-x: auto;
   font-size: 0.875rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .error-boundary-fallback button {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background-color: #3182ce;
-  color: white;
+  background-color: var(--primary-accent-color);
+  color: var(--white);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 .error-boundary-fallback button:hover {
-  background-color: #2c5282;
+  background-color: var(--primary-color-dark);
+  transform: translateY(-2px);
 } 

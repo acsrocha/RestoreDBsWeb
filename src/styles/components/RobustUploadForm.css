@@ -6,25 +6,26 @@
 
 .form-header h2 {
   margin-bottom: 0.5rem;
-  color: var(--color-primary);
+  color: var(--primary-accent-color);
 }
 
 .form-description {
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
 .upload-progress-container {
-  background-color: var(--color-bg-card);
-  border-radius: 8px;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-md);
   padding: 1rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
 }
 
 .progress-bar {
   height: 12px;
-  background-color: var(--color-bg-secondary);
+  background-color: var(--bg-secondary);
   border-radius: 6px;
   overflow: hidden;
   margin-bottom: 0.75rem;
@@ -32,7 +33,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  background: linear-gradient(90deg, var(--primary-accent-color) 0%, var(--primary-color-light) 100%);
   transition: width 0.3s ease;
 }
 
@@ -47,12 +48,12 @@
 .progress-text {
   font-weight: 600;
   font-size: 1rem;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
 }
 
 .chunks-info {
   font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
 .upload-metrics {
@@ -64,10 +65,10 @@
 
 .speed, .time-remaining {
   font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  background-color: var(--color-bg-secondary);
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
 }
 
 .upload-controls {
@@ -81,7 +82,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -89,18 +90,18 @@
 }
 
 .control-button.pause {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: rgba(var(--warning-color-rgb), 0.15);
+  color: var(--warning-color);
 }
 
 .control-button.resume {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: rgba(var(--success-color-rgb), 0.15);
+  color: var(--success-color);
 }
 
 .control-button.cancel {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: rgba(var(--error-color-rgb), 0.15);
+  color: var(--error-color);
 }
 
 .control-button:hover {
@@ -117,28 +118,32 @@
   gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.75rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--border-radius-md);
   font-size: 0.95rem;
 }
 
 .upload-status-message.success {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: rgba(var(--success-color-rgb), 0.15);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
 }
 
 .upload-status-message.error {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: rgba(var(--error-color-rgb), 0.15);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
 }
 
 .upload-status-message.pending {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: rgba(var(--warning-color-rgb), 0.15);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
 }
 
 .upload-status-message.paused {
-  background-color: #d1ecf1;
-  color: #0c5460;
+  background-color: rgba(var(--info-color-rgb), 0.15);
+  color: var(--info-color);
+  border: 1px solid var(--info-color);
 }
 
 .status-icon {
@@ -146,11 +151,11 @@
 }
 
 .status-icon.success {
-  color: #28a745;
+  color: var(--success-color);
 }
 
 .status-icon.error {
-  color: #dc3545;
+  color: var(--error-color);
 }
 
 .spin-animation {
@@ -164,21 +169,21 @@
 
 /* Avisos */
 .simulation-notice {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: rgba(var(--warning-color-rgb), 0.15);
+  color: var(--warning-color);
   padding: 10px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   margin-bottom: 15px;
-  border-left: 4px solid #ffc107;
+  border-left: 4px solid var(--warning-color);
 }
 
 .connection-notice {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: rgba(var(--success-color-rgb), 0.15);
+  color: var(--success-color);
   padding: 10px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   margin-bottom: 15px;
-  border-left: 4px solid #28a745;
+  border-left: 4px solid var(--success-color);
 }
 
 /* Responsividade */

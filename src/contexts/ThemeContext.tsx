@@ -24,7 +24,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const root = document.documentElement;
     if (isDarkMode) {
       root.setAttribute('data-theme', 'dark');
-      document.body.style.setProperty('--card-bg', '#ffffff');
+      document.body.style.setProperty('--card-bg', '#1a2234');
       document.body.style.setProperty('--dark-card-bg', '#1a2234');
       document.body.style.setProperty('--text-primary', '#e2e8f0');
       document.body.style.setProperty('--text-secondary', '#a0aec0');
