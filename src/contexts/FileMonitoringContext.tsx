@@ -1,6 +1,6 @@
 // src/contexts/FileMonitoringContext.tsx
-import React, { createContext, useState, useContext, useCallback, useEffect, ReactNode } from 'react';
-import { fetchFileMonitoringData } from '../services/fileMonitoringApi';
+import React, { createContext, useState, useContext, useCallback, useEffect, ReactNode, useRef } from 'react';
+import { fetchFileMonitoringData } from '../services/monitoringApi';
 import type { FileMonitoringData, FileProcessingDetail } from '../types/fileMonitoring';
 import { useNotification } from '../hooks/useNotification';
 import { useGlobalRefresh } from './GlobalRefreshContext';
@@ -24,9 +24,12 @@ export const FileMonitoringProvider: React.FC<{ children: ReactNode }> = ({ chil
   
   const { showError } = useNotification();
   const { tick } = useGlobalRefresh();
+  const refreshInProgressRef = useRef(false);
 
   const refreshData = useCallback(async () => {
-    if (isLoading) return;
+    // Evitar múltiplas chamadas simultâneas usando uma ref
+    if (refreshInProgressRef.current) return;
+    refreshInProgressRef.current = true;
     
     setIsLoading(true);
     try {
@@ -45,8 +48,12 @@ export const FileMonitoringProvider: React.FC<{ children: ReactNode }> = ({ chil
       showError(errorMessage);
     } finally {
       setIsLoading(false);
+      // Liberar o bloqueio após um delay para evitar chamadas rápidas consecutivas
+      setTimeout(() => {
+        refreshInProgressRef.current = false;
+      }, 1000);
     }
-  }, [isLoading, showError, monitoringData]);
+  }, [showError, monitoringData]);
 
   const getFileById = useCallback((fileId: string): FileProcessingDetail | undefined => {
     if (!monitoringData) return undefined;
@@ -58,17 +65,24 @@ export const FileMonitoringProvider: React.FC<{ children: ReactNode }> = ({ chil
     ].find(file => file.fileId === fileId);
   }, [monitoringData]);
 
-  // Carregar dados iniciais APENAS UMA VEZ
+  // Carregar dados iniciais
   useEffect(() => {
-    refreshData();
-  }, []); // Array de dependências vazio
+    // Usar setTimeout para garantir que o carregamento inicial aconteça após a montagem
+    const timer = setTimeout(() => {
+      if (!refreshInProgressRef.current) {
+        refreshData();
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
   
-  // Atualizar quando o tick global mudar, mas pular o tick inicial (0)
+  // Atualizar quando o tick global mudar
   useEffect(() => {
-    if (tick > 0) {
+    // Pular o primeiro tick (0) e evitar atualizações durante o refresh
+    if (tick > 0 && !refreshInProgressRef.current) {
       refreshData();
     }
-  }, [tick]); // Remova refreshData das dependências para evitar loop
+  }, [refreshData, tick]);
 
   return (
     <FileMonitoringContext.Provider 

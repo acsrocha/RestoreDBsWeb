@@ -1,8 +1,9 @@
 // src/pages/DetailedMonitoringPage.tsx
 import React from 'react';
-import { FiRefreshCw, FiClock } from 'react-icons/fi';
+import { FiRefreshCw, FiClock, FiActivity, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
 import FileProcessingList from '../components/monitoring/FileProcessingList';
 import ErrorMessage from '../components/common/ErrorMessage';
+import HighlightCard from '../components/common/HighlightCard';
 import { useFileMonitoring } from '../contexts/FileMonitoringContext';
 
 import '../styles/components/DetailedMonitoring.css';
@@ -17,8 +18,20 @@ const DetailedMonitoringPage: React.FC = () => {
       : '--:--:--';
   }, [lastUpdated]);
 
+  // Calcular métricas para os cartões de resumo
+  const dashboardMetrics = React.useMemo(() => {
+    const activeFilesCount = monitoringData?.activeFiles?.length || 0;
+    const failedFilesCount = monitoringData?.recentlyFailed?.length || 0;
+    const completedFilesCount = monitoringData?.recentlyCompleted?.length || 0;
+    
+    return {
+      activeFilesCount,
+      failedFilesCount,
+      completedFilesCount
+    };
+  }, [monitoringData]);
+
   const handleManualRefresh = () => {
-    // A guarda 'if (!isLoading)' já existe dentro do refreshData no contexto
     refreshData();
   };
 
@@ -40,6 +53,31 @@ const DetailedMonitoringPage: React.FC = () => {
             <span>Atualizar</span>
           </button>
         </div>
+      </div>
+
+      {/* Dashboard Cards */}
+      <div className="dashboard-summary-cards">
+        <HighlightCard 
+          icon={<FiActivity />}
+          label="Total de Arquivos Ativos"
+          value={String(dashboardMetrics.activeFilesCount)}
+          type="processing"
+          isLoading={isLoading && !monitoringData}
+        />
+        <HighlightCard 
+          icon={<FiAlertTriangle />}
+          label="Falhas nas Últimas 24h"
+          value={String(dashboardMetrics.failedFilesCount)}
+          type="errors"
+          isLoading={isLoading && !monitoringData}
+        />
+        <HighlightCard 
+          icon={<FiCheckCircle />}
+          label="Concluídos Recentemente"
+          value={String(dashboardMetrics.completedFilesCount)}
+          type="activity-summary"
+          isLoading={isLoading && !monitoringData}
+        />
       </div>
 
       <div className="detailed-monitoring-content">

@@ -1,95 +1,139 @@
-// src/components/shared/DiscardConfirmationModal.tsx
+// src/components/shared/ConfirmationModal.tsx
 import React, { useState, useEffect } from 'react';
-import type { ProcessedDatabase } from '../../types/api'; // Ajuste o caminho se necessário
+import { FiAlertTriangle } from 'react-icons/fi';
 
-interface DiscardConfirmationModalProps {
+interface ConfirmationModalProps {
   isOpen: boolean;
-  dbToDiscard: ProcessedDatabase | null;
+  title: string;
+  message: string;
+  confirmButtonText: string;
+  cancelButtonText?: string;
   onClose: () => void;
-  onConfirm: (confirmationTicket?: string) => Promise<void>;
-  isDiscarding: boolean;
+  onConfirm: (confirmationInput?: string) => Promise<void>;
+  isProcessing: boolean;
+  confirmationInputProps?: {
+    required: boolean;
+    expectedValue?: string;
+    placeholder?: string;
+    label?: string;
+    errorMessage?: string;
+  };
+  children?: React.ReactNode;
+  dangerMode?: boolean;
 }
 
-const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
-  dbToDiscard,
+  title,
+  message,
+  confirmButtonText,
+  cancelButtonText = 'Cancelar',
   onClose,
   onConfirm,
-  isDiscarding,
+  isProcessing,
+  confirmationInputProps,
+  children,
+  dangerMode = true,
 }) => {
-  const [ticketInput, setTicketInput] = useState('');
+  const [confirmationInput, setConfirmationInput] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setTicketInput('');
+      setConfirmationInput('');
       setInputError(null);
     }
-  }, [isOpen, dbToDiscard]);
+  }, [isOpen]);
 
-  if (!isOpen || !dbToDiscard) {
+  if (!isOpen) {
     return null;
   }
 
-  const hasOriginalTicket = dbToDiscard.uploadedByTicketID && dbToDiscard.uploadedByTicketID.trim() !== '';
-
   const handleConfirmClick = async () => {
-    if (hasOriginalTicket && ticketInput.trim() === '') {
-      setInputError(`Por favor, digite o Ticket ID ('${dbToDiscard.uploadedByTicketID}') para confirmar.`);
-      return;
-    }
-    if (hasOriginalTicket && ticketInput.trim() !== dbToDiscard.uploadedByTicketID) {
-        setInputError(`Ticket ID de confirmação ('${ticketInput.trim()}') não corresponde ao Ticket ID original ('${dbToDiscard.uploadedByTicketID}').`);
+    // Validar entrada de confirmação se necessário
+    if (confirmationInputProps?.required) {
+      if (confirmationInput.trim() === '') {
+        setInputError(confirmationInputProps.errorMessage || 'Por favor, preencha o campo de confirmação.');
         return;
+      }
+      
+      if (confirmationInputProps.expectedValue && confirmationInput.trim() !== confirmationInputProps.expectedValue) {
+        setInputError(
+          confirmationInputProps.errorMessage || 
+          `O valor de confirmação '${confirmationInput.trim()}' não corresponde ao valor esperado '${confirmationInputProps.expectedValue}'.`
+        );
+        return;
+      }
     }
+    
     setInputError(null);
-    await onConfirm(hasOriginalTicket ? ticketInput.trim() : undefined);
+    await onConfirm(confirmationInputProps?.required ? confirmationInput.trim() : undefined);
   };
 
   return (
-    <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
-      <div className="modal-content discard-modal">
-        <button className="modal-close-button" onClick={onClose} disabled={isDiscarding} aria-label="Fechar">
+    <div className="modal-overlay active" onClick={onClose}>
+      <div className="modal-content confirmation-modal" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="modal-close-button" 
+          onClick={onClose} 
+          disabled={isProcessing} 
+          aria-label="Fechar"
+        >
           &times;
         </button>
-        <h2>Confirmar Descarte</h2>
-        <p>
-          Você está prestes a marcar o banco de dados{' '}
-          <strong>"{dbToDiscard.restoredDbAlias}"</strong> (ID: {dbToDiscard.id}) para descarte.
-        </p>
-        {hasOriginalTicket && (
-          <div className="ticket-confirmation">
-            <p className="ticket-instruction">
-              Este banco está associado ao Ticket ID original:{' '}
-              <strong>"{dbToDiscard.uploadedByTicketID}"</strong>.
+        
+        <h2>
+          {dangerMode && <FiAlertTriangle style={{ color: 'var(--error-color)', marginRight: '8px' }} />}
+          {title}
+        </h2>
+        
+        <div className="modal-scrollable-content">
+          <p>{message}</p>
+          
+          {confirmationInputProps?.required && (
+            <div className="confirmation-input-container">
+              <p className="confirmation-input-label">
+                {confirmationInputProps.label || 'Para confirmar, digite o valor de confirmação:'}
+              </p>
+              <input
+                type="text"
+                value={confirmationInput}
+                onChange={(e) => {
+                  setConfirmationInput(e.target.value);
+                  if (inputError) setInputError(null);
+                }}
+                placeholder={confirmationInputProps.placeholder || 'Digite o valor de confirmação'}
+                disabled={isProcessing}
+                className={inputError ? 'input-error' : ''}
+                autoFocus
+              />
+              {inputError && <p className="error-text modal-input-error">{inputError}</p>}
+            </div>
+          )}
+          
+          {children}
+          
+          {dangerMode && (
+            <p className="warning-text">
+              <strong>Atenção:&nbsp;</strong> Esta ação é irreversível.
             </p>
-            <p>
-              Para confirmar o <strong>DESCARTE PERMANENTE</strong>, por favor, digite o Ticket ID
-              original novamente abaixo:
-            </p>
-            <input
-              type="text"
-              value={ticketInput}
-              onChange={(e) => {
-                setTicketInput(e.target.value);
-                if (inputError) setInputError(null);
-              }}
-              placeholder={`Digite '${dbToDiscard.uploadedByTicketID}'`}
-              disabled={isDiscarding}
-              className={inputError ? 'input-error' : ''}
-            />
-            {inputError && <p className="error-text modal-input-error">{inputError}</p>}
-          </div>
-        )}
-        <p className="warning-text">
-          <strong>Atenção:&nbsp;</strong> Esta ação é irreversível.
-        </p>
+          )}
+        </div>
+        
         <div className="modal-actions">
-          <button onClick={onClose} className="button-secondary" disabled={isDiscarding}>
-            Cancelar
+          <button 
+            onClick={onClose} 
+            className="button-secondary" 
+            disabled={isProcessing}
+          >
+            {cancelButtonText}
           </button>
-          <button onClick={handleConfirmClick} className="button-danger" disabled={isDiscarding}>
-            {isDiscarding ? 'Descartando...' : 'Confirmar Descarte'}
+          <button 
+            onClick={handleConfirmClick} 
+            className={dangerMode ? "button-danger" : "button-primary"} 
+            disabled={isProcessing || (confirmationInputProps?.required && confirmationInputProps?.expectedValue && confirmationInput.trim() !== confirmationInputProps.expectedValue)}
+          >
+            {isProcessing ? 'Processando...' : confirmButtonText}
           </button>
         </div>
       </div>
@@ -97,4 +141,4 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
   );
 };
 
-export default DiscardConfirmationModal;
+export default ConfirmationModal;
