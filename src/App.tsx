@@ -11,6 +11,7 @@ import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import MonitoringPage from './pages/MonitoringPage';
+import DetailedMonitoringPage from './pages/DetailedMonitoringPage';
 import UploadPage from './pages/UploadPage';
 import RobustUploadPage from './pages/RobustUploadPage';
 import ProcessedDatabasesPage from './pages/ProcessedDatabasesPage';
@@ -88,6 +89,7 @@ const App: React.FC = () => {
                     element={<Navigate to='/monitoramento' replace />}
                   />
                   <Route path='/monitoramento' element={<MonitoringPage />} />
+                  <Route path='/monitoramento-detalhado' element={<DetailedMonitoringPage />} />
                   <Route path='/upload' element={<UploadPage />} />
                   <Route path='/upload-robusto' element={<RobustUploadPage />} />
                   <Route

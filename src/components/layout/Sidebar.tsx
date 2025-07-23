@@ -32,7 +32,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/monitoramento', icon: <FiBarChart2 />, text: 'Monitoramento' },
+  { 
+    icon: <FiBarChart2 />, 
+    text: 'Monitoramento',
+    submenu: [
+      { path: '/monitoramento', icon: <FiBarChart2 />, text: 'Dashboard Geral' },
+      { path: '/monitoramento-detalhado', icon: <FiActivity />, text: 'Monitoramento Detalhado' }
+    ]
+  },
   { 
     icon: <FiUploadCloud />, 
     text: 'Upload',

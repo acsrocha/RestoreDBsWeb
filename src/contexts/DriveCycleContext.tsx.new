@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
 } from 'react';
 import { fetchStatusData } from '../services/api';
 import type { StatusData } from '../types/api';
@@ -41,10 +42,12 @@ interface DriveCycleProviderProps {
   children: React.ReactNode;
 }
 
-// --- Componente Provider Simplificado ---
+
+// --- Componente Provider Modificado ---
 export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
   children,
 }) => {
+
   // 1. MODIFICAÇÃO: O estado inicial agora tenta ler do sessionStorage.
   const getInitialState = () => {
     const storedEpoch = sessionStorage.getItem(STORAGE_KEYS.NEXT_RUN_EPOCH);
@@ -78,15 +81,20 @@ export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
   const [lastSuccessfulSync, setLastSuccessfulSync] = useState<Date | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncError, setSyncError] = useState<string | null>(null);
-  const { tick } = useGlobalRefresh();
+  const hasSyncedRef = useRef(false);
+  const syncInProgressRef = useRef(false);
+  const { tick, isRefreshing: isGlobalRefreshing } = useGlobalRefresh();
 
-  const syncWithBackend = useCallback(async () => {
-    if (isSyncing) return; // Guarda simples
+  const syncWithBackend = useCallback(async (triggeredBy?: string) => {
+    // Evitar múltiplas chamadas simultâneas
+    if (syncInProgressRef.current) return;
+    syncInProgressRef.current = true;
     
     setIsSyncing(true);
     setSyncError(null);
     try {
       const status: StatusData = await fetchStatusData();
+      hasSyncedRef.current = true;
       const nowEpochSeconds = Math.floor(Date.now() / 1000);
       let newTimeLeft = DEFAULT_FALLBACK_INTERVAL_MINUTES * 60;
       let newCycleDuration = DEFAULT_FALLBACK_INTERVAL_MINUTES;
@@ -107,9 +115,10 @@ export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
         const calculatedTimeLeft = status.driveMonitorNextRunEpoch - nowEpochSeconds;
         newTimeLeft = Math.max(0, calculatedTimeLeft);
 
-        // Salva o estado recebido do backend no sessionStorage.
+        // 2. MODIFICAÇÃO: Salva o estado recebido do backend no sessionStorage.
         sessionStorage.setItem(STORAGE_KEYS.NEXT_RUN_EPOCH, String(status.driveMonitorNextRunEpoch));
         sessionStorage.setItem(STORAGE_KEYS.INTERVAL_MINUTES, String(newCycleDuration));
+
       } else {
          // Limpa o storage se o backend não retornar dados válidos
          sessionStorage.removeItem(STORAGE_KEYS.NEXT_RUN_EPOCH);
@@ -133,30 +142,46 @@ export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
       setSyncError(errMsg);
     } finally {
       setIsSyncing(false);
+      // Liberar o bloqueio após um delay para evitar chamadas rápidas consecutivas
+      setTimeout(() => {
+        syncInProgressRef.current = false;
+      }, 1000);
     }
-  }, [cycleDurationMinutes, timeLeftSeconds, isSyncing]);
+  }, [cycleDurationMinutes, timeLeftSeconds]);
+
+  const syncFnRef = useRef(syncWithBackend);
+  useEffect(() => {
+    syncFnRef.current = syncWithBackend;
+  }, [syncWithBackend]);
 
   // Sincronização inicial
   useEffect(() => {
-    syncWithBackend();
+    // Usar setTimeout para garantir que a sincronização inicial aconteça após a montagem
+    const timer = setTimeout(() => {
+      const storedEpoch = sessionStorage.getItem(STORAGE_KEYS.NEXT_RUN_EPOCH);
+      if (!storedEpoch || !hasSyncedRef.current) {
+        syncFnRef.current("initialMount");
+      }
+    }, 200);
+    return () => clearTimeout(timer);
   }, []);
   
   // Sincronizar quando o tick global mudar
   useEffect(() => {
-    if (tick > 0) {
-      syncWithBackend();
+    // Pular o primeiro tick (0) e evitar múltiplas sincronizações
+    if (tick > 0 && !syncInProgressRef.current && !isGlobalRefreshing) {
+      syncFnRef.current("globalRefresh");
     }
-  }, [tick]);
+  }, [tick, isGlobalRefreshing]);
 
-  // Gerenciar contagem regressiva
   useEffect(() => {
     if (!isCycling || timeLeftSeconds <= 0) {
       if (isCycling && timeLeftSeconds <= 0) {
         setIsCycling(false);
         // Evitar múltiplas chamadas quando o ciclo termina
-        if (!isSyncing) {
+        if (!syncInProgressRef.current) {
           setTimeout(() => {
-            syncWithBackend();
+            syncFnRef.current("cycleEnd");
           }, POST_CYCLE_SYNC_DELAY_MS);
         }
       }
@@ -168,13 +193,13 @@ export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [timeLeftSeconds, isCycling, isSyncing, syncWithBackend]);
+  }, [timeLeftSeconds, isCycling]);
 
   const forceSync = useCallback(() => {
-    if (!isSyncing) {
-      syncWithBackend();
+    if (!syncInProgressRef.current) {
+      syncFnRef.current("forceSync");
     }
-  }, [isSyncing, syncWithBackend]);
+  }, []);
 
   const value = useMemo(() => {
     const currentCycleDurationSeconds = cycleDurationMinutes * 60;
@@ -196,6 +221,7 @@ export const DriveCycleProvider: React.FC<DriveCycleProviderProps> = ({
         : null,
         isSyncing,
         syncError,
+ 
     }
   }, [
       timeLeftSeconds, cycleDurationMinutes, isCycling, forceSync, 

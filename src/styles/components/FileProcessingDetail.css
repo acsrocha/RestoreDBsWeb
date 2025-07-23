@@ -1,0 +1,274 @@
+.file-processing-detail {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme="dark"] .file-processing-detail {
+  background-color: var(--nested-content-bg, var(--card-bg));
+}
+
+.file-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.file-icon {
+  font-size: 20px;
+  color: var(--primary-color);
+}
+
+.file-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-progress-container {
+  width: 150px;
+  height: 8px;
+  background-color: var(--progress-bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.file-progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.file-progress-text {
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: right;
+}
+
+.file-info {
+  margin-bottom: 16px;
+}
+
+.file-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.file-error {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: var(--error-bg);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--error-color);
+}
+
+.error-icon {
+  color: var(--error-color);
+}
+
+.file-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-processing-stage {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  gap: 8px;
+  cursor: pointer;
+  background-color: var(--card-header-bg);
+  transition: background-color 0.2s ease;
+}
+
+.stage-header:hover {
+  background-color: var(--card-header-hover-bg);
+}
+
+.status-icon {
+  font-size: 16px;
+}
+
+.status-icon.completed {
+  color: var(--success-color);
+}
+
+.status-icon.failed {
+  color: var(--error-color);
+}
+
+.status-icon.in-progress {
+  color: var(--primary-color);
+  animation: spin 1.5s linear infinite;
+}
+
+.status-icon.pending {
+  color: var(--text-secondary);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.stage-name {
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+.stage-progress-container {
+  width: 100px;
+  height: 6px;
+  background-color: var(--progress-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stage-progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.stage-progress-text {
+  font-size: 12px;
+  min-width: 36px;
+  text-align: right;
+}
+
+.stage-content {
+  padding: 12px;
+  background-color: var(--card-bg);
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+[data-theme="dark"] .stage-content {
+  background-color: var(--nested-content-bg, var(--card-bg));
+}
+
+.stage-info {
+  margin-bottom: 12px;
+}
+
+.stage-description {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.stage-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  display: flex;
+  gap: 16px;
+}
+
+.stage-steps {
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.steps-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.steps-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.file-processing-step {
+  padding: 8px;
+  border-radius: 4px;
+  background-color: var(--step-bg);
+  font-size: 13px;
+}
+
+.file-processing-step.status-completed {
+  border-left: 3px solid var(--success-color);
+}
+
+.file-processing-step.status-failed {
+  border-left: 3px solid var(--error-color);
+}
+
+.file-processing-step.status-in_progress {
+  border-left: 3px solid var(--primary-color);
+}
+
+.file-processing-step.status-pending {
+  border-left: 3px solid var(--text-secondary);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-timestamp {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.step-message {
+  flex-grow: 1;
+}
+
+.step-duration {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.step-details {
+  margin-top: 6px;
+  padding-left: 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.step-details pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.step-details code {
+  font-family: monospace;
+  background-color: var(--code-bg);
+  padding: 4px;
+  border-radius: 3px;
+  display: block;
+  overflow-x: auto;
+}

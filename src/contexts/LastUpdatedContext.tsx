@@ -1,5 +1,6 @@
 // src/contexts/LastUpdatedContext.tsx
-import React, { createContext, useState, useContext, type ReactNode, useCallback } from 'react';
+import React, { createContext, useState, useContext, type ReactNode, useCallback, useEffect } from 'react';
+import { useGlobalRefresh } from './GlobalRefreshContext';
 
 // 1. Atualizar a interface LastUpdatedContextType
 interface LastUpdatedContextType {
@@ -15,6 +16,7 @@ export const LastUpdatedProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   // Você pode adicionar um estado para armazenar as atividades se desejar
   // const [activities, setActivities] = useState<string[]>([]);
+  const { tick } = useGlobalRefresh();
 
   const signalUpdate = useCallback(() => {
     setLastUpdateTime(new Date());
@@ -29,6 +31,9 @@ export const LastUpdatedProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Se você tivesse um estado para atividades:
     // setActivities(prevActivities => [...prevActivities, `${new Date().toISOString()}: ${message}`]);
   }, []); // Adicionar dependências se 'activities' ou similar for usado
+  
+  // Não atualizamos o lastUpdateTime automaticamente com o tick
+  // Ele só deve ser atualizado quando os dados realmente forem atualizados
 
   return (
     // 3. Incluir addActivity no valor do Provider
