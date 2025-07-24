@@ -32,9 +32,14 @@ const MonitoringPage: React.FC = () => {
   const isMountedRef = useRef(false);
 
   // Memoize a função de extração de timestamp
-  const extractTimestamp = useCallback((activityLog: string): string => {
-    const timeMatch = activityLog.match(/^(\d{2}:\d{2}:\d{2})/);
-    return timeMatch && timeMatch[1] ? timeMatch[1] : '--:--:--';
+  const extractTimestamp = useCallback((activityLog: any): string => {
+    if (typeof activityLog === 'string') {
+      const timeMatch = activityLog.match(/^(\d{2}:\d{2}:\d{2})/);
+      return timeMatch && timeMatch[1] ? timeMatch[1] : '--:--:--';
+    } else if (activityLog && typeof activityLog === 'object' && 'timestamp' in activityLog) {
+      return activityLog.timestamp || '--:--:--';
+    }
+    return '--:--:--';
   }, []);
 
   // Memoize a função de processamento de nome de arquivo
@@ -64,11 +69,7 @@ const MonitoringPage: React.FC = () => {
         setStatusData(statusResult.value);
         if (statusResult.value?.recentActivity?.length > 0) {
           const lastActivityLog = statusResult.value.recentActivity[0];
-          if (typeof lastActivityLog === 'string') {
-            setLastActivityTimestamp(extractTimestamp(lastActivityLog));
-          } else {
-            setLastActivityTimestamp('--:--:--');
-          }
+          setLastActivityTimestamp(extractTimestamp(lastActivityLog));
         } else {
           setLastActivityTimestamp('--:--:--');
         }

@@ -1,8 +1,14 @@
+export interface ActivityLogEntry {
+  timestamp: string;
+  message: string;
+  level: 'success' | 'error' | 'info' | 'warning';
+}
+
 export interface StatusData {
   currentProcessing: string | null;
   queueCount: number;
   queuedFiles: string[];
-  recentActivity: string[];
+  recentActivity: ActivityLogEntry[];
   driveMonitorNextRunEpoch?: number;
   driveMonitorIntervalMinutes?: number;
 }
@@ -82,4 +88,4 @@ export interface ParsedNoteEntry {
   source: string;
   message: string;
   rawLine: string;
-} 
+}

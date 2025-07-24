@@ -4,48 +4,23 @@ import React, { memo, useMemo, useState, useCallback } from 'react';
 import { FiActivity, FiClock, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { ARIA_ROLES, ARIA_LABELS } from '../../hooks/useA11y';
 import ActivityFilters from './ActivityFilters';
+import type { ActivityLogEntry } from '../../types/api';
 
 import '../../styles/components/RecentActivityList.css';
 import '../../styles/components/ActivityFilters.css';
 
 interface RecentActivityListProps {
-  activities: string[];
+  activities: ActivityLogEntry[];
   isLoading: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-const getActivityClass = (activity: string): string => {
-  if (typeof activity !== 'string') return 'activity-item';
-  const lowerActivity = activity.toLowerCase();
-  
-  if (lowerActivity.includes('sucesso') || lowerActivity.includes('concluído')) 
-    return 'activity-item success';
-  
-  if (lowerActivity.includes('erro') || lowerActivity.includes('falha')) 
-    return 'activity-item error';
-  
-  if (lowerActivity.includes('iniciando') || 
-      lowerActivity.includes('upload') ||
-      lowerActivity.includes('adicionando') ||
-      lowerActivity.includes('detectado') ||
-      lowerActivity.includes('processamento')) 
-    return 'activity-item info';
-  
-  if (lowerActivity.includes('aviso') || 
-      lowerActivity.includes('aguardando')) 
-    return 'activity-item warning';
-  
-  return 'activity-item';
+const getActivityClass = (activity: ActivityLogEntry): string => {
+  return `activity-item ${activity.level}`;
 };
 
-const formatMessage = (message: string): string => {
-  // Remove caracteres especiais e formata melhor a mensagem
-  return message
-    .replace(/['"]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
+// Função formatMessage removida pois não é mais necessária
 
 const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isLoading }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,30 +33,14 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
 
   const filteredActivities = useMemo(() => {
     return activities.filter(activity => {
-      if (!activity || typeof activity !== 'string') return false;
-      const lowerActivity = activity.toLowerCase();
-      const matchesSearch = searchQuery === '' || lowerActivity.includes(searchQuery.toLowerCase());
+      if (!activity) return false;
+      const lowerMessage = activity.message.toLowerCase();
+      const matchesSearch = searchQuery === '' || lowerMessage.includes(searchQuery.toLowerCase());
       
-      const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => {
-        switch (type) {
-          case 'success':
-            return lowerActivity.includes('sucesso') || lowerActivity.includes('concluído');
-          case 'error':
-            return lowerActivity.includes('erro') || lowerActivity.includes('falha');
-          case 'info':
-            return lowerActivity.includes('iniciando') || 
-                   lowerActivity.includes('upload') ||
-                   lowerActivity.includes('processamento');
-          case 'warning':
-            return lowerActivity.includes('aviso') || 
-                   lowerActivity.includes('aguardando');
-          default:
-            return false;
-        }
-      });
+      // Lógica de filtro agora é simples e robusta!
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(activity.level);
 
-      const timeMatch = activity.match(/^(\d{2}:\d{2}:\d{2})/);
-      const activityTime = timeMatch ? timeMatch[1] : '';
+      const activityTime = activity.timestamp;
       const matchesDate = (!dateRange.start && !dateRange.end) ||
         ((!dateRange.start || activityTime >= dateRange.start) &&
          (!dateRange.end || activityTime <= dateRange.end));
@@ -109,14 +68,10 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
     </>
   );
 
-  const renderActivity = useCallback((activity: string, index: number) => {
-    const timeMatch = activity.match(/^(\d{2}:\d{2}:\d{2})/);
-    const time = timeMatch ? timeMatch[1] : '';
-    const message = timeMatch ? formatMessage(activity.slice(timeMatch[0].length)) : formatMessage(activity);
-
+  const renderActivity = useCallback((activity: ActivityLogEntry, index: number) => {
     return (
       <li 
-        key={`${time}-${index}`} 
+        key={`${activity.timestamp}-${index}`} 
         className={getActivityClass(activity)}
         role={ARIA_ROLES.LISTITEM}
       >
@@ -126,13 +81,13 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
           title="Horário da atividade"
         >
           <FiClock style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-          {time}
+          {activity.timestamp}
         </span>
         <span 
           className="activity-message"
-          title={message}
+          title={activity.message}
         >
-          {message}
+          {activity.message}
         </span>
       </li>
     );
@@ -211,7 +166,7 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
             {renderLoadingState()}
           </li>
         ) : paginatedActivities.length > 0 ? (
-          paginatedActivities.filter(activity => activity && typeof activity === 'string').map(renderActivity)
+          paginatedActivities.map(renderActivity)
         ) : (
           <li 
             className="empty-list"
