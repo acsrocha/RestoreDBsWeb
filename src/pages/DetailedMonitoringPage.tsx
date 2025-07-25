@@ -5,12 +5,12 @@ import { useNotification } from '../hooks/useNotification';
 import ActiveJobCard from '../components/monitoring/ActiveJobCard';
 import FileProcessingList from '../components/monitoring/FileProcessingList';
 import BackendDiagnostic from '../components/monitoring/BackendDiagnostic';
-import { 
-  FiActivity, FiCheckCircle, FiAlertTriangle, FiRefreshCw, 
-  FiPause, FiPlay, FiFilter, FiSearch, FiBarChart,
-  FiClock, FiTrendingUp, FiDatabase
-} from 'react-icons/fi';
+import MonitoringPageHeader from '../components/monitoring/MonitoringPageHeader';
+import StatisticsDashboard from '../components/monitoring/StatisticsDashboard';
+import JobViewFilters from '../components/monitoring/JobViewFilters';
+import { FiActivity, FiCheckCircle, FiAlertTriangle, FiDatabase } from 'react-icons/fi';
 import '../styles/components/DetailedMonitoring.css';
+import '../styles/theme.css';
 
 // Intervalo de atualização em milissegundos
 const REFRESH_INTERVAL = 2000;
@@ -135,140 +135,29 @@ const DetailedMonitoringPage: React.FC = () => {
 
   return (
     <div className="detailed-monitoring-page">
-      {/* Header com controles */}
-      <div className="monitoring-header">
-        <div className="header-left">
-          <h1>Monitoramento Detalhado</h1>
-          <div className="status-indicator">
-            <div className={`status-dot ${isPaused ? 'paused' : 'active'}`}></div>
-            <span>{isPaused ? 'Pausado' : 'Ativo'}</span>
-            {lastUpdated && (
-              <span className="last-update">
-                Última atualização: {lastUpdated.toLocaleTimeString()}
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="header-controls">
-          <div className="search-box">
-            <FiSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Buscar por nome ou ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <select 
-            value={refreshInterval} 
-            onChange={(e) => handleRefreshIntervalChange(Number(e.target.value))}
-            className="refresh-select"
-          >
-            {REFRESH_OPTIONS.map(interval => (
-              <option key={interval} value={interval}>
-                {interval / 1000}s
-              </option>
-            ))}
-          </select>
-          
-          <button 
-            onClick={togglePause} 
-            className={`control-btn ${isPaused ? 'play' : 'pause'}`}
-            title={isPaused ? 'Retomar' : 'Pausar'}
-          >
-            {isPaused ? <FiPlay /> : <FiPause />}
-          </button>
-          
-          <button 
-            onClick={handleManualRefresh} 
-            className="control-btn refresh"
-            disabled={isLoading}
-            title="Atualizar agora"
-          >
-            <FiRefreshCw className={isLoading ? 'spinning' : ''} />
-          </button>
-        </div>
-      </div>
+      <MonitoringPageHeader
+        isPaused={isPaused}
+        lastUpdated={lastUpdated}
+        searchTerm={searchTerm}
+        refreshInterval={refreshInterval}
+        isLoading={isLoading}
+        onTogglePause={togglePause}
+        onSearchChange={setSearchTerm}
+        onRefreshIntervalChange={handleRefreshIntervalChange}
+        onManualRefresh={handleManualRefresh}
+        refreshOptions={REFRESH_OPTIONS}
+      />
 
-      {/* Dashboard de estatísticas */}
-      <div className="stats-dashboard">
-        <div className="stat-card total">
-          <FiDatabase className="stat-icon" />
-          <div className="stat-content">
-            <div className="stat-number">{stats.total}</div>
-            <div className="stat-label">Total de Arquivos</div>
-          </div>
-        </div>
-        
-        <div className="stat-card processing">
-          <FiActivity className="stat-icon" />
-          <div className="stat-content">
-            <div className="stat-number">{stats.processing}</div>
-            <div className="stat-label">Em Processamento</div>
-            {realtimeStats.avgProgress > 0 && (
-              <div className="stat-detail">{realtimeStats.avgProgress.toFixed(1)}% médio</div>
-            )}
-          </div>
-        </div>
-        
-        <div className="stat-card completed">
-          <FiCheckCircle className="stat-icon" />
-          <div className="stat-content">
-            <div className="stat-number">{stats.completed}</div>
-            <div className="stat-label">Concluídos</div>
-          </div>
-        </div>
-        
-        <div className="stat-card failed">
-          <FiAlertTriangle className="stat-icon" />
-          <div className="stat-content">
-            <div className="stat-number">{stats.failed}</div>
-            <div className="stat-label">Com Falha</div>
-          </div>
-        </div>
-        
-        {realtimeStats.estimatedTime > 0 && (
-          <div className="stat-card eta">
-            <FiClock className="stat-icon" />
-            <div className="stat-content">
-              <div className="stat-number">
-                {Math.round(realtimeStats.estimatedTime / 60000)}min
-              </div>
-              <div className="stat-label">Tempo Estimado</div>
-            </div>
-          </div>
-        )}
-      </div>
+      <StatisticsDashboard
+        stats={stats}
+        realtimeStats={realtimeStats}
+      />
 
-      {/* Filtros de visualização */}
-      <div className="view-filters">
-        <button 
-          className={`filter-btn ${selectedView === 'all' ? 'active' : ''}`}
-          onClick={() => setSelectedView('all')}
-        >
-          <FiBarChart /> Todos ({stats.total})
-        </button>
-        <button 
-          className={`filter-btn ${selectedView === 'processing' ? 'active' : ''}`}
-          onClick={() => setSelectedView('processing')}
-        >
-          <FiActivity /> Processando ({stats.processing})
-        </button>
-        <button 
-          className={`filter-btn ${selectedView === 'completed' ? 'active' : ''}`}
-          onClick={() => setSelectedView('completed')}
-        >
-          <FiCheckCircle /> Concluídos ({stats.completed})
-        </button>
-        <button 
-          className={`filter-btn ${selectedView === 'failed' ? 'active' : ''}`}
-          onClick={() => setSelectedView('failed')}
-        >
-          <FiAlertTriangle /> Falhas ({stats.failed})
-        </button>
-      </div>
+      <JobViewFilters
+        selectedView={selectedView}
+        stats={stats}
+        onViewChange={setSelectedView}
+      />
 
       {/* Conteúdo principal */}
       {isLoading && filteredJobs.length === 0 ? (

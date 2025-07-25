@@ -1,8 +1,9 @@
 /* src/styles/components/BackendDiagnostic.css */
 .diagnostic-section {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
   padding: 20px;
   margin-bottom: 24px;
 }
@@ -19,6 +20,7 @@
   font-size: 1.4rem;
   display: flex;
   align-items: center;
+  color: var(--text-primary);
 }
 
 .section-icon {
@@ -78,17 +80,18 @@
 }
 
 .diagnostic-card {
-  background-color: #f9f9f9;
-  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .diagnostic-card h3 {
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
 }

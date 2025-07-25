@@ -1,9 +1,10 @@
 /* src/styles/components/ActiveJobCard.css */
 .active-job-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  padding: 20px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
 }
@@ -28,11 +29,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 70%;
+  color: var(--text-primary);
 }
 
 .file-icon {
   margin-right: 8px;
-  color: #4a6da7;
+  color: var(--accent-primary);
 }
 
 .job-meta {
@@ -44,13 +46,13 @@
   display: flex;
   align-items: center;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-secondary);
   margin-right: 12px;
 }
 
 .time-icon {
   margin-right: 4px;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .expand-button {
