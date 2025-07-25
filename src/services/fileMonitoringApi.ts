@@ -1,73 +1,9 @@
 // src/services/fileMonitoringApi.ts
-import type { FileMonitoringData } from '../types/fileMonitoring';
+import type { FileMonitoringData, FileProcessingDetail } from '../types/fileMonitoring';
 import { generateMockFileMonitoringData } from './mockFileMonitoring';
-
-// Variáveis de ambiente no Vite precisam começar com VITE_
-const API_KEY = import.meta.env.VITE_APP_RESTOREDB_API_KEY;
-
-// Função para obter URL base do servidor
-const getServerUrl = () => {
-  // Usar URL vazia para usar o proxy do Vite
-  return '';
-};
-
-const getApiUrl = (endpoint: string) => {
-  const serverUrl = getServerUrl();
-  const finalUrl = serverUrl ? `${serverUrl}${endpoint}` : endpoint;
-  return finalUrl;
-};
+import { buildHeaders, getApiUrl, handleResponse } from './apiUtils';
 
 const FILE_MONITORING_API_URL = () => getApiUrl('/api/file_monitoring');
-
-// Função auxiliar para construir cabeçalhos, incluindo a API Key
-const buildHeaders = (includeContentTypeJson = false): HeadersInit => {
-  const headers: HeadersInit = {};
-  
-  // Sempre incluir API Key se disponível
-  if (API_KEY) {
-    headers['X-API-Key'] = API_KEY;
-  }
-  if (includeContentTypeJson) {
-    headers['Content-Type'] = 'application/json';
-  }
-  return headers;
-};
-
-async function handleResponse<T>(response: Response, isJsonExpected = true): Promise<T> {
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`API Error for ${response.url}: ${response.status} - ${errorText}`);
-    try {
-      const errorJson = JSON.parse(errorText);
-      if (errorJson && errorJson.error) {
-        throw new Error(errorJson.error);
-      }
-    } catch (e) {
-      // Ignora o erro do parse, ou se errorText não for JSON
-    }
-    throw new Error(errorText || `Erro de rede: ${response.status} ${response.statusText}`);
-  }
-
-  if (response.status === 204) { // No Content
-    return {} as Promise<T>;
-  }
-
-  if (isJsonExpected) {
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-        return response.json() as Promise<T>;
-    } else if (response.status === 200 && response.headers.get('content-length') === '0' ) {
-        console.warn(`API Info for ${response.url}: Expected JSON but received ${response.status} with no JSON content.`);
-        return {} as Promise<T>;
-    } else {
-        const text = await response.text();
-        console.warn(`API Warning for ${response.url}: Expected JSON response but got ${contentType}. Body: ${text}`);
-        throw new Error(`Resposta inesperada do servidor: ${text || response.statusText}`);
-    }
-  }
-  // Para respostas que não são JSON
-  return response.text() as unknown as Promise<T>;
-}
 
 // Flag para usar dados mockados (temporário até o backend estar pronto)
 // IMPORTANTE: Altere para false quando o backend estiver implementado com a API /api/file_monitoring
@@ -118,4 +54,16 @@ export const fetchFileDetails = async (fileId: string): Promise<any> => {
     headers: buildHeaders()
   });
   return handleResponse<any>(response);
+};
+
+// Função para buscar todos os jobs de processamento de arquivos em um único array
+export const fetchFileProcessingJobs = async (): Promise<FileProcessingDetail[]> => {
+  const data = await fetchFileMonitoringData();
+  
+  // Combina todos os jobs em um único array
+  return [
+    ...data.activeFiles,
+    ...data.recentlyCompleted,
+    ...data.recentlyFailed
+  ];
 };

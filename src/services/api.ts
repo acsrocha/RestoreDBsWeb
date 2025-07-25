@@ -1,258 +1,232 @@
 // src/services/api.ts
-import type {
-  StatusData,
-  FailedRestoreItem,
-  ProcessedDatabase,
-  CreateClientUploadAreaRequest,
-  CreateClientUploadAreaResponse,
-  AdminClientUploadAreaDetail
-} from '../types/api';
+import { buildHeaders, getApiUrl, handleResponse } from './apiUtils';
 
-// Variáveis de ambiente no Vite precisam começar com VITE_
-// Você precisará criar um arquivo .env na raiz do seu projeto frontend
-const API_KEY = import.meta.env.VITE_APP_RESTOREDB_API_KEY;
-
-if (!API_KEY) {
-  console.warn(
-    "ATENÇÃO: A chave de API (VITE_APP_RESTOREDB_API_KEY) não está configurada no frontend. " +
-    "Crie um arquivo .env na raiz do projeto frontend com VITE_APP_RESTOREDB_API_KEY=sua_chave_aqui. " +
-    "As chamadas para endpoints protegidos falharão sem ela."
-  );
-}
-
-// Função para obter URL base do servidor
-const getServerUrl = () => {
-  // Usar URL vazia para usar o proxy do Vite
-  return '';
-};
-
-const getApiUrl = (endpoint: string) => {
-  const serverUrl = getServerUrl();
-  const finalUrl = serverUrl ? `${serverUrl}${endpoint}` : endpoint;
-  console.log(`API URL: ${finalUrl} (servidor: ${serverUrl || 'proxy local'})`);
-  return finalUrl;
-};
-
-const STATUS_API_URL = () => getApiUrl('/api/status');
-const ERRORS_API_URL = () => getApiUrl('/api/errors');
-const PROCESSED_API_URL = () => getApiUrl('/api/processed_databases');
-const UPLOAD_API_URL = () => getApiUrl('/api/upload');
-const CREATE_CLIENT_DRIVE_AREA_URL = () => getApiUrl('/api/client_upload_area/create');
-const ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL = '/api/admin/client_upload_areas_details';
-const ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL = '/api/admin/client_upload_areas';
-const HEALTH_API_URL = () => getApiUrl('/api/health');
-const SYSTEM_ACTIVITY_API_URL = () => getApiUrl('/api/system_activity');
-
-// Função auxiliar para construir cabeçalhos, incluindo a API Key
-const buildHeaders = (includeContentTypeJson = false): HeadersInit => {
-  const headers: HeadersInit = {};
-  
-  // Sempre incluir API Key se disponível
-  if (API_KEY) {
-    headers['X-API-Key'] = API_KEY;
-    console.log(`[DEBUG] API Key incluída: ${API_KEY.substring(0, 8)}...`);
-  } else {
-    console.log('[DEBUG] API Key NÃO encontrada!');
-  }
-  if (includeContentTypeJson) {
-    headers['Content-Type'] = 'application/json';
-  }
-  console.log('[DEBUG] Headers:', headers);
-  return headers;
-};
-
-async function handleResponse<T>(response: Response, isJsonExpected = true): Promise<T> {
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`API Error for ${response.url}: ${response.status} - ${errorText}`);
-    try {
-      const errorJson = JSON.parse(errorText);
-      // Backend envia a mensagem de erro na propriedade "error"
-      if (errorJson && errorJson.error) { // <<< ALTERAÇÃO: Usar errorJson.error
-        throw new Error(errorJson.error);
-      }
-    } catch (e) {
-      // Ignora o erro do parse, ou se errorText não for JSON
-    }
-    throw new Error(errorText || `Erro de rede: ${response.status} ${response.statusText}`);
-  }
-
-  if (response.status === 204) { // No Content
-    return {} as Promise<T>;
-  }
-
-  if (isJsonExpected) {
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-        return response.json() as Promise<T>;
-    } else if (response.status === 200 && response.headers.get('content-length') === '0' ) {
-        console.warn(`API Info for ${response.url}: Expected JSON but received ${response.status} with no JSON content.`);
-        return {} as Promise<T>;
-    } else {
-        const text = await response.text();
-        console.warn(`API Warning for ${response.url}: Expected JSON response but got ${contentType}. Body: ${text}`);
-        throw new Error(`Resposta inesperada do servidor: ${text || response.statusText}`);
-    }
-  }
-  // Para respostas que não são JSON (ex: texto plano do uploadHandler)
-  return response.text() as unknown as Promise<T>;
-}
-
-
-// Endpoints Públicos (não precisam de API Key)
-export const fetchStatusData = async (): Promise<StatusData> => {
-  const response = await fetch(STATUS_API_URL(), { cache: 'no-store' });
-  return handleResponse<StatusData>(response);
-};
-
-export const fetchErrorsData = async (): Promise<FailedRestoreItem[]> => {
-  const response = await fetch(ERRORS_API_URL(), { cache: 'no-store' });
-  return handleResponse<FailedRestoreItem[]>(response);
-};
-
-export const fetchProcessedDatabases = async (): Promise<ProcessedDatabase[]> => {
-  const response = await fetch(PROCESSED_API_URL(), { cache: 'no-store' });
-  return handleResponse<ProcessedDatabase[]>(response);
-};
-
-// Endpoints Protegidos (agora incluem API Key)
-export const uploadBackup = async (formData: FormData): Promise<string> => {
-  console.log('Iniciando upload para:', UPLOAD_API_URL());
-  console.log('FormData contém backupFile:', formData.has('backupFile'));
-  
+// Endpoint para buscar dados de saúde do sistema
+export const fetchHealthData = async (): Promise<any> => {
   try {
-    const response = await fetch(UPLOAD_API_URL(), {
-      method: 'POST',
-      headers: buildHeaders(), // FormData define Content-Type automaticamente
-      body: formData,
+    const response = await fetch(getApiUrl('/api/health'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
     });
     
-    console.log('Resposta do servidor:', response.status, response.statusText);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro detalhado do servidor:', errorText);
-    }
-    
-    return handleResponse<string>(response, false); // Resposta é texto plano
+    return handleResponse<any>(response);
   } catch (error) {
-    console.error('Erro na chamada fetch:', error);
+    console.error('Erro ao buscar dados de saúde do sistema:', error);
     throw error;
   }
 };
 
-export const markDatabaseForDiscard = async (dbId: string, confirmationTicketID: string): Promise<string> => {
-  const response = await fetch(`${PROCESSED_API_URL()}/${dbId}/mark_for_discard`, {
-    method: 'POST',
-    headers: buildHeaders(true),
-    body: JSON.stringify({ confirmationTicketID: confirmationTicketID }),
-    cache: 'no-store'
-  });
-  return handleResponse<string>(response, false); // Resposta é texto plano
-};
-
-export const createClientDriveArea = async (
-  data: CreateClientUploadAreaRequest
-): Promise<CreateClientUploadAreaResponse> => {
-  const response = await fetch(CREATE_CLIENT_DRIVE_AREA_URL(), {
-    method: 'POST',
-    headers: buildHeaders(true),
-    body: JSON.stringify(data),
-    cache: 'no-store',
-  });
-  return handleResponse<CreateClientUploadAreaResponse>(response, true);
-};
-
-export const fetchAdminClientUploadAreaDetails = async (): Promise<AdminClientUploadAreaDetail[]> => {
-  const response = await fetch(getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_DETAILS_URL), {
-    headers: buildHeaders(),
-    cache: 'no-store',
-  });
-  return handleResponse<AdminClientUploadAreaDetail[]>(response, true);
-};
-
-export const updateClientUploadAreaStatus = async (
-  areaId: string,
-  newStatus: string
-): Promise<{ message: string }> => {
-  const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}/status`, {
-    method: 'PUT',
-    headers: buildHeaders(true),
-    body: JSON.stringify({ status: newStatus }),
-    cache: 'no-store',
-  });
-  return handleResponse<{ message: string }>(response, true);
-};
-
-export const updateClientUploadAreaNotes = async (
-  areaId: string,
-  newNotes: string
-): Promise<{ message: string }> => {
-  const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}/notes`, {
-    method: 'PUT',
-    headers: buildHeaders(true),
-    body: JSON.stringify({ notes: newNotes }),
-    cache: 'no-store',
-  });
-  return handleResponse<{ message: string }>(response, true);
-};
-
-export const downloadFromDrive = async (
-  areaId: string
-): Promise<{ message: string }> => {
-  const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}/download`, {
-    method: 'POST',
-    headers: buildHeaders(),
-    cache: 'no-store',
-  });
-  return handleResponse<{ message: string }>(response, true);
-};
-
-export const deleteClientUploadArea = async (areaId: string): Promise<void> => {
-    const response = await fetch(`${getApiUrl(ADMIN_CLIENT_UPLOAD_AREAS_BASE_URL)}/${areaId}`, {
-        method: 'DELETE',
-        headers: buildHeaders(),
-        cache: 'no-store',
+// Endpoint para buscar dados de status
+export const fetchStatusData = async (): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/status'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
     });
-    await handleResponse<void>(response, false); // Backend retorna 204 No Content
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao buscar dados de status:', error);
+    throw error;
+  }
 };
 
-// Novos endpoints para monitoramento do sistema
-export const fetchHealthData = async (): Promise<any> => {
-  const url = HEALTH_API_URL();
-  console.log('Fazendo chamada para:', url);
-  const response = await fetch(url, { 
-    cache: 'no-store',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
-  });
-  console.log('Response status:', response.status);
-  console.log('Response headers:', response.headers);
-  return handleResponse<any>(response);
+// Endpoint para buscar dados de erros
+export const fetchErrorsData = async (): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/errors'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao buscar dados de erros:', error);
+    throw error;
+  }
 };
 
-export const fetchSystemActivity = async (): Promise<string[]> => {
-  const response = await fetch(SYSTEM_ACTIVITY_API_URL(), { cache: 'no-store' });
-  return handleResponse<string[]>(response);
+// Endpoint para buscar atividade do sistema
+export const fetchSystemActivity = async (): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/system_activity'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao buscar atividade do sistema:', error);
+    throw error;
+  }
 };
 
-// Funções para gerenciar CORS
-export const fetchCORSConfig = async (): Promise<{allowed_origins: string[]}> => {
-  const response = await fetch(getApiUrl('/api/admin/cors/config'), {
-    headers: buildHeaders(),
-    cache: 'no-store'
-  });
-  return handleResponse<{allowed_origins: string[]}>(response);
+// Endpoint para buscar bancos de dados processados
+export const fetchProcessedDatabases = async (): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/processed_databases'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao buscar bancos de dados processados:', error);
+    throw error;
+  }
 };
 
-export const updateCORSConfig = async (allowedOrigins: string): Promise<{message: string, allowed_origins: string[]}> => {
-  const response = await fetch(getApiUrl('/api/admin/cors/update'), {
-    method: 'POST',
-    headers: buildHeaders(true),
-    body: JSON.stringify({ allowed_origins: allowedOrigins }),
-    cache: 'no-store'
-  });
-  return handleResponse<{message: string, allowed_origins: string[]}>(response);
+// Endpoint para marcar banco de dados para descarte
+export const markDatabaseForDiscard = async (databaseId: string): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl(`/api/discard_database/${databaseId}`), { 
+      method: 'POST',
+      headers: buildHeaders(true)
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao marcar banco de dados para descarte:', error);
+    throw error;
+  }
+};
+
+// Endpoint para fazer upload de backup
+export const uploadBackup = async (formData: FormData): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/upload'), { 
+      method: 'POST',
+      headers: buildHeaders(), // Não incluir Content-Type para FormData
+      body: formData
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao fazer upload de backup:', error);
+    throw error;
+  }
+};
+
+// Endpoint para criar área de cliente no Drive
+export const createClientDriveArea = async (data: any): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/create_client_area'), { 
+      method: 'POST',
+      headers: buildHeaders(true),
+      body: JSON.stringify(data)
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao criar área de cliente no Drive:', error);
+    throw error;
+  }
+};
+
+// Endpoint para buscar detalhes de áreas de cliente
+export const fetchAdminClientUploadAreaDetails = async (): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/client_upload_areas_admin_details'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao buscar detalhes de áreas de cliente:', error);
+    throw error;
+  }
+};
+
+// Endpoint para baixar do Drive
+export const downloadFromDrive = async (driveId: string): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl(`/api/download_from_drive/${driveId}`), { 
+      method: 'POST',
+      headers: buildHeaders(true)
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao baixar do Drive:', error);
+    throw error;
+  }
+};
+
+// Endpoint para excluir área de cliente
+export const deleteClientUploadArea = async (areaId: string): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl(`/api/client_upload_area/${areaId}`), { 
+      method: 'DELETE',
+      headers: buildHeaders()
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao excluir área de cliente:', error);
+    throw error;
+  }
+};
+
+// Endpoint para atualizar status de área de cliente
+export const updateClientUploadAreaStatus = async (areaId: string, status: string): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl(`/api/client_upload_area_status/${areaId}`), { 
+      method: 'PUT',
+      headers: buildHeaders(true),
+      body: JSON.stringify({ status })
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao atualizar status de área de cliente:', error);
+    throw error;
+  }
+};
+
+// Endpoint para atualizar notas de área de cliente
+export const updateClientUploadAreaNotes = async (areaId: string, notes: string): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl(`/api/client_upload_area_notes/${areaId}`), { 
+      method: 'PUT',
+      headers: buildHeaders(true),
+      body: JSON.stringify({ notes })
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao atualizar notas de área de cliente:', error);
+    throw error;
+  }
+};
+
+// Endpoint para buscar configuração CORS
+export const fetchCORSConfig = async (): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/cors_config'), { 
+      cache: 'no-store',
+      headers: buildHeaders()
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao buscar configuração CORS:', error);
+    throw error;
+  }
+};
+
+// Endpoint para atualizar configuração CORS
+export const updateCORSConfig = async (config: any): Promise<any> => {
+  try {
+    const response = await fetch(getApiUrl('/api/cors_config'), { 
+      method: 'PUT',
+      headers: buildHeaders(true),
+      body: JSON.stringify(config)
+    });
+    
+    return handleResponse<any>(response);
+  } catch (error) {
+    console.error('Erro ao atualizar configuração CORS:', error);
+    throw error;
+  }
 };

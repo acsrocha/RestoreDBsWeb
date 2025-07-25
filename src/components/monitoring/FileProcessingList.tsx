@@ -1,113 +1,190 @@
-// src/components/monitoring/FileProcessingList.tsx
 import React, { useState } from 'react';
-import { FiFileText, FiChevronDown, FiChevronRight, FiSearch } from 'react-icons/fi';
-import useDebounce from '../../hooks/useDebounce';
-import FileProcessingDetail from './FileProcessingDetail';
-import type { FileProcessingDetail as FileProcessingDetailType } from '../../types/fileMonitoring';
-
+import { FiChevronDown, FiChevronUp, FiClock, FiFileText } from 'react-icons/fi';
 import '../../styles/components/FileProcessingList.css';
 
-interface FileProcessingListProps {
-  files: FileProcessingDetailType[];
-  title: string;
-  emptyMessage: string;
-  isLoading: boolean;
+interface FileProcessingJob {
+  fileId: string;
+  fileName: string;
+  status: string;
+  startedAt: string;
+  completedAt?: string;
+  errorMessage?: string;
+  overallProgress: number;
+  currentStage: string;
+  downloadStageStatus: string;
+  downloadStageDetails?: string;
+  validationStageStatus: string;
+  validationStageDetails?: string;
+  restoreStageStatus: string;
+  restoreStageDetails?: string;
+  finalizationStageStatus: string;
+  finalizationStageDetails?: string;
 }
 
-const FileProcessingList: React.FC<FileProcessingListProps> = ({ 
-  files, 
-  title, 
-  emptyMessage,
-  isLoading 
-}) => {
-  const [expandedFiles, setExpandedFiles] = useState<Record<string, boolean>>({});
-  const [searchQuery, setSearchQuery] = useState('');
-  // Usar debounce para melhorar a performance da busca
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+interface FileProcessingListProps {
+  jobs: FileProcessingJob[];
+  isLoading: boolean;
+  emptyMessage: string;
+  type: 'success' | 'error';
+}
 
-  const toggleFile = (fileId: string) => {
-    setExpandedFiles(prev => ({
-      ...prev,
-      [fileId]: !prev[fileId]
-    }));
+const FileProcessingList: React.FC<FileProcessingListProps> = ({
+  jobs,
+  isLoading,
+  emptyMessage,
+  type
+}) => {
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+
+  const toggleJobDetails = (jobId: string) => {
+    if (expandedJobId === jobId) {
+      setExpandedJobId(null);
+    } else {
+      setExpandedJobId(jobId);
+    }
   };
 
-  const filteredFiles = files.filter(file => 
-    file.fileName.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-    file.originalPath.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  );
+  // Formatar duração do processamento
+  const formatDuration = (startTime: string, endTime?: string) => {
+    if (!startTime) return 'N/A';
+    
+    const start = new Date(startTime).getTime();
+    const end = endTime ? new Date(endTime).getTime() : Date.now();
+    const durationMs = end - start;
+    
+    const seconds = Math.floor((durationMs / 1000) % 60);
+    const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
+    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  };
 
-  const renderLoadingState = () => (
-    <div className="loading-skeleton-container">
-      <div className="loading-skeleton" />
-      <div className="loading-skeleton" style={{ width: '85%' }} />
-      <div className="loading-skeleton" style={{ width: '90%' }} />
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  if (jobs.length === 0) {
+    return (
+      <div className="empty-state">
+        <p>{emptyMessage}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="file-processing-list">
-      <div className="list-header">
-        <h2>{title}</h2>
-        <div className="search-container">
-          <FiSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Buscar arquivos..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-        </div>
-      </div>
-
-      {isLoading ? (
-        renderLoadingState()
-      ) : files.length === 0 ? (
-        <div className="empty-list">
-          <p>{emptyMessage}</p>
-        </div>
-      ) : filteredFiles.length === 0 ? (
-        <div className="empty-list">
-          <p>Nenhum resultado encontrado para "{searchQuery}"</p>
-        </div>
-      ) : (
-        <ul className="files-list">
-          {filteredFiles.map(file => (
-            <li key={file.fileId} className={`file-item status-${file.status}`}>
-              <button 
-                className="file-summary" 
-                onClick={() => toggleFile(file.fileId)}
-                aria-expanded={expandedFiles[file.fileId] || false}
-                aria-controls={`file-details-${file.fileId}`}
-              >
-                <span className="expand-icon">
-                  {expandedFiles[file.fileId] ? <FiChevronDown /> : <FiChevronRight />}
+      {jobs.map(job => (
+        <div 
+          key={job.fileId} 
+          className={`file-item ${type} ${expandedJobId === job.fileId ? 'expanded' : ''}`}
+        >
+          <div 
+            className="file-header" 
+            onClick={() => toggleJobDetails(job.fileId)}
+          >
+            <div className="file-info">
+              <FiFileText className="file-icon" />
+              <span className="file-name" title={job.fileName}>
+                {job.fileName}
+              </span>
+            </div>
+            
+            <div className="file-meta">
+              <div className="file-time">
+                <FiClock className="time-icon" />
+                <span title={`Duração: ${formatDuration(job.startedAt, job.completedAt)}`}>
+                  {formatDuration(job.startedAt, job.completedAt)}
                 </span>
-                <FiFileText className="file-icon" />
-                <span className="file-name" title={file.originalPath}>{file.fileName}</span>
-                <div className="file-progress-container">
-                  <div 
-                    className="file-progress-bar" 
-                    style={{ width: `${file.overallProgress}%` }}
-                    aria-valuenow={file.overallProgress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  />
-                </div>
-                <span className="file-progress-text">{file.overallProgress}%</span>
-                <span className="file-status">{file.status}</span>
-              </button>
+              </div>
               
-              {expandedFiles[file.fileId] && (
-                <div className="file-details" id={`file-details-${file.fileId}`}>
-                  <FileProcessingDetail file={file} />
+              {expandedJobId === job.fileId ? (
+                <FiChevronUp className="expand-icon" />
+              ) : (
+                <FiChevronDown className="expand-icon" />
+              )}
+            </div>
+          </div>
+          
+          {expandedJobId === job.fileId && (
+            <div className="file-details">
+              <div className="detail-row">
+                <span className="detail-label">Iniciado em:</span>
+                <span className="detail-value">
+                  {new Date(job.startedAt).toLocaleString()}
+                </span>
+              </div>
+              
+              {job.completedAt && (
+                <div className="detail-row">
+                  <span className="detail-label">Concluído em:</span>
+                  <span className="detail-value">
+                    {new Date(job.completedAt).toLocaleString()}
+                  </span>
                 </div>
               )}
-            </li>
-          ))}
-        </ul>
-      )}
+              
+              <div className="detail-row">
+                <span className="detail-label">ID do Arquivo:</span>
+                <span className="detail-value">{job.fileId}</span>
+              </div>
+              
+              {type === 'error' && job.errorMessage && (
+                <div className="detail-row error-message">
+                  <span className="detail-label">Erro:</span>
+                  <span className="detail-value">{job.errorMessage}</span>
+                </div>
+              )}
+              
+              <div className="stages-summary">
+                <h4>Estágios de Processamento:</h4>
+                
+                <div className={`stage-item ${job.downloadStageStatus}`}>
+                  <span className="stage-name">Download:</span>
+                  <span className="stage-status">{job.downloadStageStatus}</span>
+                  {job.downloadStageDetails && (
+                    <div className="stage-details">{job.downloadStageDetails}</div>
+                  )}
+                </div>
+                
+                <div className={`stage-item ${job.validationStageStatus}`}>
+                  <span className="stage-name">Validação:</span>
+                  <span className="stage-status">{job.validationStageStatus}</span>
+                  {job.validationStageDetails && (
+                    <div className="stage-details">{job.validationStageDetails}</div>
+                  )}
+                </div>
+                
+                <div className={`stage-item ${job.restoreStageStatus}`}>
+                  <span className="stage-name">Restauração:</span>
+                  <span className="stage-status">{job.restoreStageStatus}</span>
+                  {job.restoreStageDetails && (
+                    <div className="stage-details">{job.restoreStageDetails}</div>
+                  )}
+                </div>
+                
+                <div className={`stage-item ${job.finalizationStageStatus}`}>
+                  <span className="stage-name">Finalização:</span>
+                  <span className="stage-status">{job.finalizationStageStatus}</span>
+                  {job.finalizationStageDetails && (
+                    <div className="stage-details">{job.finalizationStageDetails}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };

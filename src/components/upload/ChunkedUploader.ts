@@ -108,12 +108,21 @@ export class ChunkedUploader {
   /**
    * Retoma um upload pausado
    */
-  public resume(): void {
+  public async resume(): Promise<void> {
     if (!this.paused) return;
     
     this.paused = false;
     this.onStatusChange('uploading');
-    this.uploadChunks();
+    
+    // Carregar estado salvo
+    const savedState = this.loadState();
+    if (savedState) {
+      this.uploadId = savedState.uploadId;
+      this.receivedChunks = savedState.receivedChunks || [];
+      console.log('Estado carregado:', { uploadId: this.uploadId, receivedChunks: this.receivedChunks.length });
+    }
+    
+    await this.uploadChunks();
   }
 
   /**
@@ -176,9 +185,16 @@ export class ChunkedUploader {
       const progress = Math.round(data.progress);
       this.onProgress(progress);
       
+      // Garantir que receivedChunks seja sempre um array
+      if (!Array.isArray(this.receivedChunks)) {
+        this.receivedChunks = [];
+      }
+      
       // Atualizar chunks recebidos (compatibilidade com diferentes formatos)
-      if (data.receivedChunks || data.received_chunks) {
-        this.receivedChunks = data.receivedChunks || data.received_chunks;
+      const serverChunks = data.receivedChunks || data.received_chunks;
+      
+      if (Array.isArray(serverChunks)) {
+        this.receivedChunks = [...new Set([...this.receivedChunks, ...serverChunks])];
       }
       
       console.log('Status do upload:', { 
@@ -211,31 +227,78 @@ export class ChunkedUploader {
   private async uploadChunks(): Promise<void> {
     if (this.aborted || this.paused) return;
     
-    // Forçar envio de todos os chunks
-    const pendingChunks = [];
-    for (let i = 0; i < this.totalChunks; i++) {
-      pendingChunks.push(i);
-    }
+    // Obter apenas chunks pendentes
+    const pendingChunks = this.getPendingChunks();
     
-    console.log(`Enviando todos os chunks: ${pendingChunks.length} de ${this.totalChunks}`);
+    console.log(`Chunks já enviados: ${this.receivedChunks.length}`);
+    console.log(`Chunks pendentes: ${pendingChunks.length}`);
+    
+    console.log(`Enviando chunks pendentes: ${pendingChunks.length} de ${this.totalChunks}`);
     
     // Enviar todos os chunks em lotes
     for (let i = 0; i < pendingChunks.length; i += this.maxConcurrentUploads) {
+      if (this.aborted || this.paused) {
+        console.log('Upload abortado ou pausado durante envio de chunks');
+        return;
+      }
+      
       const batch = pendingChunks.slice(i, i + this.maxConcurrentUploads);
-      console.log(`Enviando lote ${Math.floor(i/this.maxConcurrentUploads) + 1}: ${batch.length} chunks`);
+      console.log(`Enviando lote ${Math.floor(i/this.maxConcurrentUploads) + 1}: chunks ${batch.join(', ')}`);
       
       try {
         await Promise.all(batch.map(chunkIndex => this.uploadChunk(chunkIndex)));
+        console.log(`Lote ${Math.floor(i/this.maxConcurrentUploads) + 1} enviado com sucesso`);
       } catch (error) {
         console.error(`Erro ao enviar lote ${Math.floor(i/this.maxConcurrentUploads) + 1}:`, error);
-        throw error;
+        // Não lançar erro imediatamente, tentar continuar
+        console.log('Tentando continuar com próximo lote...');
       }
     }
     
-    console.log('Todos os chunks enviados, finalizando upload...');
+    console.log('Todos os lotes processados, verificando status...');
     
-    // Finalizar o upload após enviar todos os chunks
-    await this.finalizeUpload();
+    // Aguardar um pouco para garantir que todos os chunks foram processados
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Verificar novamente o status no servidor antes de finalizar
+    try {
+      await this.checkServerStatus();
+    } catch (error) {
+      console.error('Erro ao verificar status do servidor:', error);
+      // Continuar mesmo com erro de status
+    }
+    
+    const receivedCount = this.receivedChunks?.length || 0;
+    console.log(`Verificação final: ${receivedCount} de ${this.totalChunks} chunks recebidos`);
+    
+    // Se ainda faltam chunks, tentar reenviá-los
+    if (receivedCount < this.totalChunks) {
+      const missingChunks = this.getPendingChunks();
+      console.log(`Reenviando ${missingChunks.length} chunks faltantes:`, missingChunks.slice(0, 10));
+      
+      // Reenviar chunks faltantes
+      for (const chunkIndex of missingChunks) {
+        if (this.aborted || this.paused) return;
+        try {
+          await this.uploadChunk(chunkIndex);
+        } catch (error) {
+          console.error(`Falha ao reenviar chunk ${chunkIndex}:`, error);
+          throw new Error(`Falha ao reenviar chunk ${chunkIndex}: ${error}`);
+        }
+      }
+      
+      // Verificar novamente após reenvio
+      await this.checkServerStatus();
+    }
+    
+    // Finalizar o upload apenas se todos os chunks foram confirmados
+    const finalReceivedCount = this.receivedChunks?.length || 0;
+    if (finalReceivedCount === this.totalChunks) {
+      console.log('Todos os chunks confirmados, finalizando upload...');
+      await this.finalizeUpload();
+    } else {
+      throw new Error(`Upload ainda incompleto após reenvio: apenas ${finalReceivedCount} de ${this.totalChunks} chunks foram confirmados pelo servidor`);
+    }
   }
 
   /**
@@ -243,8 +306,9 @@ export class ChunkedUploader {
    */
   private getPendingChunks(): number[] {
     const pendingChunks: number[] = [];
+    const received = this.receivedChunks || [];
     for (let i = 0; i < this.totalChunks; i++) {
-      if (!this.receivedChunks.includes(i)) {
+      if (!received.includes(i)) {
         pendingChunks.push(i);
       }
     }
@@ -277,6 +341,11 @@ export class ChunkedUploader {
         checksum
       );
       
+      // Validar resposta do backend
+      if (data.chunkIndex !== undefined && data.chunkIndex !== chunkIndex) {
+        throw new Error(`Resposta inconsistente do backend para o chunk ${chunkIndex}. Esperado confirmação para ${chunkIndex}, mas recebido para ${data.chunkIndex}.`);
+      }
+      
       // Remover controller da lista de requisições ativas
       const index = this.activeRequests.indexOf(controller);
       if (index !== -1) {
@@ -284,7 +353,9 @@ export class ChunkedUploader {
       }
       
       // Atualizar progresso (compatibilidade com diferentes formatos)
-      this.onProgress(Math.round(data.progress));
+      if (data.progress !== undefined) {
+        this.onProgress(Math.round(data.progress));
+      }
       
       console.log('Chunk enviado:', { 
         chunkIndex, 
@@ -292,17 +363,34 @@ export class ChunkedUploader {
         receivedChunks: data.receivedChunks || data.received_chunks
       });
       
-      // Adicionar chunk à lista de recebidos
-      if (!this.receivedChunks.includes(chunkIndex)) {
+      // Garantir que receivedChunks seja um array
+      if (!Array.isArray(this.receivedChunks)) {
+        this.receivedChunks = [];
+      }
+      
+      // Atualizar lista de chunks recebidos
+      const serverChunks = data.receivedChunks || data.received_chunks;
+      
+      if (Array.isArray(serverChunks)) {
+        this.receivedChunks = [...new Set([...this.receivedChunks, ...serverChunks])];
+      } else if (!this.receivedChunks.includes(chunkIndex)) {
+        // Fallback: Se o backend não enviar a lista, pelo menos adicione o chunk atual.
         this.receivedChunks.push(chunkIndex);
       }
       
       // Notificar conclusão do chunk
-      this.onChunkComplete(chunkIndex, this.receivedChunks.length, this.totalChunks);
+      const receivedCount = this.receivedChunks?.length || 0;
+      this.onChunkComplete(chunkIndex, receivedCount, this.totalChunks);
       
       // Salvar estado
       this.saveState();
+      
+      // Chunk enviado com sucesso, sair da função
+      return;
+      
     } catch (error) {
+      console.error(`Erro detalhado ao enviar chunk ${chunkIndex}:`, error);
+      
       // Se foi abortado, não tentar novamente
       if (this.aborted || this.paused) return;
       
@@ -320,6 +408,7 @@ export class ChunkedUploader {
         await new Promise(resolve => setTimeout(resolve, delay));
         await this.uploadChunk(chunkIndex, retryCount + 1);
       } else {
+        console.error(`Falha definitiva ao enviar chunk ${chunkIndex} após ${this.retryCount} tentativas`);
         throw error;
       }
     }
@@ -332,12 +421,22 @@ export class ChunkedUploader {
     this.onStatusChange('finalizing');
     
     // Verificar se todos os chunks foram enviados
-    if (this.receivedChunks.length < this.totalChunks) {
-      console.error(`Tentativa de finalizar upload incompleto: ${this.receivedChunks.length} de ${this.totalChunks} chunks enviados`);
-      throw new Error(`Upload incompleto: ${this.receivedChunks.length} de ${this.totalChunks} chunks enviados`);
+    const receivedCount = this.receivedChunks?.length || 0;
+    if (receivedCount < this.totalChunks) {
+      const missingChunks = [];
+      for (let i = 0; i < this.totalChunks; i++) {
+        if (!this.receivedChunks.includes(i)) {
+          missingChunks.push(i);
+        }
+      }
+      
+      console.error(`Tentativa de finalizar upload incompleto: ${receivedCount} de ${this.totalChunks} chunks enviados`);
+      console.error('Chunks faltando:', missingChunks.slice(0, 10)); // Mostrar apenas os primeiros 10
+      
+      throw new Error(`Upload incompleto: ${receivedCount} de ${this.totalChunks} chunks enviados. Chunks faltando: ${missingChunks.length}`);
     }
     
-    console.log(`Finalizando upload ${this.uploadId} com ${this.receivedChunks.length} chunks enviados`);
+    console.log(`Finalizando upload ${this.uploadId} com ${receivedCount} chunks enviados`);
     
     try {
       const data = await finalizeChunkedUpload(
@@ -347,7 +446,7 @@ export class ChunkedUploader {
         this.metadata
       );
       
-      console.log('Upload finalizado:', data);
+      console.log('Upload finalizado com sucesso:', data);
       
       // Limpar estado
       this.clearState();
@@ -355,6 +454,7 @@ export class ChunkedUploader {
       this.onStatusChange('completed');
       this.onComplete(data);
     } catch (error) {
+      console.error('Erro ao finalizar upload:', error);
       this.onStatusChange('error');
       this.onError(error instanceof Error ? error : new Error('Erro ao finalizar upload'));
     }

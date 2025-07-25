@@ -1,149 +1,201 @@
-// src/components/monitoring/BackendDiagnostic.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FiServer, FiHardDrive, FiDatabase, FiRefreshCw } from 'react-icons/fi';
+import { fetchHealthData } from '../../services/api';
+import { useInterval } from '../../hooks/useInterval';
+import '../../styles/components/BackendDiagnostic.css';
 
-interface BackendDiagnosticProps {
-  onRefresh: () => void;
-}
+// Intervalo de atualização em milissegundos
+const REFRESH_INTERVAL = 30000; // 30 segundos
 
-const BackendDiagnostic: React.FC<BackendDiagnosticProps> = ({ onRefresh }) => {
-  const [isChecking, setIsChecking] = useState(false);
-  const [diagnosticResult, setDiagnosticResult] = useState<string | null>(null);
-  const [diagnosticError, setDiagnosticError] = useState<string | null>(null);
+const BackendDiagnostic: React.FC = () => {
+  const [healthData, setHealthData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const checkBackendConfig = async () => {
-    setIsChecking(true);
-    setDiagnosticResult(null);
-    setDiagnosticError(null);
-    
+  const fetchDiagnosticData = useCallback(async () => {
     try {
-      // Verificar status do backend
-      const statusResponse = await fetch('/api/status');
-      if (!statusResponse.ok) {
-        throw new Error(`Erro ao verificar status: ${statusResponse.status} ${statusResponse.statusText}`);
-      }
-      
-      const statusData = await statusResponse.json();
-      console.log('Status do backend:', statusData);
-      
-      // Verificar monitoramento
-      const monitoringResponse = await fetch('/api/file_monitoring');
-      if (!monitoringResponse.ok) {
-        throw new Error(`Erro ao verificar monitoramento: ${monitoringResponse.status} ${monitoringResponse.statusText}`);
-      }
-      
-      const monitoringData = await monitoringResponse.json();
-      console.log('Dados de monitoramento:', monitoringData);
-      
-      // Analisar configuração
-      let result = '## Diagnóstico do Backend ##\n\n';
-      
-      // Verificar diretório monitorado
-      let monitoredDir = null;
-      if (statusData.recentActivity && statusData.recentActivity.length > 0) {
-        const activityMsg = statusData.recentActivity[0];
-        const match = activityMsg.match(/Monitoramento \(Fsnotify\) iniciado para: (.+)$/);
-        if (match && match[1]) {
-          monitoredDir = match[1];
-          result += `✅ Diretório monitorado: ${monitoredDir}\n`;
-        } else {
-          result += `❌ Não foi possível identificar o diretório monitorado\n`;
-        }
-      } else {
-        result += `❌ Não há mensagens de atividade recente\n`;
-      }
-      
-      // Verificar fila
-      if (statusData.queueCount !== undefined) {
-        result += `✅ Fila de processamento: ${statusData.queueCount} arquivo(s)\n`;
-      } else {
-        result += `❌ Não foi possível verificar a fila de processamento\n`;
-      }
-      
-      // Verificar monitoramento do Google Drive
-      if (statusData.driveMonitorNextRunEpoch) {
-        const nextRun = new Date(statusData.driveMonitorNextRunEpoch * 1000);
-        result += `✅ Próxima verificação do Drive: ${nextRun.toLocaleString()}\n`;
-        result += `✅ Intervalo de verificação: ${statusData.driveMonitorIntervalMinutes || 0} minutos\n`;
-      } else {
-        result += `❓ Monitoramento do Google Drive não configurado ou desativado\n`;
-      }
-      
-      // Verificar dados de monitoramento
-      const hasActiveFiles = monitoringData.activeFiles && monitoringData.activeFiles.length > 0;
-      const hasCompletedFiles = monitoringData.recentlyCompleted && monitoringData.recentlyCompleted.length > 0;
-      const hasFailedFiles = monitoringData.recentlyFailed && monitoringData.recentlyFailed.length > 0;
-      
-      result += `\n## Dados de Monitoramento ##\n`;
-      result += `- Arquivos ativos: ${hasActiveFiles ? monitoringData.activeFiles.length : 0}\n`;
-      result += `- Arquivos concluídos: ${hasCompletedFiles ? monitoringData.recentlyCompleted.length : 0}\n`;
-      result += `- Arquivos com falha: ${hasFailedFiles ? monitoringData.recentlyFailed.length : 0}\n`;
-      
-      if (!hasActiveFiles && !hasCompletedFiles && !hasFailedFiles) {
-        result += `\n⚠️ Nenhum arquivo encontrado no monitoramento.\n`;
-        result += `Isso pode indicar que:\n`;
-        result += `1. Não há arquivos no diretório monitorado\n`;
-        result += `2. O backend não está processando os arquivos corretamente\n`;
-        result += `3. O backend não está registrando os arquivos no sistema de monitoramento\n`;
-      }
-      
-      // Recomendações
-      result += `\n## Recomendações ##\n`;
-      if (!monitoredDir) {
-        result += `- Verifique se o diretório de monitoramento está configurado corretamente no backend\n`;
-      }
-      
-      if (!hasActiveFiles && !hasCompletedFiles && !hasFailedFiles) {
-        result += `- Tente enviar um arquivo manualmente através da API de upload\n`;
-        result += `- Verifique os logs do backend para erros\n`;
-        result += `- Verifique se há arquivos .fbk no diretório monitorado\n`;
-      }
-      
-      setDiagnosticResult(result);
-    } catch (error) {
-      console.error('Erro durante o diagnóstico:', error);
-      setDiagnosticError(`Erro durante o diagnóstico: ${error instanceof Error ? error.message : String(error)}`);
+      setIsLoading(true);
+      const data = await fetchHealthData();
+      setHealthData(data);
+      setError(null);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Erro ao buscar dados de diagnóstico:', err);
+      setError(err.message || 'Erro ao buscar dados de diagnóstico');
     } finally {
-      setIsChecking(false);
+      setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Carregar dados iniciais
+  useEffect(() => {
+    fetchDiagnosticData();
+  }, [fetchDiagnosticData]);
+
+  // Configurar intervalo de atualização
+  useInterval(() => {
+    fetchDiagnosticData();
+  }, REFRESH_INTERVAL);
+
+  // Formatar o timestamp de última atualização
+  const formattedLastUpdated = lastUpdated 
+    ? lastUpdated.toLocaleTimeString() 
+    : '--:--:--';
 
   return (
-    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
-      <h3>Diagnóstico do Backend</h3>
-      <p>Use esta ferramenta para verificar a configuração do backend e identificar problemas.</p>
-      
-      <div style={{ marginBottom: '10px' }}>
-        <button 
-          onClick={checkBackendConfig}
-          disabled={isChecking}
-          style={{ padding: '5px 10px', backgroundColor: '#2196f3', color: 'white', border: 'none', borderRadius: '4px', marginRight: '10px' }}
-        >
-          {isChecking ? 'Verificando...' : 'Verificar Configuração do Backend'}
-        </button>
-        
-        <button 
-          onClick={onRefresh}
-          disabled={isChecking}
-          style={{ padding: '5px 10px' }}
-        >
-          Atualizar Dados
-        </button>
+    <section className="diagnostic-section">
+      <div className="diagnostic-header">
+        <h2>
+          <FiServer className="section-icon" />
+          Diagnóstico do Sistema
+        </h2>
+        <div className="diagnostic-actions">
+          <span className="last-updated">
+            Atualizado: {formattedLastUpdated}
+          </span>
+          <button 
+            className="refresh-button" 
+            onClick={fetchDiagnosticData}
+            disabled={isLoading}
+          >
+            <FiRefreshCw className={isLoading ? 'spinning' : ''} />
+            Atualizar
+          </button>
+        </div>
       </div>
-      
-      {diagnosticError && (
-        <div style={{ backgroundColor: '#ffebee', color: '#c62828', padding: '10px', borderRadius: '4px', marginBottom: '10px' }}>
-          <strong>Erro:</strong> {diagnosticError}
+
+      {error ? (
+        <div className="diagnostic-error">
+          <p>Erro ao carregar dados de diagnóstico: {error}</p>
+          <button onClick={fetchDiagnosticData} className="retry-button">
+            Tentar Novamente
+          </button>
+        </div>
+      ) : isLoading && !healthData ? (
+        <div className="diagnostic-loading">
+          <div className="loading-spinner"></div>
+          <p>Carregando dados de diagnóstico...</p>
+        </div>
+      ) : healthData ? (
+        <div className="diagnostic-grid">
+          {/* Status Geral */}
+          <div className={`diagnostic-card status-${healthData.status}`}>
+            <h3>Status Geral</h3>
+            <div className="diagnostic-value">
+              {healthData.status === 'healthy' ? 'Saudável' : 'Atenção'}
+            </div>
+            {healthData.problems && healthData.problems.length > 0 && (
+              <div className="diagnostic-problems">
+                <h4>Problemas Detectados:</h4>
+                <ul>
+                  {healthData.problems.map((problem: string, index: number) => (
+                    <li key={index}>{problem}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Espaço em Disco */}
+          <div className="diagnostic-card">
+            <h3>
+              <FiHardDrive className="card-icon" />
+              Espaço em Disco
+            </h3>
+            {healthData.disk_space && (
+              <div className="disk-space-grid">
+                {Object.entries(healthData.disk_space).map(([dir, space]: [string, any]) => (
+                  <div key={dir} className="disk-space-item">
+                    <div className="disk-dir">{dir}</div>
+                    <div className="disk-space">{space}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Status do Firebird */}
+          <div className="diagnostic-card">
+            <h3>
+              <FiDatabase className="card-icon" />
+              Firebird
+            </h3>
+            <div className={`diagnostic-value status-${healthData.firebird_status === 'ok' ? 'healthy' : 'warning'}`}>
+              {healthData.firebird_status === 'ok' ? 'Conectado' : 'Problema de Conexão'}
+            </div>
+            {healthData.firebird_status !== 'ok' && (
+              <div className="diagnostic-detail error">
+                {healthData.firebird_status}
+              </div>
+            )}
+          </div>
+
+          {/* Status do Google Drive */}
+          <div className="diagnostic-card">
+            <h3>
+              <svg className="card-icon gdrive-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4.5 14.5L8 5.5H16L12.5 14.5H4.5Z" fill="currentColor" />
+                <path d="M12.5 14.5L16 5.5L19.5 14.5H12.5Z" fill="currentColor" />
+                <path d="M4.5 14.5L8 18.5H19.5L16 14.5H4.5Z" fill="currentColor" />
+              </svg>
+              Google Drive
+            </h3>
+            <div className={`diagnostic-value status-${
+              healthData.gdrive_status === 'ok' 
+                ? 'healthy' 
+                : healthData.gdrive_status === 'desabilitado' 
+                  ? 'neutral' 
+                  : 'warning'
+            }`}>
+              {healthData.gdrive_status === 'ok' 
+                ? 'Conectado' 
+                : healthData.gdrive_status === 'desabilitado' 
+                  ? 'Desabilitado' 
+                  : 'Problema de Conexão'}
+            </div>
+            {healthData.gdrive_status !== 'ok' && healthData.gdrive_status !== 'desabilitado' && (
+              <div className="diagnostic-detail error">
+                {healthData.gdrive_status}
+              </div>
+            )}
+          </div>
+
+          {/* Informações da Fila */}
+          <div className="diagnostic-card">
+            <h3>Fila de Processamento</h3>
+            <div className="queue-info">
+              <div className="queue-item">
+                <span className="queue-label">Tamanho da Fila:</span>
+                <span className="queue-value">{healthData.queue_size || 0}</span>
+              </div>
+              <div className="queue-item">
+                <span className="queue-label">Em Processamento:</span>
+                <span className="queue-value">
+                  {healthData.current_processing 
+                    ? healthData.current_processing.split(/[\\/]/).pop() 
+                    : 'Nenhum'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Timestamp */}
+          <div className="diagnostic-card timestamp-card">
+            <h3>Timestamp do Servidor</h3>
+            <div className="diagnostic-value">
+              {healthData.timestamp 
+                ? new Date(healthData.timestamp).toLocaleString() 
+                : 'N/A'}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="diagnostic-empty">
+          <p>Nenhum dado de diagnóstico disponível.</p>
         </div>
       )}
-      
-      {diagnosticResult && (
-        <div style={{ marginTop: '10px' }}>
-          <pre style={{ background: '#f5f5f5', padding: '10px', overflow: 'auto', maxHeight: '300px', whiteSpace: 'pre-wrap' }}>
-            {diagnosticResult}
-          </pre>
-        </div>
-      )}
-    </div>
+    </section>
   );
 };
 

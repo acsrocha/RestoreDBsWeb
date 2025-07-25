@@ -1,16 +1,7 @@
 // src/services/apiUtils.ts
-// Utilitários compartilhados para chamadas de API
 
 // Variáveis de ambiente no Vite precisam começar com VITE_
 const API_KEY = import.meta.env.VITE_APP_RESTOREDB_API_KEY;
-
-if (!API_KEY) {
-  console.warn(
-    "ATENÇÃO: A chave de API (VITE_APP_RESTOREDB_API_KEY) não está configurada no frontend. " +
-    "Crie um arquivo .env na raiz do projeto frontend com VITE_APP_RESTOREDB_API_KEY=sua_chave_aqui. " +
-    "As chamadas para endpoints protegidos falharão sem ela."
-  );
-}
 
 // Função para obter URL base do servidor
 export const getServerUrl = () => {
