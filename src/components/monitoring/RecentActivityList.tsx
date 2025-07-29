@@ -124,15 +124,9 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
   };
 
   return (
-    <div 
-      className="list-card" 
-      role={ARIA_ROLES.REGION}
-      aria-labelledby={headerId}
-    >
+    <>
       <h2 id={headerId}>
-        <span className="icon" aria-hidden="true">
-          <FiActivity />
-        </span>
+        <FiActivity className="section-icon" />
         Atividade Recente
       </h2>
 
@@ -179,7 +173,7 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({ activities, isL
       </ul>
 
       {renderPagination()}
-    </div>
+    </>
   );
 };
 

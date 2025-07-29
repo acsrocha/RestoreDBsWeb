@@ -164,55 +164,80 @@ const MonitoringPage: React.FC = () => {
   );
 
   return (
-    <div id="view-monitoramento" className="view active monitoring-view">
-      <div className="monitoring-fixed-header">
-        <section className="status-highlight-grid" aria-label="Status de Destaque">
-          <HighlightCard
-            icon={<FiCpu />} // Passando o ícone diretamente
-            label="Em Processamento"
-            value={displayProcessingFilename}
-            type="processing status" // Adicionando classe status para aplicar os estilos compactos
-            title={processingTitle}
-          />
-          <HighlightCard icon={<FiArchive />} label="Arquivos na Fila" value={String(queueCount)} type="queue status" />
-          <HighlightCard icon={<FiAlertTriangle />} label="Falhas" value={String(errorCount)} type="errors status" />
-          <HighlightCard icon={<FiClock />} label="Última Atividade" value={lastActivityTimestamp} type="activity-summary status" />
-        </section>
+    <div className="detailed-monitoring-page">
+      {/* Stats Dashboard */}
+      <div className="stats-dashboard">
+        <div className="stat-card processing">
+          <div className="stat-icon"><FiCpu /></div>
+          <div className="stat-content">
+            <div className="stat-number">{statusData?.currentProcessing ? '1' : '0'}</div>
+            <div className="stat-label">Em Processamento</div>
+            <div className="stat-detail">{displayProcessingFilename}</div>
+          </div>
+        </div>
+        <div className="stat-card total">
+          <div className="stat-icon"><FiArchive /></div>
+          <div className="stat-content">
+            <div className="stat-number">{queueCount}</div>
+            <div className="stat-label">Arquivos na Fila</div>
+          </div>
+        </div>
+        <div className="stat-card failed">
+          <div className="stat-icon"><FiAlertTriangle /></div>
+          <div className="stat-content">
+            <div className="stat-number error">{errorCount}</div>
+            <div className="stat-label">Falhas</div>
+          </div>
+        </div>
+        <div className="stat-card eta">
+          <div className="stat-icon"><FiClock /></div>
+          <div className="stat-content">
+            <div className="stat-number">{lastActivityTimestamp}</div>
+            <div className="stat-label">Última Atividade</div>
+          </div>
+        </div>
       </div>
-      
-      <div className="scrollable-content">
-        <section className="monitor-detailed-lists-grid" aria-label="Listas Detalhadas de Monitoramento">
-        <div className="list-card" id="queuedFilesListSection">
-          <h2><span className="icon"><FiList /></span>Fila de Espera</h2>
-          <ul id="queuedFiles" aria-live="polite">
+
+      {/* Jobs Container */}
+      <div className="jobs-container">
+        <section className="monitoring-section">
+          <h2>
+            <FiList className="section-icon" />
+            Fila de Espera
+            <span className="count-badge">{queueCount}</span>
+          </h2>
+          <ul className="queue-list">
             {initialLoading && !statusData ? (
               <li className="empty-list"><em>Carregando fila...</em></li>
             ) : statusData?.queuedFiles && statusData.queuedFiles.length > 0 ? (
               statusData.queuedFiles.map((file: string, index: number) => {
                 const fileName = file.split(/[\\/]/).pop();
                 return (
-                    <li key={file || index} title={`Caminho completo: ${file}`}>
-                        <FiFileText style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                        {fileName || 'Nome inválido'}
-                    </li>
+                  <li key={file || index} title={`Caminho completo: ${file}`}>
+                    <FiFileText style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    {fileName || 'Nome inválido'}
+                  </li>
                 );
               })
             ) : (
               !initialLoading && statusData && <li className="empty-list"><em>Fila vazia</em></li>
             )}
           </ul>
-        </div>
+        </section>
 
-        <RecentActivityList
+        <section className="monitoring-section">
+          <RecentActivityList
             activities={statusData?.recentActivity || []}
             isLoading={initialLoading && !statusData}
-        />
-      </section>
+          />
+        </section>
 
-      <FailedRestoresList
-          errors={errorsData}
-          isLoading={initialLoading && errorsData.length === 0 && !errorLoading}
-       />
+        <section className="monitoring-section error">
+          <FailedRestoresList
+            errors={errorsData}
+            isLoading={initialLoading && errorsData.length === 0 && !errorLoading}
+          />
+        </section>
       </div>
     </div>
   );

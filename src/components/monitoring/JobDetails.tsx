@@ -15,10 +15,10 @@ interface Job {
   startedAt?: string;
   completedAt?: string;
   errorMessage?: string;
-  downloadStage: JobStage;
-  validationStage: JobStage;
-  restoreStage: JobStage;
-  finalizationStage: JobStage;
+  downloadStage?: JobStage;
+  validationStage?: JobStage;
+  restoreStage?: JobStage;
+  finalizationStage?: JobStage;
 }
 
 interface JobDetailsProps {
@@ -44,12 +44,15 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
     showSuccess(`${label} copiado!`);
   };
   
-  const renderTimelineStep = (stage: JobStage, name: string) => {
+  const renderTimelineStep = (stage: JobStage | undefined, name: string) => {
+    // Se o estágio não existir, criar um estágio padrão
+    const safeStage = stage || { status: 'pending' as const };
+    
     let icon;
     let statusText;
-    const iconClass = `timeline-icon status-${stage.status}`;
+    const iconClass = `timeline-icon status-${safeStage.status}`;
 
-    switch (stage.status) {
+    switch (safeStage.status) {
       case 'success':
         icon = <FiCheckCircle />;
         statusText = 'Concluído com sucesso';
@@ -70,13 +73,13 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
     }
 
     return (
-      <li className={`timeline-step status-${stage.status}`}>
+      <li className={`timeline-step status-${safeStage.status}`}>
         <div className={iconClass}>{icon}</div>
         <div className="timeline-content">
           <h4 className="stage-name">{name}</h4>
           <p className="stage-status">{statusText}</p>
-          {stage.status === 'failed' && stage.details && (
-            <pre className="stage-error-details">{stage.details}</pre>
+          {safeStage.status === 'failed' && safeStage.details && (
+            <pre className="stage-error-details">{safeStage.details}</pre>
           )}
         </div>
       </li>

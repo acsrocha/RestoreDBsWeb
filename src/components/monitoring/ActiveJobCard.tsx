@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import '../../styles/components/ActiveJobCard.css';
+import '../../styles/components/DetailedMonitoringSteps.css';
+import '../../styles/components/DetailedMonitoringSteps.css';
 
 // Tipos para os estágios de processamento
 type StageStatus = 'pending' | 'start' | 'processing' | 'complete' | 'failed';
@@ -8,6 +10,14 @@ type StageStatus = 'pending' | 'start' | 'processing' | 'complete' | 'failed';
 interface ProcessingStage {
   status: StageStatus;
   details?: string;
+  steps?: Array<{
+    id: string;
+    timestamp: string;
+    status: string;
+    message: string;
+    details?: string;
+    duration?: number;
+  }>;
 }
 
 interface ActiveJobProps {
@@ -189,6 +199,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
                         <div className="step-header">
                           <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
                           <span className="step-message">{step.message}</span>
+                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
                         </div>
                         {step.details && <div className="step-details">{step.details}</div>}
                       </li>
@@ -217,6 +228,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
                         <div className="step-header">
                           <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
                           <span className="step-message">{step.message}</span>
+                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
                         </div>
                         {step.details && <div className="step-details">{step.details}</div>}
                       </li>
@@ -245,6 +257,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
                         <div className="step-header">
                           <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
                           <span className="step-message">{step.message}</span>
+                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
                         </div>
                         {step.details && <div className="step-details">{step.details}</div>}
                       </li>
@@ -273,6 +286,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
                         <div className="step-header">
                           <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
                           <span className="step-message">{step.message}</span>
+                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
                         </div>
                         {step.details && <div className="step-details">{step.details}</div>}
                       </li>

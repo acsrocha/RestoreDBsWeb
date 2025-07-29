@@ -78,16 +78,11 @@ const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoadi
   };
 
   return (
-    <div 
-      className="list-card error-list" 
-      role={ARIA_ROLES.REGION}
-      aria-labelledby={headerId}
-    >
+    <>
       <h2 id={headerId}>
-        <span className="icon" aria-hidden="true">
-          <FiAlertOctagon />
-        </span>
+        <FiAlertOctagon className="section-icon" />
         Falhas na Restauração
+        <span className="count-badge error">{errors.length}</span>
       </h2>
       <ul 
         id={listId}
@@ -115,7 +110,7 @@ const FailedRestoresList: React.FC<FailedRestoresListProps> = ({ errors, isLoadi
           </li>
         )}
       </ul>
-    </div>
+    </>
   );
 };
 

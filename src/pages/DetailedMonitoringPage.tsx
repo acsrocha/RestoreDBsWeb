@@ -40,8 +40,8 @@ const DetailedMonitoringPage: React.FC = () => {
       const data = await fetchFileProcessingJobs();
       
       // Separar os jobs por status
-      const active = data.filter(job => job.status === 'processing');
-      const completed = data.filter(job => job.status === 'success');
+      const active = data.filter(job => job.status === 'processing' || job.status === 'queued');
+      const completed = data.filter(job => job.status === 'completed');
       const failed = data.filter(job => job.status === 'failed');
       
       setProcessingJobs(active);
@@ -108,34 +108,30 @@ const DetailedMonitoringPage: React.FC = () => {
     return {
       fileId: job.fileId,
       fileName: job.fileName,
-      status: job.status === 'success' ? 'success' : job.status === 'failed' ? 'failed' : 'processing',
+      status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'failed' : 'processing',
       startedAt: job.startedAt,
       completedAt: job.completedAt,
-      errorMessage: job.errorMessage,
-      downloadStage: {
-        status: job.downloadStageStatus === 'complete' ? 'success' : 
-               job.downloadStageStatus === 'failed' ? 'failed' : 
-               job.downloadStageStatus === 'processing' ? 'processing' : 'pending',
-        details: job.downloadStageDetails
-      },
-      validationStage: {
-        status: job.validationStageStatus === 'complete' ? 'success' : 
-               job.validationStageStatus === 'failed' ? 'failed' : 
-               job.validationStageStatus === 'processing' ? 'processing' : 'pending',
-        details: job.validationStageDetails
-      },
-      restoreStage: {
-        status: job.restoreStageStatus === 'complete' ? 'success' : 
-               job.restoreStageStatus === 'failed' ? 'failed' : 
-               job.restoreStageStatus === 'processing' ? 'processing' : 'pending',
-        details: job.restoreStageDetails
-      },
-      finalizationStage: {
-        status: job.finalizationStageStatus === 'complete' ? 'success' : 
-               job.finalizationStageStatus === 'failed' ? 'failed' : 
-               job.finalizationStageStatus === 'processing' ? 'processing' : 'pending',
-        details: job.finalizationStageDetails
-      }
+      errorMessage: job.error,
+      downloadStage: job.stages?.[0] ? {
+        status: job.stages[0].status === 'completed' ? 'success' : 
+               job.stages[0].status === 'failed' ? 'failed' : 
+               job.stages[0].status === 'in_progress' ? 'processing' : 'pending'
+      } : { status: 'pending' },
+      validationStage: job.stages?.[1] ? {
+        status: job.stages[1].status === 'completed' ? 'success' : 
+               job.stages[1].status === 'failed' ? 'failed' : 
+               job.stages[1].status === 'in_progress' ? 'processing' : 'pending'
+      } : { status: 'pending' },
+      restoreStage: job.stages?.[2] ? {
+        status: job.stages[2].status === 'completed' ? 'success' : 
+               job.stages[2].status === 'failed' ? 'failed' : 
+               job.stages[2].status === 'in_progress' ? 'processing' : 'pending'
+      } : { status: 'pending' },
+      finalizationStage: job.stages?.[3] ? {
+        status: job.stages[3].status === 'completed' ? 'success' : 
+               job.stages[3].status === 'failed' ? 'failed' : 
+               job.stages[3].status === 'in_progress' ? 'processing' : 'pending'
+      } : { status: 'pending' }
     };
   }, [selectedJobId, processingJobs, completedJobs, failedJobs]);
 
@@ -157,8 +153,8 @@ const DetailedMonitoringPage: React.FC = () => {
     if (selectedView !== 'all') {
       filtered = filtered.filter(job => {
         switch (selectedView) {
-          case 'processing': return job.status === 'processing';
-          case 'completed': return job.status === 'success';
+          case 'processing': return job.status === 'processing' || job.status === 'queued';
+          case 'completed': return job.status === 'completed';
           case 'failed': return job.status === 'failed';
           default: return true;
         }
@@ -251,32 +247,49 @@ const DetailedMonitoringPage: React.FC = () => {
                     job.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     job.fileId.toLowerCase().includes(searchTerm.toLowerCase())
                   )
-                  .map(job => (
-                    <ActiveJobCard
-                      key={job.fileId}
-                      fileId={job.fileId}
-                      fileName={job.fileName}
-                      startedAt={job.startedAt}
-                      currentStage={job.currentStage}
-                      overallProgress={job.overallProgress}
-                      downloadStage={{
-                        status: job.downloadStageStatus,
-                        details: job.downloadStageDetails
-                      }}
-                      validationStage={{
-                        status: job.validationStageStatus,
-                        details: job.validationStageDetails
-                      }}
-                      restoreStage={{
-                        status: job.restoreStageStatus,
-                        details: job.restoreStageDetails
-                      }}
-                      finalizationStage={{
-                        status: job.finalizationStageStatus,
-                        details: job.finalizationStageDetails
-                      }}
-                    />
-                  ))
+                  .map(job => {
+                    // Mapear os estágios corretamente
+                    const stages = job.stages || [];
+                    const downloadStage = stages[0] || { status: 'pending', steps: [] };
+                    const validationStage = stages[1] || { status: 'pending', steps: [] };
+                    const restoreStage = stages[2] || { status: 'pending', steps: [] };
+                    const finalizationStage = stages[3] || { status: 'pending', steps: [] };
+                    
+                    return (
+                      <ActiveJobCard
+                        key={job.fileId}
+                        fileId={job.fileId}
+                        fileName={job.fileName}
+                        startedAt={job.startedAt}
+                        currentStage={job.currentStage}
+                        overallProgress={job.overallProgress}
+                        downloadStage={{
+                          status: downloadStage.status === 'completed' ? 'complete' : 
+                                 downloadStage.status === 'in_progress' ? 'processing' : 
+                                 downloadStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: downloadStage.steps
+                        }}
+                        validationStage={{
+                          status: validationStage.status === 'completed' ? 'complete' : 
+                                 validationStage.status === 'in_progress' ? 'processing' : 
+                                 validationStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: validationStage.steps
+                        }}
+                        restoreStage={{
+                          status: restoreStage.status === 'completed' ? 'complete' : 
+                                 restoreStage.status === 'in_progress' ? 'processing' : 
+                                 restoreStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: restoreStage.steps
+                        }}
+                        finalizationStage={{
+                          status: finalizationStage.status === 'completed' ? 'complete' : 
+                                 finalizationStage.status === 'in_progress' ? 'processing' : 
+                                 finalizationStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: finalizationStage.steps
+                        }}
+                      />
+                    );
+                  })
                 }
               </div>
             </section>
