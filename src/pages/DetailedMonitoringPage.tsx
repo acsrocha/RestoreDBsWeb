@@ -4,7 +4,7 @@ import { useInterval } from '../hooks/useInterval';
 import { useNotification } from '../hooks/useNotification';
 import ActiveJobCard from '../components/monitoring/ActiveJobCard';
 import FileProcessingList from '../components/monitoring/FileProcessingList';
-import BackendDiagnostic from '../components/monitoring/BackendDiagnostic';
+
 import MonitoringPageHeader from '../components/monitoring/MonitoringPageHeader';
 import StatisticsDashboard from '../components/monitoring/StatisticsDashboard';
 import JobViewFilters from '../components/monitoring/JobViewFilters';
@@ -271,8 +271,6 @@ const DetailedMonitoringPage: React.FC = () => {
           )}
         </div>
       )}
-      
-      <BackendDiagnostic />
     </div>
   );
 };

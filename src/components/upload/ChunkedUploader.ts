@@ -119,7 +119,6 @@ export class ChunkedUploader {
     if (savedState) {
       this.uploadId = savedState.uploadId;
       this.receivedChunks = savedState.receivedChunks || [];
-      console.log('Estado carregado:', { uploadId: this.uploadId, receivedChunks: this.receivedChunks.length });
     }
     
     await this.uploadChunks();
@@ -164,11 +163,7 @@ export class ChunkedUploader {
     this.chunkSize = data.chunkSize || data.chunk_size || this.chunkSize;
     this.totalChunks = data.totalChunks || data.total_chunks || Math.ceil(this.file.size / this.chunkSize);
     
-    console.log('Upload inicializado:', { 
-      uploadId: this.uploadId, 
-      chunkSize: this.chunkSize, 
-      totalChunks: this.totalChunks 
-    });
+
     
     // Salvar estado inicial
     this.saveState();
@@ -197,11 +192,7 @@ export class ChunkedUploader {
         this.receivedChunks = [...new Set([...this.receivedChunks, ...serverChunks])];
       }
       
-      console.log('Status do upload:', { 
-        uploadId: this.uploadId, 
-        progress, 
-        receivedChunks: this.receivedChunks.length 
-      });
+
     } catch (error) {
       // Verificar se o erro é 404 (upload não encontrado)
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -230,32 +221,21 @@ export class ChunkedUploader {
     // Obter apenas chunks pendentes
     const pendingChunks = this.getPendingChunks();
     
-    console.log(`Chunks já enviados: ${this.receivedChunks.length}`);
-    console.log(`Chunks pendentes: ${pendingChunks.length}`);
-    
-    console.log(`Enviando chunks pendentes: ${pendingChunks.length} de ${this.totalChunks}`);
+
     
     // Enviar todos os chunks em lotes
     for (let i = 0; i < pendingChunks.length; i += this.maxConcurrentUploads) {
       if (this.aborted || this.paused) {
-        console.log('Upload abortado ou pausado durante envio de chunks');
         return;
       }
       
       const batch = pendingChunks.slice(i, i + this.maxConcurrentUploads);
-      console.log(`Enviando lote ${Math.floor(i/this.maxConcurrentUploads) + 1}: chunks ${batch.join(', ')}`);
-      
       try {
         await Promise.all(batch.map(chunkIndex => this.uploadChunk(chunkIndex)));
-        console.log(`Lote ${Math.floor(i/this.maxConcurrentUploads) + 1} enviado com sucesso`);
       } catch (error) {
         console.error(`Erro ao enviar lote ${Math.floor(i/this.maxConcurrentUploads) + 1}:`, error);
-        // Não lançar erro imediatamente, tentar continuar
-        console.log('Tentando continuar com próximo lote...');
       }
     }
-    
-    console.log('Todos os lotes processados, verificando status...');
     
     // Aguardar um pouco para garantir que todos os chunks foram processados
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -265,16 +245,13 @@ export class ChunkedUploader {
       await this.checkServerStatus();
     } catch (error) {
       console.error('Erro ao verificar status do servidor:', error);
-      // Continuar mesmo com erro de status
     }
     
     const receivedCount = this.receivedChunks?.length || 0;
-    console.log(`Verificação final: ${receivedCount} de ${this.totalChunks} chunks recebidos`);
     
     // Se ainda faltam chunks, tentar reenviá-los
     if (receivedCount < this.totalChunks) {
       const missingChunks = this.getPendingChunks();
-      console.log(`Reenviando ${missingChunks.length} chunks faltantes:`, missingChunks.slice(0, 10));
       
       // Reenviar chunks faltantes
       for (const chunkIndex of missingChunks) {
@@ -294,7 +271,6 @@ export class ChunkedUploader {
     // Finalizar o upload apenas se todos os chunks foram confirmados
     const finalReceivedCount = this.receivedChunks?.length || 0;
     if (finalReceivedCount === this.totalChunks) {
-      console.log('Todos os chunks confirmados, finalizando upload...');
       await this.finalizeUpload();
     } else {
       throw new Error(`Upload ainda incompleto após reenvio: apenas ${finalReceivedCount} de ${this.totalChunks} chunks foram confirmados pelo servidor`);
@@ -319,7 +295,6 @@ export class ChunkedUploader {
    * Envia um chunk específico para o servidor
    */
   private async uploadChunk(chunkIndex: number, retryCount = 0): Promise<void> {
-    console.log(`Iniciando upload do chunk ${chunkIndex}...`);
     if (this.aborted || this.paused) return;
     
     const start = chunkIndex * this.chunkSize;
@@ -357,11 +332,7 @@ export class ChunkedUploader {
         this.onProgress(Math.round(data.progress));
       }
       
-      console.log('Chunk enviado:', { 
-        chunkIndex, 
-        progress: data.progress,
-        receivedChunks: data.receivedChunks || data.received_chunks
-      });
+
       
       // Garantir que receivedChunks seja um array
       if (!Array.isArray(this.receivedChunks)) {
@@ -436,8 +407,6 @@ export class ChunkedUploader {
       throw new Error(`Upload incompleto: ${receivedCount} de ${this.totalChunks} chunks enviados. Chunks faltando: ${missingChunks.length}`);
     }
     
-    console.log(`Finalizando upload ${this.uploadId} com ${receivedCount} chunks enviados`);
-    
     try {
       const data = await finalizeChunkedUpload(
         this.uploadId,
@@ -445,8 +414,6 @@ export class ChunkedUploader {
         this.file.size,
         this.metadata
       );
-      
-      console.log('Upload finalizado com sucesso:', data);
       
       // Limpar estado
       this.clearState();

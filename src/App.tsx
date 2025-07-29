@@ -9,7 +9,7 @@ import {
 import { Toaster } from 'react-hot-toast';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
+import BackendDiagnostic from './components/monitoring/BackendDiagnostic';
 import MonitoringPage from './pages/MonitoringPage';
 import DetailedMonitoringPage from './pages/DetailedMonitoringPage';
 import UploadPage from './pages/UploadPage';
@@ -114,7 +114,7 @@ const App: React.FC = () => {
                   />
                 </Routes>
               </main>
-              <Footer />
+              <BackendDiagnostic />
             </div>
           </div>
         </Router>
