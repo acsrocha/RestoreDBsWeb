@@ -47,7 +47,7 @@ const SystemMonitoringPage: React.FC = () => {
   const fetchHealthDataLocal = async () => {
     try {
       const response = await fetchHealthData();
-      console.log('Health data response:', response); // Debug log
+      // Health data received
       setHealthData(response);
       setLastUpdated(new Date());
     } catch (error) {
@@ -107,7 +107,7 @@ const SystemMonitoringPage: React.FC = () => {
   const testAPI = async () => {
     try {
       const data = await fetchHealthData();
-      console.log('Teste da API:', data);
+      // API test completed
       
       // Traduzir o status para português
       let statusPt = data.status;

@@ -21,7 +21,6 @@ export const fetchErrorsData = async (): Promise<FailedRestoreItem[]> => {
 // Novos endpoints para monitoramento do sistema
 export const fetchHealthData = async (): Promise<any> => {
   const url = HEALTH_API_URL();
-  console.log('Fazendo chamada para:', url);
   const response = await fetch(url, { 
     cache: 'no-store',
     headers: {
@@ -29,7 +28,6 @@ export const fetchHealthData = async (): Promise<any> => {
       'Content-Type': 'application/json'
     }
   });
-  console.log('Response status:', response.status);
   return handleResponse<any>(response);
 };
 

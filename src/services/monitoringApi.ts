@@ -7,13 +7,10 @@ const FILE_MONITORING_API_URL = () => getApiUrl('/api/file_monitoring');
 // Endpoint para buscar dados de monitoramento de arquivos
 export const fetchFileMonitoringData = async (): Promise<FileMonitoringData> => {
   try {
-    console.log('Buscando dados de monitoramento...');
     const response = await fetch(FILE_MONITORING_API_URL(), { 
       cache: 'no-store',
       headers: buildHeaders()
     });
-    
-    console.log('Status da resposta:', response.status);
     
     const data = await handleResponse<FileMonitoringData>(response);
     
@@ -23,7 +20,7 @@ export const fetchFileMonitoringData = async (): Promise<FileMonitoringData> => 
       (!data.recentlyCompleted || data.recentlyCompleted.length === 0) &&
       (!data.recentlyFailed || data.recentlyFailed.length === 0)
     ) {
-      console.log('Aviso: Todos os arrays de monitoramento estão vazios');
+      // Warning: all monitoring arrays are empty
     }
     
     return data;

@@ -27,9 +27,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   onCascadeDeleteChange,
   canCascadeDelete, // << NOVA PROP >>
 }) => {
-  console.log(
-    `LOG DEBUG: [DeleteConfirmationModal] RENDERIZANDO. Props: isOpen=${isOpen}, itemName=${itemName}, canCascadeDelete=${canCascadeDelete}, shouldCascadeDelete=${shouldCascadeDelete}`
-  );
+  // Delete confirmation modal rendering
 
   const [ticketInput, setTicketInput] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
@@ -51,7 +49,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   }
   
   if (!itemName && isOpen) { // Adicionado para depuração, caso o item não chegue
-      console.warn(`LOG DEBUG WARN: [DeleteConfirmationModal] Props: isOpen=${isOpen}, MAS itemName é nulo ou vazio!`);
+      // Warning: itemName is null or empty
   }
   
   const hasTicketId = ticketId && ticketId.trim() !== '';

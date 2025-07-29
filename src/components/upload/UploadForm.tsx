@@ -36,9 +36,7 @@ const UploadForm: React.FC = () => {
     }
 
     const file = fileInputRef.current.files[0];
-    console.log('Arquivo selecionado:', file.name);
-    console.log('Tamanho:', file.size, 'bytes');
-    console.log('Tipo:', file.type);
+    // File selected for upload
     
     // Verificar tipo do arquivo
     const fileName = file.name.toLowerCase();
@@ -67,7 +65,7 @@ const UploadForm: React.FC = () => {
     if (notasTecnico) formData.append('notasTecnico', notasTecnico);
     
     // Verificar se o FormData contém o arquivo
-    console.log('FormData contém backupFile:', formData.has('backupFile'));
+    // FormData prepared
     
     try {
       // Simular progresso para feedback visual
@@ -89,7 +87,7 @@ const UploadForm: React.FC = () => {
       setSelectedFileName('Nenhum arquivo escolhido');
       signalUpdate();
     } catch (error) {
-      console.error('Falha no upload:', error);
+      // Upload failed
       setUploadStatus(error instanceof Error ? `Erro no upload: ${error.message}` : 'Falha crítica no upload.');
       setStatusType('error');
     } finally {

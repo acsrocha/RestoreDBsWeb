@@ -17,38 +17,26 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
   onConfirm,
   isDiscarding,
 }) => {
-  // PONTO DE LOG A
-  console.log(
-    `LOG DEBUG: [DiscardConfirmationModal] RENDERIZANDO. Props recebidas: isOpen=${isOpen}, dbToDiscard ID=${dbToDiscard?.id}, dbToDiscard Alias=${dbToDiscard?.restoredDbAlias}, isDiscarding=${isDiscarding}`
-  );
+  // Discard confirmation modal rendering
 
   const [ticketInput, setTicketInput] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && dbToDiscard) { 
-      // PONTO DE LOG B
-      console.log(
-        "LOG DEBUG: [DiscardConfirmationModal] useEffect EXECUTADO porque isOpen é true E dbToDiscard existe. Limpando ticketInput e inputError."
-      );
+      // Clearing input fields
       setTicketInput('');
       setInputError(null);
     }
   }, [isOpen, dbToDiscard]);
 
   if (!isOpen) {
-    // PONTO DE LOG C.1
-    console.log(
-      `LOG DEBUG: [DiscardConfirmationModal] RETORNANDO NULL porque !isOpen (${!isOpen})`
-    );
+    // Modal is closed
     return null;
   }
   
   if (!dbToDiscard) {
-    // PONTO DE LOG C.2
-    console.log(
-      `LOG DEBUG: [DiscardConfirmationModal] RETORNANDO NULL (ou loader) porque isOpen é true, MAS !dbToDiscard (${!dbToDiscard})`
-    );
+    // Loading database data
     // Mantendo a lógica de retornar um overlay com "Carregando..." se dbToDiscard for null mas isOpen for true
     return (
         <div className={`modal-overlay active`}> 
@@ -59,11 +47,7 @@ const DiscardConfirmationModal: React.FC<DiscardConfirmationModalProps> = ({
     );
   }
   
-  // PONTO DE LOG D
-  console.log(
-    "LOG DEBUG: [DiscardConfirmationModal] PASSOU DAS CONDIÇÕES DE SAÍDA. Modal deveria ser montado no DOM e visível. dbToDiscard.id:", 
-    dbToDiscard.id
-  );
+  // Modal ready to render
 
   const hasOriginalTicket = dbToDiscard.uploadedByTicketID && dbToDiscard.uploadedByTicketID.trim() !== '';
 

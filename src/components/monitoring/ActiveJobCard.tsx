@@ -42,38 +42,21 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   restoreStage,
   finalizationStage
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // --- INÍCIO DA CORREÇÃO ---
-  // Estados para controlar as fases da animação de saída
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [isFadingOut, setIsFadingOut] = useState(false);
-  const [isRemoved, setIsRemoved] = useState(false);
+  // LOG 1: VER AS PROPS A CADA RENDERIZAÇÃO
+  console.log(`[CARD: ${fileId}] Renderizando. Status de Finalização: ${finalizationStage.status}`);
 
+  // LOG 2: VER QUANDO O COMPONENTE É MONTADO E DESMONTADO
   useEffect(() => {
-    // A animação é disparada quando o status da finalização é 'complete' (ou 'completed')
-    // e o estado 'isCompleting' ainda não foi ativado, para evitar múltiplos disparos.
-    const isDone = finalizationStage.status === 'complete' || finalizationStage.status === 'completed';
-    if (isDone && !isCompleting) {
-      setIsCompleting(true); // 1. Ativa o estado de "completando" para adicionar a classe do pulso.
+    // Roda quando o componente é montado
+    console.log(`%c[CARD: ${fileId}] MONTADO NO DOM`, 'color: green; font-weight: bold;');
 
-      // 2. Aguarda a animação de pulso (2s) terminar antes de iniciar o fade out.
-      setTimeout(() => {
-        setIsFadingOut(true);
-      }, 2000); 
+    // A função de retorno do useEffect roda quando o componente vai ser desmontado
+    return () => {
+      console.log(`%c[CARD: ${fileId}] SENDO DESMONTADO`, 'color: red; font-weight: bold;');
+    };
+  }, [fileId]); // Dependência em fileId para ser específico da instância do card
 
-      // 3. Aguarda o fade out (1s) terminar para remover o componente do DOM.
-      setTimeout(() => {
-        setIsRemoved(true);
-      }, 3000); // 2s de pulso + 1s de fade out
-    }
-  }, [finalizationStage.status, isCompleting]);
-  
-  // Se o componente estiver no estado final de remoção, ele retorna null e desaparece.
-  if (isRemoved) {
-    return null;
-  }
-  // --- FIM DA CORREÇÃO ---
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -118,20 +101,17 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
     const finalStatus = (status === 'complete' || status === 'completed') ? 'completed' 
                       : (status === 'start' || status === 'processing') ? 'processing' 
                       : status;
-    
-    const iconClass = `stage-icon ${finalStatus}`;
 
     if (finalStatus === 'completed') {
-      return <div className={iconClass}><FiCheckCircle/></div>;
+      return <FiCheckCircle className="stage-icon complete" />;
     }
     if (finalStatus === 'failed') {
-      return <div className={iconClass}><FiAlertTriangle/></div>;
+      return <FiAlertTriangle className="stage-icon failed" />;
     }
     if (finalStatus === 'processing') {
-      // Usando o ícone FiLoader para a animação de processamento
-      return <div className={iconClass}><FiLoader className="processing-spinner" /></div>;
+      return <div className="stage-icon processing"><FiLoader className="processing-spinner" /></div>;
     }
-    return <div className={iconClass}></div>; // Ícone pendente
+    return <div className="stage-icon pending"></div>;
   };
 
   const getStageName = (stage: string): string => {
@@ -149,8 +129,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
     return <span className={`stage-label ${finalStatus}`}>{getStageName(stageName)}</span>
   }
 
-  // Combina as classes dinamicamente
-  const cardClassName = `active-job-card ${isExpanded ? 'expanded' : ''} ${isCompleting ? 'completing' : ''} ${isFadingOut ? 'fade-out' : ''}`.trim();
+  const cardClassName = `active-job-card ${isExpanded ? 'expanded' : ''}`.trim();
 
   return (
     <div className={cardClassName} data-file-id={fileId}>

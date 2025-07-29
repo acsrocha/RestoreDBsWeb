@@ -32,7 +32,7 @@ const getStatusClassNameForPage = (status?: string): string => {
 };
 
 const ProcessedDatabasesPage: React.FC = () => {
-  console.log("LOG DEBUG: ProcessedDatabasesPage RENDERIZOU");
+  // ProcessedDatabasesPage rendered
 
   const [databases, setDatabases] = useState<ProcessedDatabase[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -119,14 +119,14 @@ const ProcessedDatabasesPage: React.FC = () => {
   }, [feedbackMessage]);
 
   const handleOpenDiscardModal = (dbId: string) => {
-    console.log(`LOG DEBUG: [ProcessedDatabasesPage] handleOpenDiscardModal INICIADO para dbId: ${dbId}`);
+    // Opening discard modal
     const dbToProcess = databases.find(d => d.id === dbId);
     
     if (dbToProcess) {
-      console.log("LOG DEBUG: [ProcessedDatabasesPage] Banco encontrado. DEFININDO dbToConfirmDiscard:", dbToProcess);
+      // Database found for discard
       setDbToConfirmDiscard(dbToProcess);
     } else {
-      console.error("LOG DEBUG ERROR: [ProcessedDatabasesPage] Banco NÃO encontrado para dbId:", dbId);
+      // Database not found for discard
       setFeedbackMessage({
         type: 'error',
         text: `Erro: Não foi possível encontrar o banco de dados com ID ${dbId} para descarte.`
@@ -137,7 +137,7 @@ const ProcessedDatabasesPage: React.FC = () => {
 
   useEffect(() => {
     if (dbToConfirmDiscard) {
-      console.log("LOG DEBUG: [ProcessedDatabasesPage] useEffect detectou dbToConfirmDiscard:", dbToConfirmDiscard, "ABRINDO MODAL.");
+      // Opening discard modal
       setIsDiscardModalOpen(true);
       setFeedbackMessage(null);
     }
@@ -145,7 +145,7 @@ const ProcessedDatabasesPage: React.FC = () => {
 
 
   const handleCloseDiscardModal = () => {
-    console.log("LOG DEBUG: [ProcessedDatabasesPage] handleCloseDiscardModal ACIONADO");
+    // Closing discard modal
     if (addActivity && dbToConfirmDiscard && !isDiscarding) {
       addActivity(
         `Descarte para '${dbToConfirmDiscard.restoredDbAlias}' cancelado pelo usuário no modal.`
@@ -158,9 +158,9 @@ const ProcessedDatabasesPage: React.FC = () => {
   const handleConfirmDiscard = async (
     confirmationTicketValueFromModal?: string
   ) => {
-    console.log("LOG DEBUG: [ProcessedDatabasesPage] handleConfirmDiscard ACIONADO");
+    // Confirming discard
     if (!dbToConfirmDiscard) {
-      console.error("LOG DEBUG ERROR: [ProcessedDatabasesPage] handleConfirmDiscard chamado sem dbToConfirmDiscard.");
+      // Error: no database to discard
       return;
     }
 
@@ -197,8 +197,7 @@ const ProcessedDatabasesPage: React.FC = () => {
     loadDatabases(false, true);
   };
   
-  console.log("LOG DEBUG: [ProcessedDatabasesPage] Estado de isDiscardModalOpen ANTES DO RETURN:", isDiscardModalOpen);
-  console.log("LOG DEBUG: [ProcessedDatabasesPage] Estado de dbToConfirmDiscard ANTES DO RETURN:", dbToConfirmDiscard ? dbToConfirmDiscard.id : null);
+  // Modal state before render
 
 
   return (

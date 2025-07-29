@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { fetchFileProcessingJobs } from '../services/fileMonitoringApi';
 import { useInterval } from '../hooks/useInterval';
 import { useNotification } from '../hooks/useNotification';
@@ -11,6 +12,7 @@ import StatisticsDashboard from '../components/monitoring/StatisticsDashboard';
 import JobViewFilters from '../components/monitoring/JobViewFilters';
 import { FiActivity, FiCheckCircle, FiAlertTriangle, FiDatabase } from 'react-icons/fi';
 import '../styles/components/DetailedMonitoring.css';
+import '../styles/animations/job-card-transition.css';
 import '../styles/theme.css';
 
 // Intervalo de atualização em milissegundos
@@ -30,6 +32,8 @@ const DetailedMonitoringPage: React.FC = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [stats, setStats] = useState({ total: 0, processing: 0, completed: 0, failed: 0 });
   const [selectedJobId, setSelectedJobId] = useState(null);
+  const [exitingJobs, setExitingJobs] = useState<string[]>([]); // IDs dos jobs em fase de saída
+  const [processedJobs, setProcessedJobs] = useState<string[]>([]); // IDs dos jobs já processados
   const { showError } = useNotification();
 
   // Função para buscar os dados de monitoramento
@@ -39,10 +43,47 @@ const DetailedMonitoringPage: React.FC = () => {
     try {
       const data = await fetchFileProcessingJobs();
       
-      // Separar os jobs por status
-      const active = data.filter(job => job.status === 'processing' || job.status === 'queued');
-      const completed = data.filter(job => job.status === 'completed');
-      const failed = data.filter(job => job.status === 'failed');
+      // Identificar IDs de jobs que estavam em processamento na renderização anterior
+      const previouslyProcessingIds = new Set(processingJobs.map(j => j.fileId));
+
+      // Jobs que estão REALMENTE completos/falharam AGORA
+      // Verificar se TODAS as etapas estão completas
+      const justFinishedJobs = data.filter(job => {
+        const stages = job.stages || [];
+        const allStagesComplete = stages.length >= 4 && 
+          stages.every(stage => stage.status === 'completed' || stage.status === 'failed');
+        
+        return (
+          (job.status === 'completed' || job.status === 'failed') && 
+          allStagesComplete &&
+          previouslyProcessingIds.has(job.fileId) &&
+          !processedJobs.includes(job.fileId)
+        );
+      });
+
+      // Adicionar os IDs desses jobs às listas de saída e processados
+      const justFinishedIds = justFinishedJobs.map(j => j.fileId);
+      if (justFinishedIds.length > 0) {
+        setExitingJobs(prev => [...prev, ...justFinishedIds]);
+        setProcessedJobs(prev => [...prev, ...justFinishedIds]);
+
+        // Agendar a remoção definitiva da lista de saída após a animação
+        setTimeout(() => {
+          setExitingJobs(prev => prev.filter(id => !justFinishedIds.includes(id)));
+        }, 3000);
+      }
+
+      // ATUALIZAÇÃO DAS LISTAS:
+      // A lista de processamento INCLUI jobs em processamento E jobs que acabaram de finalizar
+      const active = data.filter(job => 
+        (job.status === 'processing' || job.status === 'queued') || 
+        exitingJobs.includes(job.fileId) ||
+        justFinishedIds.includes(job.fileId)
+      );
+
+      // As listas de concluídos/falha EXCLUEM os jobs que ainda estão em 'exiting'
+      const completed = data.filter(job => job.status === 'completed' && !exitingJobs.includes(job.fileId));
+      const failed = data.filter(job => job.status === 'failed' && !exitingJobs.includes(job.fileId));
       
       setProcessingJobs(active);
       setCompletedJobs(completed);
@@ -64,7 +105,7 @@ const DetailedMonitoringPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isPaused]);
+  }, [isPaused, processingJobs, exitingJobs, processedJobs]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -181,6 +222,12 @@ const DetailedMonitoringPage: React.FC = () => {
     return { avgProgress, estimatedTime };
   }, [processingJobs]);
 
+  // LOG PARA O PAI
+  console.log(
+    `[PAI] Renderizando. Jobs em processamento: ${processingJobs.length}`, 
+    processingJobs.map(j => j.fileId)
+  );
+
   return (
     <div className="detailed-monitoring-page">
       <MonitoringPageHeader
@@ -241,7 +288,7 @@ const DetailedMonitoringPage: React.FC = () => {
                 Arquivos em Processamento
                 <span className="count-badge">{processingJobs.length}</span>
               </h2>
-              <div className="active-jobs-grid">
+              <TransitionGroup component="div" className="active-jobs-grid">
                 {processingJobs
                   .filter(job => !searchTerm || 
                     job.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -256,42 +303,47 @@ const DetailedMonitoringPage: React.FC = () => {
                     const finalizationStage = stages[3] || { status: 'pending', steps: [] };
                     
                     return (
-                      <ActiveJobCard
+                      <CSSTransition
                         key={job.fileId}
-                        fileId={job.fileId}
-                        fileName={job.fileName}
-                        startedAt={job.startedAt}
-                        currentStage={job.currentStage}
-                        overallProgress={job.overallProgress}
-                        downloadStage={{
-                          status: downloadStage.status === 'completed' ? 'complete' : 
-                                 downloadStage.status === 'in_progress' ? 'processing' : 
-                                 downloadStage.status === 'failed' ? 'failed' : 'pending',
-                          steps: downloadStage.steps
-                        }}
-                        validationStage={{
-                          status: validationStage.status === 'completed' ? 'complete' : 
-                                 validationStage.status === 'in_progress' ? 'processing' : 
-                                 validationStage.status === 'failed' ? 'failed' : 'pending',
-                          steps: validationStage.steps
-                        }}
-                        restoreStage={{
-                          status: restoreStage.status === 'completed' ? 'complete' : 
-                                 restoreStage.status === 'in_progress' ? 'processing' : 
-                                 restoreStage.status === 'failed' ? 'failed' : 'pending',
-                          steps: restoreStage.steps
-                        }}
-                        finalizationStage={{
-                          status: finalizationStage.status === 'completed' ? 'complete' : 
-                                 finalizationStage.status === 'in_progress' ? 'processing' : 
-                                 finalizationStage.status === 'failed' ? 'failed' : 'pending',
-                          steps: finalizationStage.steps
-                        }}
-                      />
+                        timeout={500}
+                        classNames="job-card"
+                      >
+                        <ActiveJobCard
+                          fileId={job.fileId}
+                          fileName={job.fileName}
+                          startedAt={job.startedAt}
+                          currentStage={job.currentStage}
+                          overallProgress={job.overallProgress}
+                          downloadStage={{
+                            status: downloadStage.status === 'completed' ? 'complete' : 
+                                   downloadStage.status === 'in_progress' ? 'processing' : 
+                                   downloadStage.status === 'failed' ? 'failed' : 'pending',
+                            steps: downloadStage.steps
+                          }}
+                          validationStage={{
+                            status: validationStage.status === 'completed' ? 'complete' : 
+                                   validationStage.status === 'in_progress' ? 'processing' : 
+                                   validationStage.status === 'failed' ? 'failed' : 'pending',
+                            steps: validationStage.steps
+                          }}
+                          restoreStage={{
+                            status: restoreStage.status === 'completed' ? 'complete' : 
+                                   restoreStage.status === 'in_progress' ? 'processing' : 
+                                   restoreStage.status === 'failed' ? 'failed' : 'pending',
+                            steps: restoreStage.steps
+                          }}
+                          finalizationStage={{
+                            status: finalizationStage.status === 'completed' ? 'complete' : 
+                                   finalizationStage.status === 'in_progress' ? 'processing' : 
+                                   finalizationStage.status === 'failed' ? 'failed' : 'pending',
+                            steps: finalizationStage.steps
+                          }}
+                        />
+                      </CSSTransition>
                     );
                   })
                 }
-              </div>
+              </TransitionGroup>
             </section>
           )}
           

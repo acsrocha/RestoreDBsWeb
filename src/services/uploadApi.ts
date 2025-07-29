@@ -4,8 +4,7 @@ import { getApiUrl, buildHeaders, handleResponse } from './apiUtils';
 const UPLOAD_API_URL = () => getApiUrl('/api/upload');
 
 export const uploadBackup = async (formData: FormData): Promise<string> => {
-  console.log('Iniciando upload para:', UPLOAD_API_URL());
-  console.log('FormData contém backupFile:', formData.has('backupFile'));
+  // Starting upload
   
   try {
     const response = await fetch(UPLOAD_API_URL(), {
@@ -14,16 +13,16 @@ export const uploadBackup = async (formData: FormData): Promise<string> => {
       body: formData,
     });
     
-    console.log('Resposta do servidor:', response.status, response.statusText);
+    // Server response received
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro detalhado do servidor:', errorText);
+      // Server error details
     }
     
     return handleResponse<string>(response, false); // Resposta é texto plano
   } catch (error) {
-    console.error('Erro na chamada fetch:', error);
+    // Fetch error
     throw error;
   }
 };

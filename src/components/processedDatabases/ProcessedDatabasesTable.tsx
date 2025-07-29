@@ -106,7 +106,7 @@ const ProcessedDatabasesTable: React.FC<ProcessedDatabasesTableProps> = ({
                   }}
                   onClick={(e) => {
                     e.stopPropagation(); 
-                    console.log(`LOG DEBUG: [ProcessedDatabasesTable] Ícone de lixeira CLICADO para dbId: ${db.id}, dbAlias: ${db.restoredDbAlias}`);
+                    // Delete icon clicked
                     onMarkForDiscard(db.id); 
                   }}
                   title="Marcar para Descarte"

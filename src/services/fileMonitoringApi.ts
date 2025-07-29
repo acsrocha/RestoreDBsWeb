@@ -19,17 +19,12 @@ export const fetchFileMonitoringData = async (): Promise<FileMonitoringData> => 
   }
   
   try {
-    console.log('Buscando dados de monitoramento...');
     const response = await fetch(FILE_MONITORING_API_URL(), { 
       cache: 'no-store',
       headers: buildHeaders()
     });
     
-    console.log('Status da resposta:', response.status);
-    console.log('Headers da resposta:', Object.fromEntries(response.headers.entries()));
-    
     const data = await handleResponse<FileMonitoringData>(response);
-    console.log('Dados recebidos:', data);
     
     // Verificar se os dados estão vazios
     if (
@@ -37,7 +32,7 @@ export const fetchFileMonitoringData = async (): Promise<FileMonitoringData> => 
       (!data.recentlyCompleted || data.recentlyCompleted.length === 0) &&
       (!data.recentlyFailed || data.recentlyFailed.length === 0)
     ) {
-      console.log('Aviso: Todos os arrays de monitoramento estão vazios');
+      // Warning: all monitoring arrays are empty
     }
     
     return data;

@@ -27,7 +27,7 @@ export const LastUpdatedProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Exemplo: registrar no console.
     // Em uma aplicação real, você pode querer armazenar isso em um estado
     // ou enviar para um serviço de logging.
-    console.log('Activity logged:', message);
+    // Activity logged
     // Se você tivesse um estado para atividades:
     // setActivities(prevActivities => [...prevActivities, `${new Date().toISOString()}: ${message}`]);
   }, []); // Adicionar dependências se 'activities' ou similar for usado
