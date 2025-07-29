@@ -187,10 +187,12 @@
   animation: processingPulse 2s infinite;
 }
 
-.stage-icon.complete {
-  background: linear-gradient(135deg, var(--accent-success), color-mix(in srgb, var(--accent-success) 80%, white));
-  border: 2px solid var(--accent-success);
-  color: white;
+.stage-icon.complete,
+.stage-icon.completed {
+  background: none;
+  border: none;
+  color: var(--accent-success);
+  transform: scale(1.2);
 }
 
 .stage-icon.failed {
@@ -412,6 +414,35 @@
   50% {
     transform: scale(1.2);
     opacity: 0.8;
+  }
+}
+
+@keyframes completionPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  25%, 75% {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-success) 40%, transparent);
+  }
+}
+
+.active-job-card.completing {
+  animation: completionPulse 1s ease-in-out 2;
+}
+
+.active-job-card.fade-out {
+  animation: fadeOut 1s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    height: 0;
+    margin: 0;
+    padding: 0;
   }
 }
 

@@ -1,11 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp, FiLoader } from 'react-icons/fi';
 import '../../styles/components/ActiveJobCard.css';
-import '../../styles/components/DetailedMonitoringSteps.css';
 import '../../styles/components/DetailedMonitoringSteps.css';
 
 // Tipos para os estágios de processamento
-type StageStatus = 'pending' | 'start' | 'processing' | 'complete' | 'failed';
+type StageStatus = 'pending' | 'start' | 'processing' | 'complete' | 'completed' | 'failed';
 
 interface ProcessingStage {
   status: StageStatus;
@@ -44,57 +43,97 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   finalizationStage
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // --- INÍCIO DA CORREÇÃO ---
+  // Estados para controlar as fases da animação de saída
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isRemoved, setIsRemoved] = useState(false);
+
+  useEffect(() => {
+    // A animação é disparada quando o status da finalização é 'complete' (ou 'completed')
+    // e o estado 'isCompleting' ainda não foi ativado, para evitar múltiplos disparos.
+    const isDone = finalizationStage.status === 'complete' || finalizationStage.status === 'completed';
+    if (isDone && !isCompleting) {
+      setIsCompleting(true); // 1. Ativa o estado de "completando" para adicionar a classe do pulso.
+
+      // 2. Aguarda a animação de pulso (2s) terminar antes de iniciar o fade out.
+      setTimeout(() => {
+        setIsFadingOut(true);
+      }, 2000); 
+
+      // 3. Aguarda o fade out (1s) terminar para remover o componente do DOM.
+      setTimeout(() => {
+        setIsRemoved(true);
+      }, 3000); // 2s de pulso + 1s de fade out
+    }
+  }, [finalizationStage.status, isCompleting]);
+  
+  // Se o componente estiver no estado final de remoção, ele retorna null e desaparece.
+  if (isRemoved) {
+    return null;
+  }
+  // --- FIM DA CORREÇÃO ---
   
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
-  // Calcular o tempo decorrido desde o início do processamento
-  const elapsedTime = useMemo(() => {
-    const startTime = new Date(startedAt).getTime();
-    const now = new Date().getTime();
-    const elapsed = now - startTime;
-    
-    // Formatar o tempo decorrido
-    const seconds = Math.floor((elapsed / 1000) % 60);
-    const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
-    const hours = Math.floor(elapsed / (1000 * 60 * 60));
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${seconds}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    } else {
-      return `${seconds}s`;
-    }
+
+  // Lógica para o tempo decorrido (otimizada com useEffect e setInterval)
+  const [elapsedTime, setElapsedTime] = useState('0s');
+  useEffect(() => {
+      const interval = setInterval(() => {
+          if (!startedAt) {
+              setElapsedTime('N/A');
+              return;
+          }
+          const startTime = new Date(startedAt).getTime();
+          const now = new Date().getTime();
+          const elapsed = now - startTime;
+
+          const seconds = Math.floor((elapsed / 1000) % 60);
+          const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
+          const hours = Math.floor(elapsed / (1000 * 60 * 60));
+
+          if (hours > 0) setElapsedTime(`${hours}h ${minutes}m`);
+          else if (minutes > 0) setElapsedTime(`${minutes}m ${seconds}s`);
+          else setElapsedTime(`${seconds}s`);
+      }, 1000);
+      return () => clearInterval(interval);
   }, [startedAt]);
 
-  // Determinar a cor da barra de progresso com base no estágio atual
+
   const progressBarColor = useMemo(() => {
     if (restoreStage.status === 'failed' || validationStage.status === 'failed') {
       return 'progress-bar-error';
     }
-    if (overallProgress >= 100) {
+    // Garante que a barra fique verde ao completar 100% ou ao finalizar
+    if (overallProgress >= 100 || finalizationStage.status === 'complete' || finalizationStage.status === 'completed') {
       return 'progress-bar-success';
     }
     return 'progress-bar-info';
-  }, [overallProgress, restoreStage.status, validationStage.status]);
+  }, [overallProgress, restoreStage.status, validationStage.status, finalizationStage.status]);
 
-  // Renderizar o ícone do estágio atual
-  const renderStageIcon = (stage: string, status: StageStatus) => {
-    if (status === 'complete') {
-      return <FiCheckCircle className="stage-icon complete" />;
+  const renderStageIcon = (status: StageStatus) => {
+    const finalStatus = (status === 'complete' || status === 'completed') ? 'completed' 
+                      : (status === 'start' || status === 'processing') ? 'processing' 
+                      : status;
+    
+    const iconClass = `stage-icon ${finalStatus}`;
+
+    if (finalStatus === 'completed') {
+      return <div className={iconClass}><FiCheckCircle/></div>;
     }
-    if (status === 'failed') {
-      return <FiAlertTriangle className="stage-icon failed" />;
+    if (finalStatus === 'failed') {
+      return <div className={iconClass}><FiAlertTriangle/></div>;
     }
-    if (status === 'processing' || status === 'start') {
-      return <div className="stage-icon processing"></div>;
+    if (finalStatus === 'processing') {
+      // Usando o ícone FiLoader para a animação de processamento
+      return <div className={iconClass}><FiLoader className="processing-spinner" /></div>;
     }
-    return <div className="stage-icon pending"></div>;
+    return <div className={iconClass}></div>; // Ícone pendente
   };
 
-  // Mapear o nome do estágio para um nome amigável
   const getStageName = (stage: string): string => {
     switch (stage) {
       case 'download': return 'Download';
@@ -104,37 +143,17 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
       default: return stage;
     }
   };
+  
+  const getStageLabel = (stageName: string, status: StageStatus) => {
+    const finalStatus = (status === 'complete' || status === 'completed') ? 'complete' : status;
+    return <span className={`stage-label ${finalStatus}`}>{getStageName(stageName)}</span>
+  }
 
-  // Obter o status do estágio atual
-  const getCurrentStageStatus = (): ProcessingStage => {
-    switch (currentStage) {
-      case 'download': return downloadStage;
-      case 'validation': return validationStage;
-      case 'restore': return restoreStage;
-      case 'finalization': return finalizationStage;
-      default: return { status: 'pending' };
-    }
-  };
-
-  const currentStageStatus = getCurrentStageStatus();
-
-  useEffect(() => {
-    if (finalizationStage.status === 'complete' && !isCompleting) {
-      setIsCompleting(true);
-      setTimeout(() => {
-        const card = document.querySelector(`[data-file-id="${fileId}"]`);
-        if (card) {
-          card.classList.add('completing');
-          setTimeout(() => {
-            card.classList.add('fade-out');
-          }, 2000);
-        }
-      }, 100);
-    }
-  }, [finalizationStage.status, fileId, isCompleting]);
+  // Combina as classes dinamicamente
+  const cardClassName = `active-job-card ${isExpanded ? 'expanded' : ''} ${isCompleting ? 'completing' : ''} ${isFadingOut ? 'fade-out' : ''}`.trim();
 
   return (
-    <div className={`active-job-card ${isExpanded ? 'expanded' : ''} ${isCompleting ? 'completing' : ''}`} data-file-id={fileId}>
+    <div className={cardClassName} data-file-id={fileId}>
       <div className="job-header">
         <h3 className="job-filename" title={fileName}>
           <FiHardDrive className="file-icon" />
@@ -159,163 +178,36 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
       </div>
       
       <div className="job-progress">
+        <div className="progress-text">
+            <span>{getStageName(currentStage)}</span>
+            <span>{Math.floor(overallProgress)}%</span>
+        </div>
         <div className="progress-bar-container">
           <div 
             className={`progress-bar ${progressBarColor}`} 
             style={{ width: `${Math.min(100, overallProgress)}%` }}
           ></div>
         </div>
-        <div className="progress-text">
-          {overallProgress}% - {getStageName(currentStage)}
-        </div>
       </div>
       
       <div className="job-stages">
-        <div className={`job-stage ${currentStage === 'download' ? 'active' : ''}`}>
-          {renderStageIcon('download', downloadStage.status)}
-          <span>Download</span>
+        <div className="job-stage">
+          {renderStageIcon(downloadStage.status)}
+          {getStageLabel('download', downloadStage.status)}
         </div>
-        <div className={`job-stage ${currentStage === 'validation' ? 'active' : ''}`}>
-          {renderStageIcon('validation', validationStage.status)}
-          <span>Validação</span>
+        <div className="job-stage">
+          {renderStageIcon(validationStage.status)}
+          {getStageLabel('validation', validationStage.status)}
         </div>
-        <div className={`job-stage ${currentStage === 'restore' ? 'active' : ''}`}>
-          {renderStageIcon('restore', restoreStage.status)}
-          <span>Restauração</span>
+        <div className="job-stage">
+          {renderStageIcon(restoreStage.status)}
+          {getStageLabel('restore', restoreStage.status)}
         </div>
-        <div className={`job-stage ${currentStage === 'finalization' ? 'active' : ''}`}>
-          {renderStageIcon('finalization', finalizationStage.status)}
-          <span>Finalização</span>
+        <div className="job-stage">
+          {renderStageIcon(finalizationStage.status)}
+          {getStageLabel('finalization', finalizationStage.status)}
         </div>
       </div>
-      
-      {currentStageStatus.details && (
-        <div className="job-details">
-          <p>{currentStageStatus.details}</p>
-        </div>
-      )}
-      
-      {isExpanded && (
-        <div className="job-expanded-details">
-          <h4>Detalhes do Processamento</h4>
-          
-          <div className="stage-details-section">
-            <h5>Download</h5>
-            <div className={`stage-status-badge ${downloadStage.status}`}>
-              {downloadStage.status === 'pending' ? 'Pendente' : 
-               downloadStage.status === 'processing' ? 'Em Processamento' : 
-               downloadStage.status === 'complete' ? 'Concluído' : 'Falha'}
-            </div>
-            {downloadStage.status !== 'pending' && (
-              <div className="stage-steps">
-                {downloadStage.steps && downloadStage.steps.length > 0 ? (
-                  <ul>
-                    {downloadStage.steps.map((step, index) => (
-                      <li key={step.id || index} className={`step-item ${step.status}`}>
-                        <div className="step-header">
-                          <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
-                          <span className="step-message">{step.message}</span>
-                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
-                        </div>
-                        {step.details && <div className="step-details">{step.details}</div>}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="no-steps">Nenhum detalhe disponível</p>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="stage-details-section">
-            <h5>Validação</h5>
-            <div className={`stage-status-badge ${validationStage.status}`}>
-              {validationStage.status === 'pending' ? 'Pendente' : 
-               validationStage.status === 'processing' ? 'Em Processamento' : 
-               validationStage.status === 'complete' ? 'Concluído' : 'Falha'}
-            </div>
-            {validationStage.status !== 'pending' && (
-              <div className="stage-steps">
-                {validationStage.steps && validationStage.steps.length > 0 ? (
-                  <ul>
-                    {validationStage.steps.map((step, index) => (
-                      <li key={step.id || index} className={`step-item ${step.status}`}>
-                        <div className="step-header">
-                          <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
-                          <span className="step-message">{step.message}</span>
-                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
-                        </div>
-                        {step.details && <div className="step-details">{step.details}</div>}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="no-steps">Nenhum detalhe disponível</p>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="stage-details-section">
-            <h5>Restauração</h5>
-            <div className={`stage-status-badge ${restoreStage.status}`}>
-              {restoreStage.status === 'pending' ? 'Pendente' : 
-               restoreStage.status === 'processing' ? 'Em Processamento' : 
-               restoreStage.status === 'complete' ? 'Concluído' : 'Falha'}
-            </div>
-            {restoreStage.status !== 'pending' && (
-              <div className="stage-steps">
-                {restoreStage.steps && restoreStage.steps.length > 0 ? (
-                  <ul>
-                    {restoreStage.steps.map((step, index) => (
-                      <li key={step.id || index} className={`step-item ${step.status}`}>
-                        <div className="step-header">
-                          <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
-                          <span className="step-message">{step.message}</span>
-                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
-                        </div>
-                        {step.details && <div className="step-details">{step.details}</div>}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="no-steps">Nenhum detalhe disponível</p>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="stage-details-section">
-            <h5>Finalização</h5>
-            <div className={`stage-status-badge ${finalizationStage.status}`}>
-              {finalizationStage.status === 'pending' ? 'Pendente' : 
-               finalizationStage.status === 'processing' ? 'Em Processamento' : 
-               finalizationStage.status === 'complete' ? 'Concluído' : 'Falha'}
-            </div>
-            {finalizationStage.status !== 'pending' && (
-              <div className="stage-steps">
-                {finalizationStage.steps && finalizationStage.steps.length > 0 ? (
-                  <ul>
-                    {finalizationStage.steps.map((step, index) => (
-                      <li key={step.id || index} className={`step-item ${step.status}`}>
-                        <div className="step-header">
-                          <span className="step-timestamp">{new Date(step.timestamp).toLocaleTimeString()}</span>
-                          <span className="step-message">{step.message}</span>
-                          {step.duration && <span className="step-duration">({step.duration}ms)</span>}
-                        </div>
-                        {step.details && <div className="step-details">{step.details}</div>}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="no-steps">Nenhum detalhe disponível</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
