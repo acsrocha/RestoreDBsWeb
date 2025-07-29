@@ -3,11 +3,11 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 800;
   
   background-color: var(--bg-secondary);
   border-top: 1px solid var(--border-primary);
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -4px 15px var(--shadow-color);
   color: var(--text-secondary);
   
   display: flex;
@@ -96,7 +96,3 @@
   opacity: 0.5;
 }
 
-.diagnostic-footer-bar.error {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-top-color: var(--accent-error);
-}

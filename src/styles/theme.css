@@ -1,54 +1,107 @@
-/* src/styles/theme.css */
+/* src/styles/theme.css - Sistema de Temas Unificado */
 
 /* --- TEMA CLARO (Padrão) --- */
 :root {
-  --bg-primary: #0f172a;        /* Azul ardósia muito escuro */
-  --bg-secondary: #1e293b;      /* Azul ardósia para cards */
-  --bg-tertiary: #334155;      /* Cor de hover */
-
-  --text-primary: #e2e8f0;       /* Texto principal, quase branco */
-  --text-secondary: #94a3b8;    /* Texto secundário, cinza claro */
-  --text-tertiary: #64748b;     /* Texto mais sutil */
-
-  --border-primary: #334155;     /* Bordas principais */
-  --border-secondary: #475569;    /* Bordas para inputs */
-
-  /* Cores de Acento e Status (mais vibrantes para o fundo escuro) */
-  --accent-primary: #818cf8;
-  --accent-processing: #38bdf8;
-  --accent-success: #4ade80;
-  --accent-error: #f87171;
-  --accent-warning: #fb923c;
-
-  --shadow-color: rgba(0, 0, 0, 0.2);
+  /* Cores de fundo */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  
+  /* Cores de texto */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  
+  /* Bordas */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e0;
+  
+  /* Cores de acento e status */
+  --accent-primary: #01c38e;
+  --accent-processing: #0ea5e9;
+  --accent-success: #22c55e;
+  --accent-error: #ef4444;
+  --accent-warning: #f59e0b;
+  
+  /* Sidebar */
+  --sidebar-bg: #2c3e50;
+  --sidebar-text: #ecf0f1;
+  --sidebar-icon: #95a5a6;
+  --sidebar-hover: #34495e;
+  
+  /* Sombras */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-light: 0 1px 3px var(--shadow-color);
+  --shadow-medium: 0 4px 12px var(--shadow-color);
+  --shadow-heavy: 0 8px 24px var(--shadow-color);
 }
 
 /* --- TEMA ESCURO --- */
 [data-theme='dark'] {
-  --bg-primary: #0f172a;        /* Azul ardósia muito escuro */
-  --bg-secondary: #1e293b;      /* Azul ardósia para cards */
-  --bg-tertiary: #334155;      /* Cor de hover */
-
-  --text-primary: #e2e8f0;       /* Texto principal, quase branco */
-  --text-secondary: #94a3b8;    /* Texto secundário, cinza claro */
-  --text-tertiary: #64748b;     /* Texto mais sutil */
-
-  --border-primary: #334155;     /* Bordas principais */
-  --border-secondary: #475569;    /* Bordas para inputs */
-
-  /* Cores de Acento e Status (mais vibrantes para o fundo escuro) */
-  --accent-primary: #818cf8;
+  /* Cores de fundo */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  
+  /* Cores de texto */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e0;
+  --text-tertiary: #94a3b8;
+  
+  /* Bordas */
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  
+  /* Cores de acento e status (mais vibrantes para fundo escuro) */
+  --accent-primary: #10b981;
   --accent-processing: #38bdf8;
   --accent-success: #4ade80;
   --accent-error: #f87171;
-  --accent-warning: #fb923c;
-
-  --shadow-color: rgba(0, 0, 0, 0.2);
+  --accent-warning: #fbbf24;
+  
+  /* Sidebar */
+  --sidebar-bg: #1e293b;
+  --sidebar-text: #f1f5f9;
+  --sidebar-icon: #94a3b8;
+  --sidebar-hover: #334155;
+  
+  /* Sombras */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-light: 0 2px 4px var(--shadow-color);
+  --shadow-medium: 0 8px 16px var(--shadow-color);
+  --shadow-heavy: 0 16px 32px var(--shadow-color);
 }
 
-/* Aplicação global do tema */
+/* Aplicação global */
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cards padrão */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
+}
+
+/* Inputs padrão */
+input, textarea, select {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(1, 195, 142, 0.1);
+}
+
+/* Modais responsivos ao tema */
+.modal-content {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
 }

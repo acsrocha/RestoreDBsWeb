@@ -4,6 +4,7 @@ import { useInterval } from '../hooks/useInterval';
 import { useNotification } from '../hooks/useNotification';
 import ActiveJobCard from '../components/monitoring/ActiveJobCard';
 import FileProcessingList from '../components/monitoring/FileProcessingList';
+import JobDetails from '../components/monitoring/JobDetails';
 
 import MonitoringPageHeader from '../components/monitoring/MonitoringPageHeader';
 import StatisticsDashboard from '../components/monitoring/StatisticsDashboard';
@@ -28,6 +29,7 @@ const DetailedMonitoringPage: React.FC = () => {
   const [selectedView, setSelectedView] = useState('all');
   const [lastUpdated, setLastUpdated] = useState(null);
   const [stats, setStats] = useState({ total: 0, processing: 0, completed: 0, failed: 0 });
+  const [selectedJobId, setSelectedJobId] = useState(null);
   const { showError } = useNotification();
 
   // Função para buscar os dados de monitoramento
@@ -59,13 +61,10 @@ const DetailedMonitoringPage: React.FC = () => {
     } catch (err) {
       console.error('Erro ao buscar dados de monitoramento:', err);
       setError(err.message || 'Erro ao buscar dados de monitoramento');
-      if (!isPaused) {
-        showError('Falha ao atualizar dados de monitoramento: ' + (err.message || 'Erro desconhecido'));
-      }
     } finally {
       setIsLoading(false);
     }
-  }, [showError, isPaused]);
+  }, [isPaused]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -86,6 +85,59 @@ const DetailedMonitoringPage: React.FC = () => {
     setIsLoading(true);
     fetchMonitoringData();
   };
+
+
+
+  const handleJobSelect = (jobId) => {
+    if (selectedJobId === jobId) {
+      setSelectedJobId(null);
+    } else {
+      setSelectedJobId(jobId);
+    }
+  };
+
+  // Job selecionado para mostrar detalhes
+  const selectedJob = useMemo(() => {
+    if (!selectedJobId) return null;
+    const allJobs = [...processingJobs, ...completedJobs, ...failedJobs];
+    const job = allJobs.find(job => job.fileId === selectedJobId);
+    
+    if (!job) return null;
+    
+    // Mapear para o formato esperado pelo JobDetails
+    return {
+      fileId: job.fileId,
+      fileName: job.fileName,
+      status: job.status === 'success' ? 'success' : job.status === 'failed' ? 'failed' : 'processing',
+      startedAt: job.startedAt,
+      completedAt: job.completedAt,
+      errorMessage: job.errorMessage,
+      downloadStage: {
+        status: job.downloadStageStatus === 'complete' ? 'success' : 
+               job.downloadStageStatus === 'failed' ? 'failed' : 
+               job.downloadStageStatus === 'processing' ? 'processing' : 'pending',
+        details: job.downloadStageDetails
+      },
+      validationStage: {
+        status: job.validationStageStatus === 'complete' ? 'success' : 
+               job.validationStageStatus === 'failed' ? 'failed' : 
+               job.validationStageStatus === 'processing' ? 'processing' : 'pending',
+        details: job.validationStageDetails
+      },
+      restoreStage: {
+        status: job.restoreStageStatus === 'complete' ? 'success' : 
+               job.restoreStageStatus === 'failed' ? 'failed' : 
+               job.restoreStageStatus === 'processing' ? 'processing' : 'pending',
+        details: job.restoreStageDetails
+      },
+      finalizationStage: {
+        status: job.finalizationStageStatus === 'complete' ? 'success' : 
+               job.finalizationStageStatus === 'failed' ? 'failed' : 
+               job.finalizationStageStatus === 'processing' ? 'processing' : 'pending',
+        details: job.finalizationStageDetails
+      }
+    };
+  }, [selectedJobId, processingJobs, completedJobs, failedJobs]);
 
   // Filtros e busca
   const filteredJobs = useMemo(() => {
@@ -246,6 +298,9 @@ const DetailedMonitoringPage: React.FC = () => {
                 isLoading={false} 
                 emptyMessage="Nenhum arquivo processado com sucesso." 
                 type="success"
+                onJobSelect={handleJobSelect}
+                selectedJobId={selectedJobId}
+                selectedJob={selectedJob}
               />
             </section>
           )}
@@ -266,11 +321,16 @@ const DetailedMonitoringPage: React.FC = () => {
                 isLoading={false} 
                 emptyMessage="Nenhum arquivo com falha no processamento." 
                 type="error"
+                onJobSelect={handleJobSelect}
+                selectedJobId={selectedJobId}
+                selectedJob={selectedJob}
               />
             </section>
           )}
         </div>
       )}
+      
+
     </div>
   );
 };

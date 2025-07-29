@@ -26,6 +26,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
  
 
+import './styles/theme.css';
+import './styles/standardization.css';
 import './styles/global.css';
 import './styles/components/ErrorBoundary.css';
 import './styles/components/SkipLink.css';

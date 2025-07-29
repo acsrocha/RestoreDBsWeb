@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { FiChevronDown, FiChevronUp, FiClock, FiFileText } from 'react-icons/fi';
+import React from 'react';
+import { FiClock, FiFileText } from 'react-icons/fi';
+import JobDetails from './JobDetails';
 import '../../styles/components/FileProcessingList.css';
 
 interface FileProcessingJob {
@@ -26,23 +27,21 @@ interface FileProcessingListProps {
   isLoading: boolean;
   emptyMessage: string;
   type: 'success' | 'error';
+  onJobSelect?: (jobId: string) => void;
+  selectedJobId?: string | null;
+  selectedJob?: any;
 }
 
 const FileProcessingList: React.FC<FileProcessingListProps> = ({
   jobs,
   isLoading,
   emptyMessage,
-  type
+  type,
+  onJobSelect,
+  selectedJobId,
+  selectedJob
 }) => {
-  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
 
-  const toggleJobDetails = (jobId: string) => {
-    if (expandedJobId === jobId) {
-      setExpandedJobId(null);
-    } else {
-      setExpandedJobId(jobId);
-    }
-  };
 
   // Formatar duração do processamento
   const formatDuration = (startTime: string, endTime?: string) => {
@@ -87,11 +86,15 @@ const FileProcessingList: React.FC<FileProcessingListProps> = ({
       {jobs.map(job => (
         <div 
           key={job.fileId} 
-          className={`file-item ${type} ${expandedJobId === job.fileId ? 'expanded' : ''}`}
+          className={`file-item ${type} ${selectedJobId === job.fileId ? 'selected' : ''}`}
         >
           <div 
             className="file-header" 
-            onClick={() => toggleJobDetails(job.fileId)}
+            onClick={() => {
+              if (onJobSelect) {
+                onJobSelect(job.fileId);
+              }
+            }}
           >
             <div className="file-info">
               <FiFileText className="file-icon" />
@@ -108,80 +111,17 @@ const FileProcessingList: React.FC<FileProcessingListProps> = ({
                 </span>
               </div>
               
-              {expandedJobId === job.fileId ? (
-                <FiChevronUp className="expand-icon" />
-              ) : (
-                <FiChevronDown className="expand-icon" />
-              )}
+
             </div>
           </div>
           
-          {expandedJobId === job.fileId && (
-            <div className="file-details">
-              <div className="detail-row">
-                <span className="detail-label">Iniciado em:</span>
-                <span className="detail-value">
-                  {new Date(job.startedAt).toLocaleString()}
-                </span>
-              </div>
-              
-              {job.completedAt && (
-                <div className="detail-row">
-                  <span className="detail-label">Concluído em:</span>
-                  <span className="detail-value">
-                    {new Date(job.completedAt).toLocaleString()}
-                  </span>
-                </div>
-              )}
-              
-              <div className="detail-row">
-                <span className="detail-label">ID do Arquivo:</span>
-                <span className="detail-value">{job.fileId}</span>
-              </div>
-              
-              {type === 'error' && job.errorMessage && (
-                <div className="detail-row error-message">
-                  <span className="detail-label">Erro:</span>
-                  <span className="detail-value">{job.errorMessage}</span>
-                </div>
-              )}
-              
-              <div className="stages-summary">
-                <h4>Estágios de Processamento:</h4>
-                
-                <div className={`stage-item ${job.downloadStageStatus}`}>
-                  <span className="stage-name">Download:</span>
-                  <span className="stage-status">{job.downloadStageStatus}</span>
-                  {job.downloadStageDetails && (
-                    <div className="stage-details">{job.downloadStageDetails}</div>
-                  )}
-                </div>
-                
-                <div className={`stage-item ${job.validationStageStatus}`}>
-                  <span className="stage-name">Validação:</span>
-                  <span className="stage-status">{job.validationStageStatus}</span>
-                  {job.validationStageDetails && (
-                    <div className="stage-details">{job.validationStageDetails}</div>
-                  )}
-                </div>
-                
-                <div className={`stage-item ${job.restoreStageStatus}`}>
-                  <span className="stage-name">Restauração:</span>
-                  <span className="stage-status">{job.restoreStageStatus}</span>
-                  {job.restoreStageDetails && (
-                    <div className="stage-details">{job.restoreStageDetails}</div>
-                  )}
-                </div>
-                
-                <div className={`stage-item ${job.finalizationStageStatus}`}>
-                  <span className="stage-name">Finalização:</span>
-                  <span className="stage-status">{job.finalizationStageStatus}</span>
-                  {job.finalizationStageDetails && (
-                    <div className="stage-details">{job.finalizationStageDetails}</div>
-                  )}
-                </div>
-              </div>
-            </div>
+
+          
+          {/* JobDetails aparece diretamente abaixo do item selecionado */}
+          {selectedJobId === job.fileId && selectedJob && (
+            <JobDetails 
+              job={selectedJob}
+            />
           )}
         </div>
       ))}

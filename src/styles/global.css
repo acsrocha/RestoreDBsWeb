@@ -446,8 +446,8 @@ html[data-theme='dark'] .custom-file-button:disabled {
   position: fixed;
   left: 0;
   top: 0;
-  bottom: 0;
-  z-index: 1000;
+  bottom: 60px;
+  z-index: 1100;
   transition: width 0.25s ease-in-out;
   overflow-x: hidden;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
@@ -663,7 +663,7 @@ header.main-header {
   top: 0;
   left: var(--sidebar-width);
   right: 0;
-  z-index: 900;
+  z-index: 1000;
   flex-shrink: 0;
   transition: left 0.25s ease-in-out;
 }
@@ -1420,7 +1420,7 @@ html[data-theme='dark'] .theme-switcher-sidebar #themeToggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050;
+  z-index: 1200;
   padding: 20px;
   opacity: 0;
   visibility: hidden;
@@ -2668,26 +2668,6 @@ html[data-theme='dark'] .details-section h3 {
   }
 }
 
-/* === ESTILOS PARA REACT-HOT-TOAST === */
-[data-sonner-toaster] [data-sonner-toast][data-type="success"] {
-  background: linear-gradient(135deg, rgba(var(--success-color-rgb), 0.4), #233823) !important;
-  color: #155724 !important;
-}
 
-[data-sonner-toaster] [data-sonner-toast][data-type="error"] {
-  background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #233823) !important;
-  color: #721c24 !important;
-}
-
-/* Para react-hot-toast padrão */
-.go3958317564 {
-  background: linear-gradient(135deg, rgba(var(--success-color-rgb), 0.4), #233823) !important;
-  color: #155724 !important;
-}
-
-.go2072408551 {
-  background: linear-gradient(135deg, rgba(var(--error-color-rgb), 0.4), #233823) !important;
-  color: #721c24 !important;
-}
 
 /* === FIM DOS ESTILOS === */

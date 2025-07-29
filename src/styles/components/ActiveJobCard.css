@@ -3,10 +3,17 @@
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 12px;
-  box-shadow: 0 4px 12px var(--shadow-color);
+  box-shadow: var(--shadow-light);
   padding: 20px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
+}
+
+.active-job-card:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
 }
 
 .active-job-card.expanded {
@@ -59,18 +66,18 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 4px;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .expand-button:hover {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .job-progress {
@@ -112,8 +119,12 @@
 
 .job-stages {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  align-items: center;
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
 }
 
 .job-stage {
@@ -122,77 +133,111 @@
   align-items: center;
   flex: 1;
   position: relative;
-  padding: 0 4px;
+  padding: 8px 4px;
 }
 
 .job-stage:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 12px;
+  top: 20px;
   right: -50%;
-  width: 100%;
-  height: 2px;
-  background-color: #ddd;
+  width: calc(100% - 8px);
+  height: 3px;
+  background: linear-gradient(90deg, var(--border-primary) 0%, var(--border-secondary) 100%);
+  border-radius: 2px;
   z-index: 0;
+  transition: all 0.3s ease;
 }
 
-.job-stage.active span {
-  font-weight: 600;
-  color: #4a6da7;
+.job-stage.complete:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--accent-success) 0%, var(--accent-success) 100%);
+}
+
+.job-stage.processing:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--accent-processing) 0%, var(--border-primary) 100%);
 }
 
 .stage-icon {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   z-index: 1;
-  background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .stage-icon.pending {
-  border: 2px solid #ddd;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-secondary);
+  color: var(--text-tertiary);
 }
 
 .stage-icon.processing {
-  border: 2px solid #4a90e2;
-  position: relative;
-}
-
-.stage-icon.processing::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #4a90e2;
-  animation: pulse 1.5s infinite;
+  background: linear-gradient(135deg, var(--accent-processing), color-mix(in srgb, var(--accent-processing) 80%, white));
+  border: 2px solid var(--accent-processing);
+  color: white;
+  animation: processingPulse 2s infinite;
 }
 
 .stage-icon.complete {
-  color: #4caf50;
+  background: linear-gradient(135deg, var(--accent-success), color-mix(in srgb, var(--accent-success) 80%, white));
+  border: 2px solid var(--accent-success);
+  color: white;
 }
 
 .stage-icon.failed {
-  color: #f44336;
+  background: linear-gradient(135deg, var(--accent-error), color-mix(in srgb, var(--accent-error) 80%, white));
+  border: 2px solid var(--accent-error);
+  color: white;
 }
 
-.job-stage span {
-  font-size: 0.8rem;
-  color: #666;
+.stage-label {
+  font-size: 0.75rem;
+  font-weight: 600;
   text-align: center;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.job-stage.complete .stage-label {
+  color: var(--accent-success);
+}
+
+.job-stage.processing .stage-label {
+  color: var(--accent-processing);
+}
+
+.job-stage.failed .stage-label {
+  color: var(--accent-error);
+}
+
+@keyframes processingPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 var(--accent-processing);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 8px color-mix(in srgb, var(--accent-processing) 20%, transparent);
+  }
 }
 
 .job-details {
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 12px;
   margin-top: 8px;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
 }
 
 .job-expanded-details {
@@ -209,43 +254,52 @@
 }
 
 .stage-details-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
 }
 
 .stage-details-section h5 {
-  margin: 0 0 8px 0;
-  font-size: 0.95rem;
-  color: #444;
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
+  font-weight: 600;
 }
 
 .stage-status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stage-status-badge.pending {
-  background-color: #f0f0f0;
-  color: #666;
+  background: color-mix(in srgb, var(--text-tertiary) 15%, transparent);
+  color: var(--text-tertiary);
 }
 
 .stage-status-badge.processing, .stage-status-badge.start {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background: color-mix(in srgb, var(--accent-processing) 15%, transparent);
+  color: var(--accent-processing);
 }
 
 .stage-status-badge.complete {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, var(--accent-success) 15%, transparent);
+  color: var(--accent-success);
 }
 
 .stage-status-badge.failed {
-  background-color: #ffebee;
-  color: #c62828;
+  background: color-mix(in srgb, var(--accent-error) 15%, transparent);
+  color: var(--accent-error);
 }
 
 .stage-steps {
@@ -259,49 +313,101 @@
 }
 
 .step-item {
-  padding: 6px 0;
-  border-left: 2px solid #ddd;
-  padding-left: 12px;
-  margin-left: 4px;
+  position: relative;
+  padding: 12px 0 12px 24px;
+  border-left: 3px solid var(--border-primary);
+  margin-left: 8px;
+  transition: all 0.2s ease;
+}
+
+.step-item::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 16px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-primary);
+  transition: all 0.2s ease;
 }
 
 .step-item.completed {
-  border-left-color: #4caf50;
+  border-left-color: var(--accent-success);
+}
+
+.step-item.completed::before {
+  background: var(--accent-success);
+  border-color: var(--accent-success);
 }
 
 .step-item.failed {
-  border-left-color: #f44336;
+  border-left-color: var(--accent-error);
+}
+
+.step-item.failed::before {
+  background: var(--accent-error);
+  border-color: var(--accent-error);
 }
 
 .step-item.in_progress {
-  border-left-color: #2196f3;
+  border-left-color: var(--accent-processing);
+  background: color-mix(in srgb, var(--accent-processing) 3%, transparent);
+}
+
+.step-item.in_progress::before {
+  background: var(--accent-processing);
+  border-color: var(--accent-processing);
+  animation: stepPulse 1.5s infinite;
 }
 
 .step-header {
   display: flex;
   align-items: flex-start;
+  gap: 8px;
 }
 
 .step-timestamp {
-  font-size: 0.75rem;
-  color: #888;
-  margin-right: 8px;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
   white-space: nowrap;
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .step-message {
   font-size: 0.85rem;
-  color: #333;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .step-details {
-  margin-top: 4px;
+  margin-top: 8px;
   font-size: 0.8rem;
-  color: #666;
-  padding-left: 8px;
-  border-left: 1px solid #eee;
-  margin-left: 4px;
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  border-left: 3px solid var(--border-secondary);
   white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+@keyframes stepPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
 .no-steps {
