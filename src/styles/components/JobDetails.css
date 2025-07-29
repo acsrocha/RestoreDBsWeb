@@ -215,6 +215,71 @@
   }
 }
 
+/* Container para a barra de progresso e as etapas */
+.job-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+/* Container principal para as etapas da trilha */
+.job-progress-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilo para cada etapa individual (ícone + texto) */
+.progress-stage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+
+/* Estilo para o ícone da etapa */
+.progress-stage .icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+
+/* Cores dos ícones baseadas no status */
+.progress-stage .icon.status-success {
+  background-color: var(--accent-success);
+}
+
+.progress-stage .icon.status-processing {
+  background-color: var(--accent-processing);
+  animation: timelinePulse 2s infinite;
+}
+
+.progress-stage .icon.status-pending {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-secondary);
+  color: var(--text-tertiary);
+}
+
+.progress-stage .icon.status-error {
+  background-color: var(--accent-error);
+}
+
+.progress-stage .label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 
 
 /* Responsividade */
@@ -231,5 +296,14 @@
   
   .job-actions {
     justify-content: flex-end;
+  }
+  
+  .job-progress-stages {
+    gap: 12px;
+  }
+  
+  .progress-stage {
+    min-width: 70px;
+    font-size: 0.75rem;
   }
 }

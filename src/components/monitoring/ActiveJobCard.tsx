@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import '../../styles/components/ActiveJobCard.css';
 import '../../styles/components/DetailedMonitoringSteps.css';
@@ -44,6 +44,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   finalizationStage
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
   
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -117,8 +118,23 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
 
   const currentStageStatus = getCurrentStageStatus();
 
+  useEffect(() => {
+    if (finalizationStage.status === 'complete' && !isCompleting) {
+      setIsCompleting(true);
+      setTimeout(() => {
+        const card = document.querySelector(`[data-file-id="${fileId}"]`);
+        if (card) {
+          card.classList.add('completing');
+          setTimeout(() => {
+            card.classList.add('fade-out');
+          }, 2000);
+        }
+      }, 100);
+    }
+  }, [finalizationStage.status, fileId, isCompleting]);
+
   return (
-    <div className={`active-job-card ${isExpanded ? 'expanded' : ''}`} data-file-id={fileId}>
+    <div className={`active-job-card ${isExpanded ? 'expanded' : ''} ${isCompleting ? 'completing' : ''}`} data-file-id={fileId}>
       <div className="job-header">
         <h3 className="job-filename" title={fileName}>
           <FiHardDrive className="file-icon" />
