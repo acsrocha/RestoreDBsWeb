@@ -50,13 +50,7 @@ const ClientAreaDetailsModal: React.FC<ClientAreaDetailsModalProps> = ({ isOpen,
     };
   }, [onClose]);
 
-  // Previne o scroll do body quando o modal está aberto
-  React.useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
+
 
   const getStatusIcon = (status: string) => {
     const lowerStatus = status.toLowerCase();

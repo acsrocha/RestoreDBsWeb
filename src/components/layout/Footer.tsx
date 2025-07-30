@@ -1,9 +1,12 @@
 // src/components/layout/Footer.tsx
 import React, { useEffect, useState } from 'react';
 import { useLastUpdated } from '../../contexts/LastUpdatedContext';
+import { useDriveCycle } from '../../contexts/DriveCycleContext';
+import { SiGoogledrive } from 'react-icons/si';
 
 const Footer: React.FC = () => {
   const { lastUpdateTime } = useLastUpdated();
+  const { isDriveConnected, lastSuccessfulSyncTime } = useDriveCycle();
   const [displayTime, setDisplayTime] = useState<string>('Nunca');
 
   useEffect(() => {
@@ -16,7 +19,20 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="content-footer">
-      <p>Interface atualizada pela última vez às: <time dateTime={lastUpdateTime?.toISOString() || new Date().toISOString()}>{displayTime}</time></p>
+      <div className="footer-status">
+        <div className="drive-status">
+          <SiGoogledrive className={`drive-icon ${isDriveConnected ? 'connected' : 'disconnected'} ${!isDriveConnected ? 'pulse' : ''}`} />
+          <span className="drive-text">
+            {isDriveConnected ? 'Conectado' : 'Desconectado'}
+          </span>
+          {lastSuccessfulSyncTime && (
+            <span className="sync-time">Sync: {lastSuccessfulSyncTime}</span>
+          )}
+        </div>
+        <div className="update-time">
+          Atualizado às: <time dateTime={lastUpdateTime?.toISOString() || new Date().toISOString()}>{displayTime}</time>
+        </div>
+      </div>
     </footer>
   );
 };

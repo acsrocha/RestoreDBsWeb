@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiRefreshCw, FiSearch, FiEye, FiDownload, FiTrash2, FiUsers, FiCheckCircle, FiDatabase, FiAlertTriangle, FiEdit2 } from 'react-icons/fi';
+import { FiPlus, FiRefreshCw, FiSearch, FiEye, FiDownload, FiTrash2, FiUsers, FiCheckCircle, FiDatabase, FiAlertTriangle, FiEdit2, FiSettings, FiArchive, FiCpu, FiClock, FiEdit } from 'react-icons/fi';
 import { fetchAdminClientUploadAreaDetails, downloadFromDrive, deleteClientUploadArea } from '../services/clientAreaApi';
 import { useNotification } from '../hooks/useNotification';
+import { useDriveCycle } from '../contexts/DriveCycleContext';
+import DriveCycleIndicator from '../components/common/DriveCycleIndicator';
 
 import ClientAreaDetailsModal from '../components/shared/ClientAreaDetailsModal';
 import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
@@ -24,8 +26,16 @@ const AdminClientAreasPage: React.FC = () => {
   const [shouldCascadeDelete, setShouldCascadeDelete] = useState(false);
   
   const { showError, showSuccess, showInfo } = useNotification();
+  const { 
+    timeLeftSeconds, 
+    cycleDurationMinutes, 
+    forceSync,
+    lastSuccessfulSyncTime,
+    isSyncing
+  } = useDriveCycle();
 
   const [isFetching, setIsFetching] = useState(false);
+  const [downloadingAreas, setDownloadingAreas] = useState<Map<string, {clientName: string, startTime: Date, progress: number}>>(new Map());
 
   const fetchClientAreas = async () => {
     if (isFetching) return;
@@ -67,12 +77,55 @@ const AdminClientAreasPage: React.FC = () => {
 
   const handleDownload = async (area: AdminClientUploadAreaDetail) => {
     try {
-      showInfo('Iniciando download do Google Drive...');
+      setDownloadingAreas(prev => new Map(prev).set(area.upload_area_id, {
+        clientName: area.client_name || 'Cliente',
+        startTime: new Date(),
+        progress: 0
+      }));
+      
+      // Simular progresso (em produção viria da API)
+      const progressInterval = setInterval(() => {
+        setDownloadingAreas(current => {
+          const updated = new Map(current);
+          const download = updated.get(area.upload_area_id);
+          if (download && download.progress < 95) {
+            updated.set(area.upload_area_id, {
+              ...download,
+              progress: Math.min(95, download.progress + Math.random() * 8 + 2)
+            });
+            return updated;
+          }
+          return current;
+        });
+      }, 800);
+      
+      // Limpar intervalo quando download terminar
+      const cleanup = () => clearInterval(progressInterval);
+      setTimeout(cleanup, 12000);
       await downloadFromDrive(area.upload_area_id);
-      showSuccess('Download iniciado com sucesso!');
+      
+      // Completar progresso
+      setDownloadingAreas(current => {
+        const updated = new Map(current);
+        const download = updated.get(area.upload_area_id);
+        if (download) {
+          updated.set(area.upload_area_id, {
+            ...download,
+            progress: 100
+          });
+        }
+        return updated;
+      });
+      
       fetchClientAreas();
     } catch (error: any) {
       showError('Erro ao iniciar download: ' + (error?.message || 'Erro desconhecido'));
+    } finally {
+      setDownloadingAreas(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(area.upload_area_id);
+        return newMap;
+      });
     }
   };
 
@@ -120,59 +173,55 @@ const AdminClientAreasPage: React.FC = () => {
   return (
     <div className="detailed-monitoring-page">
       <div className="monitoring-header">
-        <div className="header-content">
-          <div className="header-title">
-            <h1>👥 Gerenciamento de Áreas de Upload de Cliente</h1>
-            <p className="header-subtitle">
-              Gerencie e monitore as áreas de upload criadas para os clientes
-            </p>
+        <div className="header-left">
+          <h1>👥 Gerenciamento de Áreas de Upload de Cliente</h1>
+        </div>
+        
+        <div className="header-controls">
+          <div className="search-box">
+            <FiSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Buscar por cliente, ticket, email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <div className="header-actions">
-            <div className="search-container">
-              <div className="search-box">
-                <FiSearch className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Buscar por cliente, ticket, email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-              </div>
-            </div>
-            <button 
-              onClick={fetchClientAreas}
-              className="control-button refresh"
-              disabled={isLoading}
-            >
-              <FiRefreshCw className={isLoading ? 'spinning' : ''} />
-              Atualizar
-            </button>
-            <button 
-              onClick={() => setShowCreateModal(true)}
-              className="control-button primary"
-            >
-              <FiPlus />
-              Nova Área
-            </button>
-          </div>
+          
+          <DriveCycleIndicator 
+            cycleDurationMinutes={cycleDurationMinutes}
+            timeLeftSeconds={timeLeftSeconds}
+          />
+          
+          <button 
+            onClick={forceSync}
+            className="control-btn refresh"
+            disabled={isSyncing}
+            title="Atualizar agora"
+          >
+            <FiRefreshCw className={isSyncing ? 'spinning' : ''} />
+          </button>
+          
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="control-btn primary"
+            title="Nova Área"
+          >
+            <FiPlus />
+          </button>
         </div>
       </div>
 
       <div className="statistics-dashboard">
-        <div className="stat-card">
-          <div className="stat-icon total">
-            <FiUsers />
-          </div>
+        <div className="stat-card total">
+          <div className="stat-icon"><FiUsers /></div>
           <div className="stat-content">
             <div className="stat-number">{clientAreas.length}</div>
             <div className="stat-label">Total de Áreas</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon active">
-            <FiCheckCircle />
-          </div>
+        <div className="stat-card processing">
+          <div className="stat-icon"><FiCheckCircle /></div>
           <div className="stat-content">
             <div className="stat-number">
               {clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('ativo')).length}
@@ -180,10 +229,8 @@ const AdminClientAreasPage: React.FC = () => {
             <div className="stat-label">Áreas Ativas</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon processing">
-            <FiDownload />
-          </div>
+        <div className="stat-card failed">
+          <div className="stat-icon"><FiClock /></div>
           <div className="stat-content">
             <div className="stat-number">
               {clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('aguardando')).length}
@@ -191,15 +238,46 @@ const AdminClientAreasPage: React.FC = () => {
             <div className="stat-label">Aguardando Upload</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon completed">
-            <FiDatabase />
-          </div>
+        <div className="stat-card eta">
+          <div className="stat-icon"><FiDatabase /></div>
           <div className="stat-content">
             <div className="stat-number">
               {clientAreas.reduce((sum, area) => sum + (area.processed_backups?.length || 0), 0)}
             </div>
             <div className="stat-label">Backups Processados</div>
+          </div>
+        </div>
+        <div className="stat-card downloading">
+          <div className="stat-icon"><FiDownload /></div>
+          <div className="stat-content">
+            <div className="stat-number">{downloadingAreas.size}</div>
+            <div className="stat-label">Downloads em Progresso</div>
+            {downloadingAreas.size > 0 && (
+              <div className="stat-detail">
+                {Array.from(downloadingAreas.entries()).map(([areaId, download]) => {
+                  const elapsed = Math.floor((Date.now() - download.startTime.getTime()) / 1000);
+                  const estimated = download.progress > 0 ? Math.floor((elapsed / download.progress) * (100 - download.progress)) : 0;
+                  
+                  return (
+                    <div key={areaId} className="download-item">
+                      <div className="download-header">
+                        <span className="client-name">{download.clientName}</span>
+                        <span className="download-percent">{Math.floor(download.progress)}%</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div 
+                          className="progress-fill" 
+                          style={{ width: `${download.progress}%` }}
+                        ></div>
+                      </div>
+                      <div className="download-time">
+                        {estimated > 0 ? `${estimated}s restantes` : 'Calculando...'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -258,7 +336,7 @@ const AdminClientAreasPage: React.FC = () => {
                 {filteredAreas.map(area => (
                   <tr 
                     key={area.upload_area_id}
-                    className="table-row-clickable"
+                    className={`table-row-clickable ${downloadingAreas.has(area.upload_area_id) ? 'syncing' : ''}`}
                     onClick={() => handleRowClick(area)}
                   >
                     <td>{area.client_name || 'N/A'}</td>
@@ -290,7 +368,7 @@ const AdminClientAreasPage: React.FC = () => {
                         title="Sincronizar com Drive"
                         onClick={() => handleDownload(area)}
                       >
-                        <FiDownload />
+                        <FiRefreshCw className={downloadingAreas.has(area.upload_area_id) ? 'spinning' : ''} />
                       </button>
                       <button 
                         className="action-icon delete" 
