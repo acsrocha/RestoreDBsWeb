@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { FiPlus, FiDownload, FiTrash2, FiEdit2, FiExternalLink } from 'react-icons/fi';
-import { 
-  fetchAdminClientUploadAreaDetails, 
-  downloadFromDrive, 
-  deleteClientUploadArea,
-  updateClientUploadAreaStatus,
-  updateClientUploadAreaNotes
-} from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { FiPlus, FiRefreshCw, FiSearch, FiEye, FiDownload, FiTrash2, FiUsers, FiCheckCircle, FiDatabase, FiAlertTriangle, FiEdit2 } from 'react-icons/fi';
+import { fetchAdminClientUploadAreaDetails, downloadFromDrive, deleteClientUploadArea } from '../services/clientAreaApi';
 import { useNotification } from '../hooks/useNotification';
-import { useGlobalRefresh } from '../contexts/GlobalRefreshContext';
-import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
+
 import ClientAreaDetailsModal from '../components/shared/ClientAreaDetailsModal';
+import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
+import CreateClientAreaModal from '../components/shared/CreateClientAreaModal';
 import type { AdminClientUploadAreaDetail } from '../types/api';
 import '../styles/components/AdminClientAreas.css';
 
@@ -19,281 +13,329 @@ const AdminClientAreasPage: React.FC = () => {
   const [clientAreas, setClientAreas] = useState<AdminClientUploadAreaDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
-  // Estado centralizado para o modal de exclusão
-  const [deleteModalState, setDeleteModalState] = useState({
-    isOpen: false,
-    area: null as AdminClientUploadAreaDetail | null,
-    shouldCascade: false,
-    canCascade: false
-  });
+  // Estados para modais
+  const [selectedArea, setSelectedArea] = useState<AdminClientUploadAreaDetail | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [shouldCascadeDelete, setShouldCascadeDelete] = useState(false);
   
-  // Estado para o modal de detalhes
-  const [detailsModalState, setDetailsModalState] = useState({
-    isOpen: false,
-    area: null as AdminClientUploadAreaDetail | null
-  });
-  
-  const { showSuccess, showError, showInfo } = useNotification();
-  const { refreshTrigger, triggerRefresh } = useGlobalRefresh();
+  const { showError, showSuccess, showInfo } = useNotification();
 
-  // Função para buscar as áreas de cliente
-  const fetchClientAreas = useCallback(async () => {
+  const [isFetching, setIsFetching] = useState(false);
+
+  const fetchClientAreas = async () => {
+    if (isFetching) return;
+    
     try {
+      setIsFetching(true);
       setIsLoading(true);
       setError(null);
       const data = await fetchAdminClientUploadAreaDetails();
-      setClientAreas(data);
-    } catch (err) {
-      console.error('Erro ao buscar áreas de cliente:', err);
-      setError(err.message || 'Erro ao buscar áreas de cliente');
-      showError('Falha ao carregar áreas de cliente: ' + (err.message || 'Erro desconhecido'));
+      setClientAreas(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Erro ao buscar áreas de cliente';
+      setError(errorMessage);
+      showError('Falha ao carregar áreas de cliente: ' + errorMessage);
     } finally {
       setIsLoading(false);
+      setIsFetching(false);
     }
-  }, [showError]);
+  };
 
-  // Carregar dados iniciais e quando o refreshTrigger mudar
   useEffect(() => {
     fetchClientAreas();
-  }, [fetchClientAreas, refreshTrigger]);
+  }, []);
 
-  // Função para iniciar o download de um arquivo do Drive
-  const handleDownloadFromDrive = async (areaId: string, clientName: string) => {
+  const filteredAreas = clientAreas.filter(area => 
+    !searchTerm || 
+    area.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    area.ticket_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    area.client_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    area.gdrive_folder_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    area.upload_area_status?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Handlers para ações
+  const handleViewDetails = (area: AdminClientUploadAreaDetail) => {
+    setSelectedArea(area);
+    setShowDetailsModal(true);
+  };
+
+  const handleDownload = async (area: AdminClientUploadAreaDetail) => {
     try {
-      showInfo(`Iniciando download para a área de ${clientName}...`);
-      await downloadFromDrive(areaId);
-      showSuccess(`Download iniciado com sucesso para a área de ${clientName}`);
-      triggerRefresh();
-    } catch (err) {
-      console.error('Erro ao iniciar download:', err);
-      showError('Falha ao iniciar download: ' + (err.message || 'Erro desconhecido'));
+      showInfo('Iniciando download do Google Drive...');
+      await downloadFromDrive(area.upload_area_id);
+      showSuccess('Download iniciado com sucesso!');
+      fetchClientAreas();
+    } catch (error: any) {
+      showError('Erro ao iniciar download: ' + (error?.message || 'Erro desconhecido'));
     }
   };
 
-  // Função para abrir o modal de exclusão
-  const handleOpenDeleteModal = (area: AdminClientUploadAreaDetail) => {
-    const hasDatabases = area.processed_backups && area.processed_backups.length > 0;
-    
-    setDeleteModalState({
-      isOpen: true,
-      area: area,
-      shouldCascade: false,
-      canCascade: hasDatabases
-    });
+  const handleDelete = (area: AdminClientUploadAreaDetail) => {
+    setSelectedArea(area);
+    setShouldCascadeDelete(false);
+    setShowDeleteModal(true);
   };
 
-  // Função para fechar o modal de exclusão
-  const handleCloseDeleteModal = () => {
-    setDeleteModalState({
-      isOpen: false,
-      area: null,
-      shouldCascade: false,
-      canCascade: false
-    });
-  };
-
-  // Função para confirmar a exclusão
-  const handleConfirmDelete = async () => {
-    const { area, shouldCascade } = deleteModalState;
-    
-    if (!area) return;
+  const confirmDelete = async () => {
+    if (!selectedArea) return;
     
     try {
-      showInfo(`Excluindo área de ${area.client_name}...`);
-      await deleteClientUploadArea(area.upload_area_id);
-      showSuccess(`Área de ${area.client_name} excluída com sucesso`);
-      
-      // Se tiver bancos de dados associados e shouldCascade for true,
-      // aqui seria o lugar para excluir os bancos de dados também
-      if (shouldCascade && area.processed_backups.length > 0) {
-        // Implementação futura para exclusão em cascata dos bancos
-        showInfo(`Nota: A exclusão em cascata dos bancos de dados ainda não está implementada.`);
-      }
-      
-      // Fechar o modal e atualizar a lista
-      handleCloseDeleteModal();
-      triggerRefresh();
-    } catch (err) {
-      console.error('Erro ao excluir área:', err);
-      showError('Falha ao excluir área: ' + (err.message || 'Erro desconhecido'));
+      setIsDeleting(true);
+      await deleteClientUploadArea(selectedArea.upload_area_id);
+      showSuccess('Área de cliente excluída com sucesso!');
+      setShowDeleteModal(false);
+      setSelectedArea(null);
+      fetchClientAreas();
+    } catch (error: any) {
+      showError('Erro ao excluir área: ' + (error?.message || 'Erro desconhecido'));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  // Função para abrir o modal de detalhes
-  const handleOpenDetailsModal = (area: AdminClientUploadAreaDetail) => {
-    setDetailsModalState({
-      isOpen: true,
-      area: area
-    });
+  const closeModals = () => {
+    setShowDetailsModal(false);
+    setShowDeleteModal(false);
+    setShowCreateModal(false);
+    setSelectedArea(null);
+    setShouldCascadeDelete(false);
   };
 
-  // Função para fechar o modal de detalhes
-  const handleCloseDetailsModal = () => {
-    setDetailsModalState({
-      isOpen: false,
-      area: null
-    });
+  const handleRowClick = (area: AdminClientUploadAreaDetail) => {
+    setSelectedArea(area);
+    setShowDetailsModal(true);
   };
 
-  // Função para atualizar o status de uma área
-  const handleUpdateStatus = async (areaId: string, newStatus: string) => {
-    try {
-      await updateClientUploadAreaStatus(areaId, newStatus);
-      showSuccess(`Status atualizado para: ${newStatus}`);
-      triggerRefresh();
-    } catch (err) {
-      console.error('Erro ao atualizar status:', err);
-      showError('Falha ao atualizar status: ' + (err.message || 'Erro desconhecido'));
-    }
-  };
-
-  // Função para atualizar as notas de uma área
-  const handleUpdateNotes = async (areaId: string, newNotes: string) => {
-    try {
-      await updateClientUploadAreaNotes(areaId, newNotes);
-      showSuccess('Notas atualizadas com sucesso');
-      triggerRefresh();
-    } catch (err) {
-      console.error('Erro ao atualizar notas:', err);
-      showError('Falha ao atualizar notas: ' + (err.message || 'Erro desconhecido'));
-    }
+  const handleEdit = (area: AdminClientUploadAreaDetail) => {
+    setSelectedArea(area);
+    setShowDetailsModal(true);
   };
 
   return (
-    <div className="admin-client-areas-page">
-      <div className="page-header">
-        <h1>Áreas de Upload de Clientes</h1>
-        <Link to="/create-client-area" className="create-button">
-          <FiPlus />
-          Nova Área
-        </Link>
+    <div className="detailed-monitoring-page">
+      <div className="monitoring-header">
+        <div className="header-content">
+          <div className="header-title">
+            <h1>👥 Gerenciamento de Áreas de Upload de Cliente</h1>
+            <p className="header-subtitle">
+              Gerencie e monitore as áreas de upload criadas para os clientes
+            </p>
+          </div>
+          <div className="header-actions">
+            <div className="search-container">
+              <div className="search-box">
+                <FiSearch className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Buscar por cliente, ticket, email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+            </div>
+            <button 
+              onClick={fetchClientAreas}
+              className="control-button refresh"
+              disabled={isLoading}
+            >
+              <FiRefreshCw className={isLoading ? 'spinning' : ''} />
+              Atualizar
+            </button>
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="control-button primary"
+            >
+              <FiPlus />
+              Nova Área
+            </button>
+          </div>
+        </div>
       </div>
 
-      {isLoading ? (
+      <div className="statistics-dashboard">
+        <div className="stat-card">
+          <div className="stat-icon total">
+            <FiUsers />
+          </div>
+          <div className="stat-content">
+            <div className="stat-number">{clientAreas.length}</div>
+            <div className="stat-label">Total de Áreas</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon active">
+            <FiCheckCircle />
+          </div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('ativo')).length}
+            </div>
+            <div className="stat-label">Áreas Ativas</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon processing">
+            <FiDownload />
+          </div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('aguardando')).length}
+            </div>
+            <div className="stat-label">Aguardando Upload</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon completed">
+            <FiDatabase />
+          </div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {clientAreas.reduce((sum, area) => sum + (area.processed_backups?.length || 0), 0)}
+            </div>
+            <div className="stat-label">Backups Processados</div>
+          </div>
+        </div>
+      </div>
+
+      {isLoading && clientAreas.length === 0 ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Carregando áreas de cliente...</p>
         </div>
       ) : error ? (
         <div className="error-container">
+          <FiAlertTriangle className="error-icon" />
           <p>{error}</p>
           <button onClick={fetchClientAreas} className="retry-button">
             Tentar Novamente
           </button>
         </div>
-      ) : clientAreas.length === 0 ? (
+      ) : filteredAreas.length === 0 ? (
         <div className="empty-state">
-          <p>Nenhuma área de cliente cadastrada.</p>
-          <Link to="/create-client-area" className="create-button">
-            <FiPlus />
-            Criar Primeira Área
-          </Link>
+          <FiUsers className="empty-icon" />
+          <p>Nenhuma área de cliente encontrada.</p>
+          {searchTerm ? (
+            <button onClick={() => setSearchTerm('')} className="clear-search">
+              Limpar busca
+            </button>
+          ) : (
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="control-button primary"
+            >
+              <FiPlus />
+              Criar Primeira Área
+            </button>
+          )}
         </div>
       ) : (
-        <div className="client-areas-grid">
-          {clientAreas.map(area => (
-            <div key={area.upload_area_id} className="client-area-card">
-              <div className="card-header">
-                <h2>{area.client_name}</h2>
-                <span className={`status-badge ${area.upload_area_status.toLowerCase()}`}>
-                  {area.upload_area_status}
-                </span>
-              </div>
-              
-              <div className="card-content">
-                <div className="info-row">
-                  <span className="info-label">Email:</span>
-                  <span className="info-value">{area.client_email}</span>
-                </div>
-                
-                {area.ticket_id && (
-                  <div className="info-row">
-                    <span className="info-label">Ticket:</span>
-                    <span className="info-value">{area.ticket_id}</span>
-                  </div>
-                )}
-                
-                <div className="info-row">
-                  <span className="info-label">Pasta:</span>
-                  <span className="info-value">{area.gdrive_folder_name}</span>
-                </div>
-                
-                <div className="info-row">
-                  <span className="info-label">Criação:</span>
-                  <span className="info-value">{area.area_creation_date}</span>
-                </div>
-                
-                <div className="info-row">
-                  <span className="info-label">Backups:</span>
-                  <span className="info-value">{area.processed_backups.length}</span>
-                </div>
-              </div>
-              
-              <div className="card-actions">
-                <button 
-                  className="action-button details"
-                  onClick={() => handleOpenDetailsModal(area)}
-                  title="Ver detalhes"
-                >
-                  <FiEdit2 />
-                </button>
-                
-                <button 
-                  className="action-button download"
-                  onClick={() => handleDownloadFromDrive(area.upload_area_id, area.client_name)}
-                  title="Baixar do Drive"
-                >
-                  <FiDownload />
-                </button>
-                
-                {area.gdrive_folder_url && (
-                  <a 
-                    href={area.gdrive_folder_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="action-button external"
-                    title="Abrir no Google Drive"
+        <section className="monitoring-section">
+          <h2>
+            <FiUsers className="section-icon" />
+            Áreas de Upload de Cliente
+            <span className="count-badge">{filteredAreas.length}</span>
+          </h2>
+          <div className="table-container">
+            <table className="client-areas-table">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Ticket ID</th>
+                  <th>Pasta no Drive</th>
+                  <th>Status da Área</th>
+                  <th>Data Criação</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAreas.map(area => (
+                  <tr 
+                    key={area.upload_area_id}
+                    className="table-row-clickable"
+                    onClick={() => handleRowClick(area)}
                   >
-                    <FiExternalLink />
-                  </a>
-                )}
-                
-                <button 
-                  className="action-button delete"
-                  onClick={() => handleOpenDeleteModal(area)}
-                  title="Excluir área"
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                    <td>{area.client_name || 'N/A'}</td>
+                    <td className="ticket-id">{area.ticket_id || 'N/A'}</td>
+                    <td className="folder-name">{area.gdrive_folder_name}</td>
+                    <td>
+                      <span className={`status-badge ${area.upload_area_status?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`}>
+                        {area.upload_area_status || 'Desconhecido'}
+                      </span>
+                    </td>
+                    <td>{new Date(area.area_creation_date).toLocaleString('pt-BR')}</td>
+                    <td className="actions-cell" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        className="action-icon view" 
+                        title="Visualizar detalhes"
+                        onClick={() => handleViewDetails(area)}
+                      >
+                        <FiEye />
+                      </button>
+                      <button 
+                        className="action-icon edit" 
+                        title="Editar área"
+                        onClick={() => handleEdit(area)}
+                      >
+                        <FiEye />
+                      </button>
+                      <button 
+                        className="action-icon sync" 
+                        title="Sincronizar com Drive"
+                        onClick={() => handleDownload(area)}
+                      >
+                        <FiDownload />
+                      </button>
+                      <button 
+                        className="action-icon delete" 
+                        title="Excluir área"
+                        onClick={() => handleDelete(area)}
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
-
-      {/* Modal de exclusão */}
-      <DeleteConfirmationModal
-        isOpen={deleteModalState.isOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-        title={`Excluir Área de ${deleteModalState.area?.client_name || 'Cliente'}`}
-        message={`Tem certeza que deseja excluir a área de upload de ${deleteModalState.area?.client_name || 'cliente'}? Esta ação não pode ser desfeita.`}
-        confirmButtonText="Excluir Área"
-        showCascadeOption={deleteModalState.canCascade}
-        cascadeOptionLabel={`Excluir também os ${deleteModalState.area?.processed_backups.length || 0} bancos de dados associados`}
-        cascadeOptionChecked={deleteModalState.shouldCascade}
-        onCascadeOptionChange={(checked) => setDeleteModalState(prev => ({...prev, shouldCascade: checked}))}
+      
+      {/* Modais */}
+      <ClientAreaDetailsModal
+        isOpen={showDetailsModal}
+        onClose={closeModals}
+        clientArea={selectedArea}
       />
-
-      {/* Modal de detalhes */}
-      {detailsModalState.isOpen && detailsModalState.area && (
-        <ClientAreaDetailsModal
-          isOpen={detailsModalState.isOpen}
-          onClose={handleCloseDetailsModal}
-          clientArea={detailsModalState.area}
-          onStatusUpdate={handleUpdateStatus}
-          onNotesUpdate={handleUpdateNotes}
+      
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={closeModals}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
+        itemName={selectedArea?.client_name || 'Área desconhecida'}
+        folderName={selectedArea?.gdrive_folder_name}
+        ticketId={selectedArea?.ticket_id}
+        shouldCascadeDelete={shouldCascadeDelete}
+        onCascadeDeleteChange={setShouldCascadeDelete}
+        canCascadeDelete={(selectedArea?.processed_backups?.length || 0) > 0}
+      />
+      
+      {showCreateModal && (
+        <CreateClientAreaModal
+          isOpen={showCreateModal}
+          onClose={closeModals}
+          onSuccess={() => {
+            closeModals();
+            fetchClientAreas();
+          }}
         />
       )}
     </div>

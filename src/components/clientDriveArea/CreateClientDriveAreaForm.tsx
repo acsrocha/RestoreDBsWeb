@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { FiFolderPlus, FiLink, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 // <<< 1. Importar o módulo CSS refatorado, que agora controla o formulário
 import styles from '../../pages/CreateClientDriveArea.module.css';
-import { createClientDriveArea } from '../../services/api';
+import { createClientDriveArea } from '../../services/clientAreaApi';
 
 const CreateClientDriveAreaForm: React.FC = () => {
   // ... (toda a sua lógica de state, handleSubmit, etc., permanece a mesma)

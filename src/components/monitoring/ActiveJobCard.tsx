@@ -42,20 +42,6 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   restoreStage,
   finalizationStage
 }) => {
-  // LOG 1: VER AS PROPS A CADA RENDERIZAÇÃO
-  console.log(`[CARD: ${fileId}] Renderizando. Status de Finalização: ${finalizationStage.status}`);
-
-  // LOG 2: VER QUANDO O COMPONENTE É MONTADO E DESMONTADO
-  useEffect(() => {
-    // Roda quando o componente é montado
-    console.log(`%c[CARD: ${fileId}] MONTADO NO DOM`, 'color: green; font-weight: bold;');
-
-    // A função de retorno do useEffect roda quando o componente vai ser desmontado
-    return () => {
-      console.log(`%c[CARD: ${fileId}] SENDO DESMONTADO`, 'color: red; font-weight: bold;');
-    };
-  }, [fileId]); // Dependência em fileId para ser específico da instância do card
-
   const [isExpanded, setIsExpanded] = useState(false);
   
   const toggleExpand = () => {

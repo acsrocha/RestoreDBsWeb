@@ -25,13 +25,15 @@ const getStatusClassName = (status: string): string => {
 interface ClientAreaDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  area: AdminClientUploadAreaDetail | null;
+  clientArea: AdminClientUploadAreaDetail | null;
 }
 
-const ClientAreaDetailsModal: React.FC<ClientAreaDetailsModalProps> = ({ isOpen, onClose, area }) => {
-  if (!isOpen || !area) {
+const ClientAreaDetailsModal: React.FC<ClientAreaDetailsModalProps> = ({ isOpen, onClose, clientArea }) => {
+  if (!isOpen || !clientArea) {
     return null;
   }
+  
+  const area = clientArea;
 
   const parsedNotes: ParsedNoteEntry[] = parseNotesString(area.upload_area_notes);
 

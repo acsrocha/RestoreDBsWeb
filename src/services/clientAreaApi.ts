@@ -27,7 +27,8 @@ export const fetchAdminClientUploadAreaDetails = async (): Promise<AdminClientUp
     headers: buildHeaders(),
     cache: 'no-store',
   });
-  return handleResponse<AdminClientUploadAreaDetail[]>(response, true);
+  const data = await handleResponse<AdminClientUploadAreaDetail[]>(response, true);
+  return Array.isArray(data) ? data : [];
 };
 
 export const updateClientUploadAreaStatus = async (
@@ -73,5 +74,5 @@ export const deleteClientUploadArea = async (areaId: string): Promise<void> => {
     headers: buildHeaders(),
     cache: 'no-store',
   });
-  await handleResponse<void>(response, false); // Backend retorna 204 No Content
+  await handleResponse<void>(response, false);
 };

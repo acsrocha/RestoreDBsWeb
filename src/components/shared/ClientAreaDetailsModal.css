@@ -1,6 +1,4 @@
-/* ClientAreaDetailsModal.css */
-
-.modal-overlay.active {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -10,288 +8,333 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1050;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
-.modal-content.modal-details {
-  background-color: var(--card-bg); /* Nível 1: Fundo principal do modal */
-  color: var(--text-primary);
-  padding: 25px 30px;
-  border-radius: var(--border-radius-md);
-  width: 100%;
-  max-width: 750px;
-  position: relative;
-  text-align: left;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow), 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.modal-close-button {
-  position: absolute;
-  top: 12px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 5px;
-  transition: color 0.2s ease, transform 0.2s ease;
+.modal-overlay.active {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2rem;
-  line-height: 1;
 }
-.modal-close-button:hover {
-  color: var(--error-color);
-  transform: scale(1.1);
+
+.modal-content {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 0;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
 }
-.modal-close-button svg {
-  width: 24px;
-  height: 24px;
+
+.modal-details {
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-details-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 20px 24px;
+  border-bottom: 2px solid var(--border-color);
+  background-color: var(--bg-secondary);
 }
+
 .modal-details-header h2 {
-  margin: 0;
+  color: var(--text-color);
   font-size: 1.4rem;
-  color: var(--text-primary);
+  margin: 0;
   font-weight: 600;
 }
-.modal-details-header > svg {
-  color: var(--primary-accent-color);
+
+.modal-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  z-index: 1001;
+}
+
+.modal-close-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-color);
 }
 
 .modal-body {
-  color: var(--text-primary);
-}
-
-/* Estilo para seções informativas gerais (ex: Detalhes do Google Drive, Info Cliente) */
-.details-section:not(.notes-section):not([aria-label="Backups Processados"]) {
-  margin-bottom: 1.5rem;
-  padding: 20px;
-  background-color: transparent; /* Herda do --card-bg do modal */
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-color);
-}
-
-/* Estilo para seções de LOG/DADOS (Notas, Backups) - esta é a área ao redor da lista de logs */
-.details-section.notes-section,
-.details-section[aria-label="Backups Processados"] {
-  margin-bottom: 1.5rem;
-  padding: 20px; /* Padding para o título da seção e espaçamento ao redor da lista escura */
-  background-color: var(--bg-primary); /* Nível 2: Fundo da seção de logs */
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-color);
-}
-
-/* Títulos H3 dentro de QUALQUER .details-section */
-.details-section h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--text-primary);
-  font-size: 1.1rem;
-  margin: 0 0 1rem 0; /* Espaço abaixo do H3 antes da lista de logs escura */
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: 600;
-}
-.details-section h3 svg {
-  color: var(--primary-accent-color);
-}
-
-/* A LISTA DE LOGS EM SI - Esta área terá o fundo MAIS ESCURO */
-.details-section.notes-section .styled-notes-list,
-.details-section[aria-label="Backups Processados"] .processed-backups-list {
-  background-color: var(--bg-secondary); /* Nível 3: Cor mais escura para a lista de logs */
-  border-radius: var(--border-radius-sm); /* Cantos arredondados para a caixa de logs */
-  padding: 15px; /* Padding interno da caixa de logs */
-  margin-top: 15px; /* Espaço entre o H3 da seção e esta caixa escura */
-  max-height: 280px; /* Aumentado um pouco, ajuste conforme necessário */
+  padding: 24px;
   overflow-y: auto;
-  border: 1px solid var(--border-color);
+  max-height: calc(90vh - 100px);
 }
 
-/* Cada entrada de log individual dentro da caixa escura */
-.details-section.notes-section .note-entry,
-.details-section[aria-label="Backups Processados"] .backup-item {
-  background-color: transparent; /* Herda o fundo da lista pai */
-  padding: 10px 5px;
-  /* Borda entre as entradas de log */
-  border-bottom: 1px solid rgba(var(--border-color-rgb), 0.2); /* Borda sutil e clara */
+.details-section {
+  margin-bottom: 24px;
 }
 
-.details-section.notes-section .note-entry:last-child,
-.details-section[aria-label="Backups Processados"] .backup-item:last-child {
-  border-bottom: none;
-}
-
-/* Estilos de texto dentro das entradas de log */
-.note-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  margin-bottom: 5px;
-  font-size: 0.8rem;
-}
-.note-timestamp {
-  color: var(--primary-accent-color); /* Deve ter bom contraste */
+.details-section h3 {
+  font-size: 1.1rem;
+  color: var(--text-color);
+  margin-bottom: 12px;
   font-weight: 600;
-  margin-right: 10px;
-  white-space: nowrap;
-}
-.note-source {
-  color: var(--text-secondary); /* Checar contraste, pode precisar ser mais claro */
-  font-style: italic;
-  text-align: right;
-  flex-grow: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.note-message {
-  margin: 0;
-  color: var(--text-primary); /* Cor principal do texto, deve ter bom contraste */
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* Estilos de texto para itens de backup na caixa escura */
-.details-section[aria-label="Backups Processados"] .backup-detail-item dt {
-  color: var(--text-secondary); /* Ajustar se necessário para contraste */
-  font-weight: 500;
-  font-size: 0.85em;
-}
-.details-section[aria-label="Backups Processados"] .backup-detail-item dd {
-  color: var(--text-primary); /* Ajustar se necessário para contraste */
-  margin: 0;
-  font-size: 0.95em;
-}
-
-
-/* Grid para outros detalhes (em seções que não são de log) */
-.details-grid-2col {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 10px 25px;
-  margin: 0;
-}
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 0;
-}
-.detail-item dt {
-  color: var(--text-secondary);
-  font-size: 0.85em;
-  font-weight: 600;
-  text-transform: uppercase;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
 }
+
+.details-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detail-item {
+  background-color: var(--bg-secondary);
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color);
+}
+
+.detail-item dt {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .detail-item dd {
   margin: 0;
-  color: var(--text-primary);
+  color: var(--text-color);
   font-weight: 500;
-  word-break: break-word;
-  font-size: 0.95em;
-  line-height: 1.45;
+  word-break: break-all;
 }
+
 .drive-link {
-  color: var(--primary-accent-color);
-  /* ... outros estilos drive-link ... */
-}
-
-/* Badges de Status */
-.status-badge {
+  color: var(--primary-color);
+  text-decoration: none;
   font-weight: 500;
-  padding: 4px 8px;
-  border-radius: var(--border-radius-small);
-  font-size: 0.9em;
-  /* ... outros estilos status-badge ... */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
 }
-.status-badge.status--success { color: var(--status-success-color); background-color: rgba(var(--success-color-dark-rgb, var(--success-color-rgb)), 0.15); }
-.status-badge.status--error { color: var(--status-error-color); background-color: rgba(var(--error-color-dark-rgb, var(--error-color-rgb)), 0.15); }
-/* ... outros status ... */
 
+.drive-link:hover {
+  color: var(--primary-color-dark);
+  text-decoration: underline;
+}
 
-/* Mensagem de "Nenhum dado" dentro da caixa escura de logs */
-.details-section.notes-section .styled-notes-list .no-data-message,
-.details-section[aria-label="Backups Processados"] .processed-backups-list .no-data-message {
-  padding: 15px;
-  text-align: center;
-  color: var(--text-secondary); /* Ajustar para contraste */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-badge.status--success {
+  background-color: rgba(40, 167, 69, 0.15);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.status-badge.status--warning {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-badge.status--error {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.status-badge.status--info {
+  background-color: rgba(23, 162, 184, 0.15);
+  color: #17a2b8;
+  border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+.status-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.status-icon.success {
+  color: #28a745;
+}
+
+.status-icon.warning {
+  color: #ffc107;
+}
+
+.notes-section {
+  margin-bottom: 0;
+}
+
+.styled-notes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.note-entry {
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.note-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+}
+
+.note-timestamp {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.note-source {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.note-message {
+  margin: 0;
+  color: var(--text-color);
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.processed-backups-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.backup-item {
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.backup-detail-item {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.backup-detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.backup-detail-item dt {
+  flex: 0 0 140px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.backup-detail-item dd {
+  margin: 0;
+  color: var(--text-color);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.no-data-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
   font-style: italic;
-  background-color: transparent; /* Herda o fundo da lista pai */
-}
-.details-section.notes-section .styled-notes-list .no-data-message svg,
-.details-section[aria-label="Backups Processados"] .processed-backups-list .no-data-message svg {
-    margin-right: 8px; /* Espaçamento do ícone */
-    vertical-align: middle; /* Alinhamento do ícone */
+  padding: 20px;
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  text-align: center;
+  justify-content: center;
 }
 
-/* Estilos da barra de rolagem para a caixa de logs escura */
-.details-section.notes-section .styled-notes-list::-webkit-scrollbar,
-.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar {
+/* Scrollbar customization */
+.modal-body::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
-}
-.details-section.notes-section .styled-notes-list::-webkit-scrollbar-track,
-.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-html[data-theme='dark'] .details-section.notes-section .styled-notes-list::-webkit-scrollbar-track,
-html[data-theme='dark'] .details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-.details-section.notes-section .styled-notes-list::-webkit-scrollbar-thumb,
-.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-thumb {
-  background: var(--border-color); /* Cor do polegar da scrollbar */
-  border-radius: 4px;
-}
-.details-section.notes-section .styled-notes-list::-webkit-scrollbar-thumb:hover,
-.details-section[aria-label="Backups Processados"] .processed-backups-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
 }
 
-/* Barra de rolagem principal do modal (se o conteúdo exceder max-height) */
-.modal-content.modal-details::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
 }
-html[data-theme='dark'] .modal-content.modal-details::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-.modal-content.modal-details::-webkit-scrollbar-thumb {
+
+.modal-body::-webkit-scrollbar-thumb {
   background: var(--border-color);
+  border-radius: 4px;
 }
-.modal-content.modal-details::-webkit-scrollbar-thumb:hover {
+
+.modal-body::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
 
-
-/* Ajustes responsivos */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .modal-content.modal-details {
+  .modal-content {
     width: 95%;
+    margin: 10px;
+  }
+
+  .modal-details-header {
+    padding: 16px 20px;
+  }
+
+  .modal-details-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .modal-body {
     padding: 20px;
   }
-  .details-grid-2col,
-  .backup-item {
+
+  .details-grid-2col {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .backup-detail-item {
+    flex-direction: column;
+  }
+
+  .backup-detail-item dt {
+    margin-bottom: 4px;
   }
 }

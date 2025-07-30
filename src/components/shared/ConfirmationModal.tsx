@@ -131,7 +131,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <button 
             onClick={handleConfirmClick} 
             className={dangerMode ? "button-danger" : "button-primary"} 
-            disabled={isProcessing || (confirmationInputProps?.required && confirmationInputProps?.expectedValue && confirmationInput.trim() !== confirmationInputProps.expectedValue)}
+            disabled={isProcessing || (!!confirmationInputProps?.required && !!confirmationInputProps?.expectedValue && confirmationInput.trim() !== confirmationInputProps.expectedValue)}
           >
             {isProcessing ? 'Processando...' : confirmButtonText}
           </button>

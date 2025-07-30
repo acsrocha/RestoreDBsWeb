@@ -105,7 +105,7 @@ const DetailedMonitoringPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isPaused, processingJobs, exitingJobs, processedJobs]);
+  }, [isPaused]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -221,12 +221,6 @@ const DetailedMonitoringPage: React.FC = () => {
     
     return { avgProgress, estimatedTime };
   }, [processingJobs]);
-
-  // LOG PARA O PAI
-  console.log(
-    `[PAI] Renderizando. Jobs em processamento: ${processingJobs.length}`, 
-    processingJobs.map(j => j.fileId)
-  );
 
   return (
     <div className="detailed-monitoring-page">
