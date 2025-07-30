@@ -4,6 +4,8 @@ import { fetchAdminClientUploadAreaDetails, downloadFromDrive, deleteClientUploa
 import { useNotification } from '../hooks/useNotification';
 import { useDriveCycle } from '../contexts/DriveCycleContext';
 import DriveCycleIndicator from '../components/common/DriveCycleIndicator';
+import { usePipeline } from '../contexts/PipelineContext';
+import UnifiedPipelineDashboard from '../components/pipeline/UnifiedPipelineDashboard';
 
 import ClientAreaDetailsModal from '../components/shared/ClientAreaDetailsModal';
 import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
@@ -26,6 +28,7 @@ const AdminClientAreasPage: React.FC = () => {
   const [shouldCascadeDelete, setShouldCascadeDelete] = useState(false);
   
   const { showError, showSuccess, showInfo } = useNotification();
+  const { addItem, updateItemStage, updateItemProgress, setItemError } = usePipeline();
   const { 
     timeLeftSeconds, 
     cycleDurationMinutes, 
@@ -98,6 +101,9 @@ const AdminClientAreasPage: React.FC = () => {
 
   const handleDownload = async (area: AdminClientUploadAreaDetail) => {
     try {
+      // Adicionar ao pipeline unificado
+      const trackingId = addItem(area.gdrive_folder_name || 'Pasta do Drive', 'drive');
+      
       setDownloadingAreas(prev => new Map(prev).set(area.upload_area_id, {
         clientName: area.client_name || 'Cliente',
         startTime: new Date(),
@@ -110,10 +116,13 @@ const AdminClientAreasPage: React.FC = () => {
           const updated = new Map(current);
           const download = updated.get(area.upload_area_id);
           if (download && download.progress < 95) {
+            const newProgress = Math.min(95, download.progress + Math.random() * 8 + 2);
             updated.set(area.upload_area_id, {
               ...download,
-              progress: Math.min(95, download.progress + Math.random() * 8 + 2)
+              progress: newProgress
             });
+            // Atualizar pipeline
+            updateItemProgress(trackingId, newProgress);
             return updated;
           }
           return current;
@@ -124,6 +133,13 @@ const AdminClientAreasPage: React.FC = () => {
       const cleanup = () => clearInterval(progressInterval);
       setTimeout(cleanup, 12000);
       await downloadFromDrive(area.upload_area_id);
+      
+      // Completar no pipeline
+      updateItemStage(trackingId, 'VALIDATING', 100, 'Download concluído');
+      
+      // Simular etapas seguintes
+      setTimeout(() => updateItemStage(trackingId, 'QUEUED', 100, 'Adicionado à fila'), 1000);
+      setTimeout(() => updateItemStage(trackingId, 'COMPLETED', 100, 'Processamento concluído'), 3000);
       
       // Completar progresso
       setDownloadingAreas(current => {
@@ -268,6 +284,8 @@ const AdminClientAreasPage: React.FC = () => {
         </div>
       </div>
 
+      <UnifiedPipelineDashboard />
+      
       <div className="statistics-dashboard">
         <div className="stat-card total">
           <div className="stat-icon"><FiUsers /></div>

@@ -1,0 +1,254 @@
+.unified-pipeline-dashboard {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.pipeline-header h2 {
+  color: var(--text-color);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pipeline-summary {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.total-items {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.completed-items {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #10b981;
+  font-weight: 500;
+}
+
+.failed-items {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.pipeline-stages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pipeline-stage {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-top: 3px solid var(--stage-color);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.pipeline-stage:hover {
+  transform: translateY(-2px);
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: rgba(var(--stage-color-rgb, 59, 130, 246), 0.1);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stage-icon {
+  color: var(--stage-color);
+  font-size: 1.2rem;
+}
+
+.stage-label {
+  font-weight: 600;
+  color: var(--text-color);
+  flex: 1;
+}
+
+.stage-count {
+  background: var(--stage-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+.stage-items {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.pipeline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.pipeline-item:hover {
+  background: var(--bg-hover);
+}
+
+.pipeline-item:last-child {
+  border-bottom: none;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-name {
+  display: block;
+  font-weight: 500;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-source {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.item-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.progress-bar {
+  width: 60px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  min-width: 32px;
+}
+
+.item-time {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  min-width: 48px;
+  text-align: right;
+}
+
+.stage-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.pipeline-completed {
+  border-top: 2px solid var(--border-color);
+  padding-top: 20px;
+}
+
+.pipeline-completed h3 {
+  color: var(--text-color);
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+.completed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.completed-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border-left: 3px solid;
+}
+
+.completed-item.success {
+  border-left-color: #10b981;
+}
+
+.completed-item.error {
+  border-left-color: #ef4444;
+}
+
+.completed-item svg {
+  flex-shrink: 0;
+}
+
+.completed-item.success svg {
+  color: #10b981;
+}
+
+.completed-item.error svg {
+  color: #ef4444;
+}
+
+.completed-item span:nth-child(2) {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.completion-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.error-message {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

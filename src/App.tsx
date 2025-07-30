@@ -22,6 +22,7 @@ import ServerConfigPage from './pages/ServerConfigPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SkipLink from './components/common/SkipLink';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { PipelineProvider } from './contexts/PipelineContext';
 // import { ServerProvider } from './contexts/ServerContext';
 
  
@@ -61,7 +62,8 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <ErrorBoundary>
+      <PipelineProvider>
+        <ErrorBoundary>
         <Router>
           <SkipLink targetId="main-content" />
           <div className='app-layout'>
@@ -122,6 +124,7 @@ const App: React.FC = () => {
         </Router>
         <Toaster />
       </ErrorBoundary>
+      </PipelineProvider>
     </ThemeProvider>
   );
 };
