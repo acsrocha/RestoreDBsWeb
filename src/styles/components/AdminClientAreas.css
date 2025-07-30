@@ -238,10 +238,68 @@
   100% { opacity: 1; }
 }
 
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card.total::before { background: var(--accent-primary); }
+.stat-card.processing::before { background: var(--accent-processing); }
+.stat-card.failed::before { background: var(--accent-error); }
+.stat-card.eta::before { background: var(--accent-warning); }
+.stat-card.downloading::before { background: var(--accent-processing); }
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
 .stat-card.downloading .stat-icon {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   animation: pulse-download 2s infinite;
+}
+
+.stat-number {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.stat-number.loading {
+  color: var(--text-secondary);
+  animation: loading-pulse 1.5s infinite;
+}
+
+.stat-card:hover .stat-number {
+  transform: scale(1.05);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 @keyframes pulse-download {

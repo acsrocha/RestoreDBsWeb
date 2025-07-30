@@ -36,6 +36,8 @@ const AdminClientAreasPage: React.FC = () => {
 
   const [isFetching, setIsFetching] = useState(false);
   const [downloadingAreas, setDownloadingAreas] = useState<Map<string, {clientName: string, startTime: Date, progress: number}>>(new Map());
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [prevStats, setPrevStats] = useState({ total: 0, active: 0, waiting: 0, processed: 0 });
 
   const fetchClientAreas = async () => {
     if (isFetching) return;
@@ -43,13 +45,32 @@ const AdminClientAreasPage: React.FC = () => {
     try {
       setIsFetching(true);
       setIsLoading(true);
+      setStatsLoading(true);
       setError(null);
+      
       const data = await fetchAdminClientUploadAreaDetails();
-      setClientAreas(Array.isArray(data) ? data : []);
+      const newData = Array.isArray(data) ? data : [];
+      
+      // Calcular novas estatísticas
+      const newStats = {
+        total: newData.length,
+        active: newData.filter(area => area.upload_area_status?.toLowerCase().includes('ativo')).length,
+        waiting: newData.filter(area => area.upload_area_status?.toLowerCase().includes('aguardando')).length,
+        processed: newData.reduce((sum, area) => sum + (area.processed_backups?.length || 0), 0)
+      };
+      
+      // Animar transição dos números
+      setTimeout(() => {
+        setPrevStats(newStats);
+        setClientAreas(newData);
+        setStatsLoading(false);
+      }, 300);
+      
     } catch (err: any) {
       const errorMessage = err?.message || 'Erro ao buscar áreas de cliente';
       setError(errorMessage);
       showError('Falha ao carregar áreas de cliente: ' + errorMessage);
+      setStatsLoading(false);
     } finally {
       setIsLoading(false);
       setIsFetching(false);
@@ -165,6 +186,41 @@ const AdminClientAreasPage: React.FC = () => {
     setShowDetailsModal(true);
   };
 
+  // Componente para animar números
+  const AnimatedNumber: React.FC<{ value: number; isLoading: boolean }> = ({ value, isLoading }) => {
+    const [displayValue, setDisplayValue] = useState(value);
+    
+    useEffect(() => {
+      if (isLoading) return;
+      
+      const start = displayValue;
+      const end = value;
+      const duration = 800;
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(start + (end - start) * easeOut);
+        
+        setDisplayValue(current);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      requestAnimationFrame(animate);
+    }, [value, isLoading]);
+    
+    return (
+      <div className={`stat-number ${isLoading ? 'loading' : ''}`}>
+        {isLoading ? '...' : displayValue}
+      </div>
+    );
+  };
+
   const handleEdit = (area: AdminClientUploadAreaDetail) => {
     setSelectedArea(area);
     setShowDetailsModal(true);
@@ -216,41 +272,44 @@ const AdminClientAreasPage: React.FC = () => {
         <div className="stat-card total">
           <div className="stat-icon"><FiUsers /></div>
           <div className="stat-content">
-            <div className="stat-number">{clientAreas.length}</div>
+            <AnimatedNumber value={clientAreas.length} isLoading={statsLoading} />
             <div className="stat-label">Total de Áreas</div>
           </div>
         </div>
         <div className="stat-card processing">
           <div className="stat-icon"><FiCheckCircle /></div>
           <div className="stat-content">
-            <div className="stat-number">
-              {clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('ativo')).length}
-            </div>
+            <AnimatedNumber 
+              value={clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('ativo')).length} 
+              isLoading={statsLoading} 
+            />
             <div className="stat-label">Áreas Ativas</div>
           </div>
         </div>
         <div className="stat-card failed">
           <div className="stat-icon"><FiClock /></div>
           <div className="stat-content">
-            <div className="stat-number">
-              {clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('aguardando')).length}
-            </div>
+            <AnimatedNumber 
+              value={clientAreas.filter(area => area.upload_area_status?.toLowerCase().includes('aguardando')).length} 
+              isLoading={statsLoading} 
+            />
             <div className="stat-label">Aguardando Upload</div>
           </div>
         </div>
         <div className="stat-card eta">
           <div className="stat-icon"><FiDatabase /></div>
           <div className="stat-content">
-            <div className="stat-number">
-              {clientAreas.reduce((sum, area) => sum + (area.processed_backups?.length || 0), 0)}
-            </div>
+            <AnimatedNumber 
+              value={clientAreas.reduce((sum, area) => sum + (area.processed_backups?.length || 0), 0)} 
+              isLoading={statsLoading} 
+            />
             <div className="stat-label">Backups Processados</div>
           </div>
         </div>
         <div className="stat-card downloading">
           <div className="stat-icon"><FiDownload /></div>
           <div className="stat-content">
-            <div className="stat-number">{downloadingAreas.size}</div>
+            <AnimatedNumber value={downloadingAreas.size} isLoading={false} />
             <div className="stat-label">Downloads em Progresso</div>
             {downloadingAreas.size > 0 && (
               <div className="stat-detail">

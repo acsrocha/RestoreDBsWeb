@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { fetchFileProcessingJobs } from '../services/fileMonitoringApi';
 import { useInterval } from '../hooks/useInterval';
 import { useNotification } from '../hooks/useNotification';
@@ -282,7 +281,7 @@ const DetailedMonitoringPage: React.FC = () => {
                 Arquivos em Processamento
                 <span className="count-badge">{processingJobs.length}</span>
               </h2>
-              <TransitionGroup component="div" className="active-jobs-grid">
+              <div className="active-jobs-grid">
                 {processingJobs
                   .filter(job => !searchTerm || 
                     job.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -297,47 +296,42 @@ const DetailedMonitoringPage: React.FC = () => {
                     const finalizationStage = stages[3] || { status: 'pending', steps: [] };
                     
                     return (
-                      <CSSTransition
+                      <ActiveJobCard
                         key={job.fileId}
-                        timeout={500}
-                        classNames="job-card"
-                      >
-                        <ActiveJobCard
-                          fileId={job.fileId}
-                          fileName={job.fileName}
-                          startedAt={job.startedAt}
-                          currentStage={job.currentStage}
-                          overallProgress={job.overallProgress}
-                          downloadStage={{
-                            status: downloadStage.status === 'completed' ? 'complete' : 
-                                   downloadStage.status === 'in_progress' ? 'processing' : 
-                                   downloadStage.status === 'failed' ? 'failed' : 'pending',
-                            steps: downloadStage.steps
-                          }}
-                          validationStage={{
-                            status: validationStage.status === 'completed' ? 'complete' : 
-                                   validationStage.status === 'in_progress' ? 'processing' : 
-                                   validationStage.status === 'failed' ? 'failed' : 'pending',
-                            steps: validationStage.steps
-                          }}
-                          restoreStage={{
-                            status: restoreStage.status === 'completed' ? 'complete' : 
-                                   restoreStage.status === 'in_progress' ? 'processing' : 
-                                   restoreStage.status === 'failed' ? 'failed' : 'pending',
-                            steps: restoreStage.steps
-                          }}
-                          finalizationStage={{
-                            status: finalizationStage.status === 'completed' ? 'complete' : 
-                                   finalizationStage.status === 'in_progress' ? 'processing' : 
-                                   finalizationStage.status === 'failed' ? 'failed' : 'pending',
-                            steps: finalizationStage.steps
-                          }}
-                        />
-                      </CSSTransition>
+                        fileId={job.fileId}
+                        fileName={job.fileName}
+                        startedAt={job.startedAt}
+                        currentStage={job.currentStage}
+                        overallProgress={job.overallProgress}
+                        downloadStage={{
+                          status: downloadStage.status === 'completed' ? 'complete' : 
+                                 downloadStage.status === 'in_progress' ? 'processing' : 
+                                 downloadStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: downloadStage.steps
+                        }}
+                        validationStage={{
+                          status: validationStage.status === 'completed' ? 'complete' : 
+                                 validationStage.status === 'in_progress' ? 'processing' : 
+                                 validationStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: validationStage.steps
+                        }}
+                        restoreStage={{
+                          status: restoreStage.status === 'completed' ? 'complete' : 
+                                 restoreStage.status === 'in_progress' ? 'processing' : 
+                                 restoreStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: restoreStage.steps
+                        }}
+                        finalizationStage={{
+                          status: finalizationStage.status === 'completed' ? 'complete' : 
+                                 finalizationStage.status === 'in_progress' ? 'processing' : 
+                                 finalizationStage.status === 'failed' ? 'failed' : 'pending',
+                          steps: finalizationStage.steps
+                        }}
+                      />
                     );
                   })
                 }
-              </TransitionGroup>
+              </div>
             </section>
           )}
           
