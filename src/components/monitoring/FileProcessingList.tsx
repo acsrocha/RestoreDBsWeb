@@ -85,14 +85,14 @@ const FileProcessingList: React.FC<FileProcessingListProps> = ({
     <div className="file-processing-list">
       {jobs.map(job => (
         <div 
-          key={job.fileId} 
-          className={`file-item ${type} ${selectedJobId === job.fileId ? 'selected' : ''}`}
+          key={job.id || job.fileId} 
+          className={`file-item ${type} ${selectedJobId === (job.id || job.fileId) ? 'selected' : ''}`}
         >
           <div 
             className="file-header" 
             onClick={() => {
               if (onJobSelect) {
-                onJobSelect(job.fileId);
+                onJobSelect(job.id || job.fileId);
               }
             }}
           >
@@ -118,7 +118,7 @@ const FileProcessingList: React.FC<FileProcessingListProps> = ({
 
           
           {/* JobDetails aparece diretamente abaixo do item selecionado */}
-          {selectedJobId === job.fileId && selectedJob && (
+          {selectedJobId === (job.id || job.fileId) && selectedJob && (
             <JobDetails 
               job={selectedJob}
             />

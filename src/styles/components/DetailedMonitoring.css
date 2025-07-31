@@ -147,6 +147,13 @@
   margin-bottom: 16px;
 }
 
+/* Força 4 cards na mesma linha em telas grandes */
+@media (min-width: 1024px) {
+  .stats-dashboard {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .stat-card {
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border: 1px solid var(--border-primary);
@@ -444,8 +451,8 @@
 
 .active-jobs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
   margin-top: 12px;
 }
 
@@ -480,12 +487,40 @@
 }
 
 /* Responsividade */
+@media (max-width: 1200px) {
+  .stats-dashboard {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .active-jobs-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .detailed-monitoring-page {
     padding: 16px;
   }
   
+  .stats-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   .active-jobs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .active-jobs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-dashboard {
     grid-template-columns: 1fr;
   }
 }

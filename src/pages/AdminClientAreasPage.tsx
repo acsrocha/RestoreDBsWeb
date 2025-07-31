@@ -4,8 +4,7 @@ import { fetchAdminClientUploadAreaDetails, downloadFromDrive, deleteClientUploa
 import { useNotification } from '../hooks/useNotification';
 import { useDriveCycle } from '../contexts/DriveCycleContext';
 import DriveCycleIndicator from '../components/common/DriveCycleIndicator';
-import { usePipeline } from '../contexts/PipelineContext';
-import UnifiedPipelineDashboard from '../components/pipeline/UnifiedPipelineDashboard';
+import { useUnifiedTracking } from '../contexts/UnifiedTrackingContext';
 
 import ClientAreaDetailsModal from '../components/shared/ClientAreaDetailsModal';
 import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
@@ -28,7 +27,7 @@ const AdminClientAreasPage: React.FC = () => {
   const [shouldCascadeDelete, setShouldCascadeDelete] = useState(false);
   
   const { showError, showSuccess, showInfo } = useNotification();
-  const { addItem, updateItemStage, updateItemProgress, setItemError } = usePipeline();
+  const { startDownload, updateProgress, completeItem, failItem } = useUnifiedTracking();
   const { 
     timeLeftSeconds, 
     cycleDurationMinutes, 
@@ -101,8 +100,8 @@ const AdminClientAreasPage: React.FC = () => {
 
   const handleDownload = async (area: AdminClientUploadAreaDetail) => {
     try {
-      // Adicionar ao pipeline unificado
-      const trackingId = addItem(area.gdrive_folder_name || 'Pasta do Drive', 'drive');
+      // Iniciar tracking unificado
+      const trackingId = startDownload(area.gdrive_folder_name || 'Pasta do Drive', 'drive');
       
       setDownloadingAreas(prev => new Map(prev).set(area.upload_area_id, {
         clientName: area.client_name || 'Cliente',
@@ -110,7 +109,7 @@ const AdminClientAreasPage: React.FC = () => {
         progress: 0
       }));
       
-      // Simular progresso (em produção viria da API)
+      // Simular progresso de download (em produção viria da API)
       const progressInterval = setInterval(() => {
         setDownloadingAreas(current => {
           const updated = new Map(current);
@@ -121,27 +120,26 @@ const AdminClientAreasPage: React.FC = () => {
               ...download,
               progress: newProgress
             });
-            // Atualizar pipeline
-            updateItemProgress(trackingId, newProgress);
+            // Atualizar progresso no tracking unificado
+            updateProgress(trackingId, 'downloading', newProgress);
             return updated;
           }
           return current;
         });
       }, 800);
       
-      // Limpar intervalo quando download terminar
-      const cleanup = () => clearInterval(progressInterval);
-      setTimeout(cleanup, 12000);
+      // Executar download real
       await downloadFromDrive(area.upload_area_id);
       
-      // Completar no pipeline
-      updateItemStage(trackingId, 'VALIDATING', 100, 'Download concluído');
+      // Limpar intervalo
+      clearInterval(progressInterval);
       
-      // Simular etapas seguintes
-      setTimeout(() => updateItemStage(trackingId, 'QUEUED', 100, 'Adicionado à fila'), 1000);
-      setTimeout(() => updateItemStage(trackingId, 'COMPLETED', 100, 'Processamento concluído'), 3000);
+      // Simular fluxo completo: download -> extração -> validação -> fila
+      updateProgress(trackingId, 'extracting', 100);
+      setTimeout(() => updateProgress(trackingId, 'validating', 100), 1000);
+      setTimeout(() => updateProgress(trackingId, 'queued', 0), 2000);
       
-      // Completar progresso
+      // Completar progresso local
       setDownloadingAreas(current => {
         const updated = new Map(current);
         const download = updated.get(area.upload_area_id);
@@ -155,14 +153,23 @@ const AdminClientAreasPage: React.FC = () => {
       });
       
       fetchClientAreas();
+      showSuccess('Download iniciado com sucesso!');
+      
     } catch (error: any) {
       showError('Erro ao iniciar download: ' + (error?.message || 'Erro desconhecido'));
+      // Marcar como falhado no tracking
+      if (trackingId) {
+        failItem(trackingId, error?.message || 'Erro no download');
+      }
     } finally {
-      setDownloadingAreas(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(area.upload_area_id);
-        return newMap;
-      });
+      // Remover da lista local após 3 segundos
+      setTimeout(() => {
+        setDownloadingAreas(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(area.upload_area_id);
+          return newMap;
+        });
+      }, 3000);
     }
   };
 
@@ -283,8 +290,6 @@ const AdminClientAreasPage: React.FC = () => {
           </button>
         </div>
       </div>
-
-      <UnifiedPipelineDashboard />
       
       <div className="statistics-dashboard">
         <div className="stat-card total">

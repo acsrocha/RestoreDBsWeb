@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { fetchFileProcessingJobs } from '../services/fileMonitoringApi';
+import { fetchUnifiedMonitoringData } from '../services/unifiedMonitoringApi';
+import type { UnifiedMonitoringData } from '../services/unifiedMonitoringApi';
 import { useInterval } from '../hooks/useInterval';
 import { useNotification } from '../hooks/useNotification';
+
 import ActiveJobCard from '../components/monitoring/ActiveJobCard';
 import FileProcessingList from '../components/monitoring/FileProcessingList';
 import JobDetails from '../components/monitoring/JobDetails';
+import UnifiedPipelineDashboard from '../components/pipeline/UnifiedPipelineDashboard';
 
 import MonitoringPageHeader from '../components/monitoring/MonitoringPageHeader';
 import StatisticsDashboard from '../components/monitoring/StatisticsDashboard';
@@ -34,34 +37,29 @@ const DetailedMonitoringPage: React.FC = () => {
   const [exitingJobs, setExitingJobs] = useState<string[]>([]); // IDs dos jobs em fase de saída
   const [processedJobs, setProcessedJobs] = useState<string[]>([]); // IDs dos jobs já processados
   const { showError } = useNotification();
+  
+
 
   // Função para buscar os dados de monitoramento
   const fetchMonitoringData = useCallback(async () => {
     if (isPaused) return;
     
     try {
-      const data = await fetchFileProcessingJobs();
+      const data = await fetchUnifiedMonitoringData();
+      const allJobs = [...data.activeJobs, ...data.recentlyCompleted, ...data.recentlyFailed];
       
       // Identificar IDs de jobs que estavam em processamento na renderização anterior
       const previouslyProcessingIds = new Set(processingJobs.map(j => j.fileId));
 
-      // Jobs que estão REALMENTE completos/falharam AGORA
-      // Verificar se TODAS as etapas estão completas
-      const justFinishedJobs = data.filter(job => {
-        const stages = job.stages || [];
-        const allStagesComplete = stages.length >= 4 && 
-          stages.every(stage => stage.status === 'completed' || stage.status === 'failed');
-        
+      const justFinishedJobs = allJobs.filter(job => {
         return (
           (job.status === 'completed' || job.status === 'failed') && 
-          allStagesComplete &&
-          previouslyProcessingIds.has(job.fileId) &&
-          !processedJobs.includes(job.fileId)
+          previouslyProcessingIds.has(job.id) &&
+          !processedJobs.includes(job.id)
         );
       });
 
-      // Adicionar os IDs desses jobs às listas de saída e processados
-      const justFinishedIds = justFinishedJobs.map(j => j.fileId);
+      const justFinishedIds = justFinishedJobs.map(j => j.id);
       if (justFinishedIds.length > 0) {
         setExitingJobs(prev => [...prev, ...justFinishedIds]);
         setProcessedJobs(prev => [...prev, ...justFinishedIds]);
@@ -73,29 +71,16 @@ const DetailedMonitoringPage: React.FC = () => {
       }
 
       // ATUALIZAÇÃO DAS LISTAS:
-      // A lista de processamento INCLUI jobs em processamento E jobs que acabaram de finalizar
-      const active = data.filter(job => 
-        (job.status === 'processing' || job.status === 'queued') || 
-        exitingJobs.includes(job.fileId) ||
-        justFinishedIds.includes(job.fileId)
-      );
-
-      // As listas de concluídos/falha EXCLUEM os jobs que ainda estão em 'exiting'
-      const completed = data.filter(job => job.status === 'completed' && !exitingJobs.includes(job.fileId));
-      const failed = data.filter(job => job.status === 'failed' && !exitingJobs.includes(job.fileId));
+      const active = data.activeJobs;
+      const completed = data.recentlyCompleted;
+      const failed = data.recentlyFailed;
       
       setProcessingJobs(active);
       setCompletedJobs(completed);
       setFailedJobs(failed);
       setLastUpdated(new Date());
       
-      // Atualizar estatísticas
-      setStats({
-        total: data.length,
-        processing: active.length,
-        completed: completed.length,
-        failed: failed.length
-      });
+      setStats(data.stats);
       
       setError(null);
     } catch (err) {
@@ -104,7 +89,7 @@ const DetailedMonitoringPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isPaused]);
+  }, [isPaused, processingJobs]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -236,6 +221,9 @@ const DetailedMonitoringPage: React.FC = () => {
         refreshOptions={REFRESH_OPTIONS}
       />
 
+      {/* Pipeline de Processamento Unificado */}
+      <UnifiedPipelineDashboard />
+
       <StatisticsDashboard
         stats={stats}
         realtimeStats={realtimeStats}
@@ -297,8 +285,8 @@ const DetailedMonitoringPage: React.FC = () => {
                     
                     return (
                       <ActiveJobCard
-                        key={job.fileId}
-                        fileId={job.fileId}
+                        key={job.id || job.fileId}
+                        fileId={job.fileId || job.id}
                         fileName={job.fileName}
                         startedAt={job.startedAt}
                         currentStage={job.currentStage}

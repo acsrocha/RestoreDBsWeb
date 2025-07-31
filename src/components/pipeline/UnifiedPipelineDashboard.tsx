@@ -1,46 +1,50 @@
 import React from 'react';
-import { usePipeline } from '../../contexts/PipelineContext';
+import { useUnifiedTracking } from '../../contexts/UnifiedTrackingContext';
 import { FiDownload, FiPackage, FiCheckSquare, FiClock, FiCpu, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
 import './UnifiedPipelineDashboard.css';
 
 const UnifiedPipelineDashboard: React.FC = () => {
-  const { stats, items, getItemsByStage } = usePipeline();
+  const { stats, items } = useUnifiedTracking();
+
+  const getItemsByStage = (stage: string) => {
+    return items.filter(item => item.currentStage === stage.toLowerCase());
+  };
 
   const stageConfig = [
     { 
-      stage: 'DOWNLOADING', 
+      stage: 'downloading', 
       icon: FiDownload, 
       label: 'Baixando', 
       color: '#3b82f6',
-      items: getItemsByStage('DOWNLOADING')
+      items: getItemsByStage('downloading')
     },
     { 
-      stage: 'EXTRACTING', 
+      stage: 'extracting', 
       icon: FiPackage, 
       label: 'Extraindo', 
       color: '#8b5cf6',
-      items: getItemsByStage('EXTRACTING')
+      items: getItemsByStage('extracting')
     },
     { 
-      stage: 'VALIDATING', 
+      stage: 'validating', 
       icon: FiCheckSquare, 
       label: 'Validando', 
       color: '#06b6d4',
-      items: getItemsByStage('VALIDATING')
+      items: getItemsByStage('validating')
     },
     { 
-      stage: 'QUEUED', 
+      stage: 'queued', 
       icon: FiClock, 
       label: 'Na Fila', 
       color: '#f59e0b',
-      items: getItemsByStage('QUEUED')
+      items: getItemsByStage('queued')
     },
     { 
-      stage: 'PROCESSING', 
+      stage: 'processing', 
       icon: FiCpu, 
       label: 'Processando', 
       color: '#10b981',
-      items: getItemsByStage('PROCESSING')
+      items: getItemsByStage('processing')
     }
   ];
 
@@ -77,6 +81,9 @@ const UnifiedPipelineDashboard: React.FC = () => {
                         {item.fileName.length > 20 ? `${item.fileName.substring(0, 20)}...` : item.fileName}
                       </span>
                       <span className="item-source">{item.source}</span>
+                      {item.queuePosition && (
+                        <span className="queue-position">#{item.queuePosition}</span>
+                      )}
                     </div>
                     
                     <div className="item-progress">
@@ -117,7 +124,7 @@ const UnifiedPipelineDashboard: React.FC = () => {
         <div className="pipeline-completed">
           <h3>Recentemente Finalizados</h3>
           <div className="completed-grid">
-            {getItemsByStage('COMPLETED').slice(0, 5).map(item => (
+            {getItemsByStage('completed').slice(0, 5).map(item => (
               <div key={item.trackingId} className="completed-item success">
                 <FiCheckCircle />
                 <span>{item.fileName}</span>
@@ -130,7 +137,7 @@ const UnifiedPipelineDashboard: React.FC = () => {
               </div>
             ))}
             
-            {getItemsByStage('FAILED').slice(0, 5).map(item => (
+            {getItemsByStage('failed').slice(0, 5).map(item => (
               <div key={item.trackingId} className="completed-item error">
                 <FiAlertTriangle />
                 <span>{item.fileName}</span>

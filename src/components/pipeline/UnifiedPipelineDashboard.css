@@ -51,8 +51,8 @@
 
 .pipeline-stages {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
   margin-bottom: 24px;
 }
 
@@ -141,6 +141,17 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   margin-top: 2px;
+}
+
+.queue-position {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  background: rgba(245, 158, 11, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-top: 2px;
+  font-weight: 500;
 }
 
 .item-progress {

@@ -143,10 +143,12 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const monitoringData: FileMonitoringData = await fetchFileMonitoringData();
         
         // Converter dados da API para o formato do pipeline
-        const convertToStage = (status: string, stages: any[]): PipelineStage => {
-          if (status === 'queued') return 'QUEUED';
+        const convertToStage = (status: string, stages: any[], overallProgress: number): PipelineStage => {
+          if (status === 'completed') return 'COMPLETED';
+          if (status === 'failed') return 'FAILED';
+          
           if (status === 'processing') {
-            // Determinar estágio baseado nos stages
+            // Determinar estágio baseado nos stages ativos
             const currentStage = stages.find(s => s.status === 'in_progress');
             if (currentStage) {
               switch (currentStage.name) {
@@ -157,25 +159,45 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 default: return 'PROCESSING';
               }
             }
+            // Se não há stage ativo mas está processando, assumir que está processando
             return 'PROCESSING';
           }
-          if (status === 'completed') return 'COMPLETED';
-          if (status === 'failed') return 'FAILED';
+          
+          // Se está na fila ou status desconhecido
           return 'QUEUED';
         };
         
-        // Combinar todos os arquivos ativos
-        const allFiles = [...monitoringData.activeFiles];
+        // Combinar todos os arquivos (ativos, recém-completados, recém-falhados)
+        // Incluir apenas arquivos que ainda estão em processamento ou na fila
+        const allFiles = [
+          ...monitoringData.activeFiles,
+          // Incluir arquivos recém-completados/falhados que ainda devem aparecer no pipeline
+          ...monitoringData.recentlyCompleted.filter(file => {
+            const completedTime = new Date(file.completedAt || file.createdAt).getTime();
+            const now = Date.now();
+            const ageInMinutes = (now - completedTime) / (1000 * 60);
+            return ageInMinutes < 5; // Mostrar por 5 minutos após completar
+          }),
+          ...monitoringData.recentlyFailed.filter(file => {
+            const failedTime = new Date(file.completedAt || file.createdAt).getTime();
+            const now = Date.now();
+            const ageInMinutes = (now - failedTime) / (1000 * 60);
+            return ageInMinutes < 5; // Mostrar por 5 minutos após falhar
+          })
+        ];
         
-        setItems(allFiles.map((file: FileProcessingDetail) => {
-          const stage = convertToStage(file.status, file.stages || []);
+        // Substituir completamente a lista com os dados atuais da API
+        // Isso garante que arquivos que saíram da fila sejam removidos visualmente
+        const newItems = allFiles.map((file: FileProcessingDetail) => {
+          const progress = file.overallProgress || 0;
+          const stage = convertToStage(file.status, file.stages || [], progress);
           
           return {
             trackingId: file.fileId,
             fileName: file.fileName,
             source: file.sourceType === 'google_drive' ? 'drive' : 'upload',
             currentStage: stage,
-            progress: file.overallProgress || 0,
+            progress: progress,
             startedAt: new Date(file.startedAt || file.createdAt),
             updatedAt: new Date(),
             ...(file.completedAt && { completedAt: new Date(file.completedAt) }),
@@ -185,21 +207,21 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 downloading: {
                   status: 'in_progress',
                   startedAt: new Date(file.startedAt || file.createdAt),
-                  progress: file.overallProgress || 0
+                  progress: progress
                 }
               }),
               ...(stage === 'EXTRACTING' && {
                 extracting: {
                   status: 'in_progress',
                   startedAt: new Date(file.startedAt || file.createdAt),
-                  progress: file.overallProgress || 0
+                  progress: progress
                 }
               }),
               ...(stage === 'VALIDATING' && {
                 validating: {
                   status: 'in_progress',
                   startedAt: new Date(file.startedAt || file.createdAt),
-                  progress: file.overallProgress || 0
+                  progress: progress
                 }
               }),
               ...(stage === 'QUEUED' && {
@@ -213,12 +235,14 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 processing: {
                   status: 'in_progress',
                   startedAt: new Date(file.startedAt || file.createdAt),
-                  progress: file.overallProgress || 0
+                  progress: progress
                 }
               })
             }
           } as PipelineItem;
-        }));
+        });
+        
+        setItems(newItems);
         
       } catch (error) {
         console.error('Erro ao sincronizar pipeline com API:', error);

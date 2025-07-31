@@ -34,6 +34,12 @@
   --shadow-light: 0 1px 3px var(--shadow-color);
   --shadow-medium: 0 4px 12px var(--shadow-color);
   --shadow-heavy: 0 8px 24px var(--shadow-color);
+  
+  /* Compatibilidade com global.css */
+  --card-bg: var(--bg-secondary);
+  --border-color: var(--border-primary);
+  --border-radius-md: 8px;
+  --shadow: var(--shadow-light);
 }
 
 /* --- TEMA ESCURO --- */
@@ -70,6 +76,12 @@
   --shadow-light: 0 2px 4px var(--shadow-color);
   --shadow-medium: 0 8px 16px var(--shadow-color);
   --shadow-heavy: 0 16px 32px var(--shadow-color);
+  
+  /* Compatibilidade com global.css */
+  --card-bg: var(--bg-secondary);
+  --border-color: var(--border-primary);
+  --border-radius-md: 8px;
+  --shadow: var(--shadow-light);
 }
 
 /* Aplicação global */

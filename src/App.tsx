@@ -22,20 +22,25 @@ import ServerConfigPage from './pages/ServerConfigPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SkipLink from './components/common/SkipLink';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { PipelineProvider } from './contexts/PipelineContext';
+import { UnifiedTrackingProvider } from './contexts/UnifiedTrackingContext';
 // import { ServerProvider } from './contexts/ServerContext';
 
  
 
+// Ordem correta: base → específicos
 import './styles/theme.css';
-import './styles/standardization.css';
 import './styles/global.css';
+import './styles/standardization.css';
+import './styles/grid-views.css';
+import './styles/toast-custom.css';
 import './styles/components/ErrorBoundary.css';
 import './styles/components/SkipLink.css';
-import './styles/toast-custom.css';
-import './styles/grid-views.css';
 import './styles/components/NotificationBanner.css';
 import './styles/components/UploadProgress.css';
+import './styles/components/DetailedMonitoring.css';
+import './styles/components/HighlightCard.css';
+import './styles/components/MonitoringCards.css';
+import './components/common/LoadingSpinner.css';
 
 const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -62,7 +67,7 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <PipelineProvider>
+      <UnifiedTrackingProvider>
         <ErrorBoundary>
         <Router>
           <SkipLink targetId="main-content" />
@@ -124,7 +129,7 @@ const App: React.FC = () => {
         </Router>
         <Toaster />
       </ErrorBoundary>
-      </PipelineProvider>
+      </UnifiedTrackingProvider>
     </ThemeProvider>
   );
 };
