@@ -29,13 +29,17 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
   const { showSuccess } = useNotification();
 
   const formatDate = (dateString?: string) => {
-    if (!dateString || dateString === 'Invalid Date') {
+    if (!dateString || dateString === 'Invalid Date' || dateString === 'null' || dateString === 'undefined') {
       return 'N/A';
     }
     try {
-      return new Date(dateString).toLocaleString('pt-BR');
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'N/A';
+      }
+      return date.toLocaleString('pt-BR');
     } catch {
-      return dateString;
+      return 'N/A';
     }
   };
 

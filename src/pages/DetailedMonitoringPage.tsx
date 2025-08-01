@@ -8,6 +8,7 @@ import ActiveJobCard from '../components/monitoring/ActiveJobCard';
 import FileProcessingList from '../components/monitoring/FileProcessingList';
 import JobDetails from '../components/monitoring/JobDetails';
 import UnifiedPipelineDashboard from '../components/pipeline/UnifiedPipelineDashboard';
+import FinishedJobsSection from '../components/monitoring/FinishedJobsSection';
 
 import MonitoringPageHeader from '../components/monitoring/MonitoringPageHeader';
 import StatisticsDashboard from '../components/monitoring/StatisticsDashboard';
@@ -15,6 +16,7 @@ import JobViewFilters from '../components/monitoring/JobViewFilters';
 import { FiActivity, FiCheckCircle, FiAlertTriangle, FiDatabase } from 'react-icons/fi';
 import '../styles/components/DetailedMonitoring.css';
 import '../styles/animations/job-card-transition.css';
+import '../styles/components/FinishedJobsSection.css';
 import '../styles/theme.css';
 
 // Intervalo de atualização em milissegundos
@@ -333,50 +335,16 @@ const DetailedMonitoringPage: React.FC = () => {
             </section>
           )}
           
-          {/* Jobs concluídos */}
-          {(selectedView === 'all' || selectedView === 'completed') && completedJobs.length > 0 && (
-            <section className="monitoring-section">
-              <h2>
-                <FiCheckCircle className="section-icon success" />
-                Arquivos Processados com Sucesso
-                <span className="count-badge success">{completedJobs.length}</span>
-              </h2>
-              <FileProcessingList 
-                jobs={completedJobs.filter(job => !searchTerm || 
-                  job.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  job.fileId.toLowerCase().includes(searchTerm.toLowerCase())
-                )} 
-                isLoading={false} 
-                emptyMessage="Nenhum arquivo processado com sucesso." 
-                type="success"
-                onJobSelect={handleJobSelect}
-                selectedJobId={selectedJobId}
-                selectedJob={selectedJob}
-              />
-            </section>
-          )}
-          
-          {/* Jobs com falha */}
-          {(selectedView === 'all' || selectedView === 'failed') && failedJobs.length > 0 && (
-            <section className="monitoring-section">
-              <h2>
-                <FiAlertTriangle className="section-icon error" />
-                Arquivos com Falha no Processamento
-                <span className="count-badge error">{failedJobs.length}</span>
-              </h2>
-              <FileProcessingList 
-                jobs={failedJobs.filter(job => !searchTerm || 
-                  job.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  job.fileId.toLowerCase().includes(searchTerm.toLowerCase())
-                )} 
-                isLoading={false} 
-                emptyMessage="Nenhum arquivo com falha no processamento." 
-                type="error"
-                onJobSelect={handleJobSelect}
-                selectedJobId={selectedJobId}
-                selectedJob={selectedJob}
-              />
-            </section>
+          {/* Jobs finalizados (sucesso e falha) */}
+          {(selectedView === 'all' || selectedView === 'completed' || selectedView === 'failed') && (completedJobs.length > 0 || failedJobs.length > 0) && (
+            <FinishedJobsSection 
+              completedJobs={completedJobs}
+              failedJobs={failedJobs}
+              searchTerm={searchTerm}
+              selectedView={selectedView}
+              onJobSelect={handleJobSelect}
+              selectedJobId={selectedJobId}
+            />
           )}
         </div>
       )}

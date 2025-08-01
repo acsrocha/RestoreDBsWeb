@@ -92,7 +92,13 @@ const FileProcessingList: React.FC<FileProcessingListProps> = ({
             className="file-header" 
             onClick={() => {
               if (onJobSelect) {
-                onJobSelect(job.id || job.fileId);
+                const jobId = job.id || job.fileId;
+                // Se já está selecionado, deseleciona (recolhe)
+                if (selectedJobId === jobId) {
+                  onJobSelect('');
+                } else {
+                  onJobSelect(jobId);
+                }
               }
             }}
           >
@@ -118,9 +124,21 @@ const FileProcessingList: React.FC<FileProcessingListProps> = ({
 
           
           {/* JobDetails aparece diretamente abaixo do item selecionado */}
-          {selectedJobId === (job.id || job.fileId) && selectedJob && (
+          {selectedJobId === (job.id || job.fileId) && (
             <JobDetails 
-              job={selectedJob}
+              job={{
+                fileId: job.fileId || job.id,
+                fileName: job.fileName,
+                status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'failed' : 'processing',
+                startedAt: job.createdAt || job.startedAt,
+                completedAt: job.status === 'completed' ? job.updatedAt || job.finishedAt : undefined,
+                errorMessage: job.errorMessage || job.error,
+                downloadStage: { status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'failed' : 'pending' },
+                validationStage: { status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'failed' : 'pending' },
+                restoreStage: { status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'failed' : 'pending' },
+                finalizationStage: { status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'failed' : 'pending' }
+              }}
+              onClose={() => onJobSelect && onJobSelect(null)}
             />
           )}
         </div>

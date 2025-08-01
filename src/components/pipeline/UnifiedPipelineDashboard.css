@@ -263,3 +263,45 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Estilos para o resumo da fila */
+.queue-summary {
+  padding: 16px;
+}
+
+.queue-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.queue-text {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.queue-next {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.queue-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-progress .progress-bar {
+  flex: 1;
+  height: 6px;
+}
+
+.queue-progress .progress-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color);
+  min-width: 60px;
+}

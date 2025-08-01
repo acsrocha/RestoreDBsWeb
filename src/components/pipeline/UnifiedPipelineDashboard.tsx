@@ -7,7 +7,21 @@ const UnifiedPipelineDashboard: React.FC = () => {
   const { stats, items } = useUnifiedTracking();
 
   const getItemsByStage = (stage: string) => {
-    return items.filter(item => item.currentStage === stage.toLowerCase());
+    return items.filter(item => {
+      const currentStage = item.currentStage?.toLowerCase() || '';
+      const targetStage = stage.toLowerCase();
+      
+      // Mapeamento de estágios alternativos
+      const stageMap: { [key: string]: string[] } = {
+        'downloading': ['downloading', 'download', 'baixando'],
+        'extracting': ['extracting', 'extract', 'extraindo', 'unzipping'],
+        'validating': ['validating', 'validate', 'validation', 'validando'],
+        'queued': ['queued', 'queue', 'fila', 'waiting'],
+        'processing': ['processing', 'process', 'processando', 'restoring']
+      };
+      
+      return stageMap[targetStage]?.includes(currentStage) || currentStage === targetStage;
+    });
   };
 
   const stageConfig = [
@@ -51,7 +65,7 @@ const UnifiedPipelineDashboard: React.FC = () => {
   return (
     <div className="unified-pipeline-dashboard">
       <div className="pipeline-header">
-        <h2>Pipeline de Processamento Unificado</h2>
+        <h2>Pipeline de Processamento</h2>
         <div className="pipeline-summary">
           <span className="total-items">Total: {stats.total}</span>
           <span className="completed-items">
@@ -74,39 +88,64 @@ const UnifiedPipelineDashboard: React.FC = () => {
             
             {items.length > 0 && (
               <div className="stage-items">
-                {items.map(item => (
-                  <div key={item.trackingId} className="pipeline-item">
-                    <div className="item-info">
-                      <span className="item-name" title={item.fileName}>
-                        {item.fileName.length > 20 ? `${item.fileName.substring(0, 20)}...` : item.fileName}
+                {stage === 'queued' ? (
+                  // Para a fila, mostrar progresso geral
+                  <div className="queue-summary">
+                    <div className="queue-info">
+                      <span className="queue-text">{items.length} arquivo{items.length > 1 ? 's' : ''} aguardando</span>
+                      <span className="queue-next">
+                        Próximo: {items.find(item => item.queuePosition === 1)?.fileName?.substring(0, 25) || 'N/A'}...
                       </span>
-                      <span className="item-source">{item.source}</span>
-                      {item.queuePosition && (
-                        <span className="queue-position">#{item.queuePosition}</span>
-                      )}
                     </div>
-                    
-                    <div className="item-progress">
+                    <div className="queue-progress">
                       <div className="progress-bar">
                         <div 
                           className="progress-fill" 
                           style={{ 
-                            width: `${item.progress}%`,
+                            width: `${Math.max(10, 100 - (items.length * 10))}%`,
                             backgroundColor: color
                           }}
                         />
                       </div>
-                      <span className="progress-text">{Math.round(item.progress)}%</span>
-                    </div>
-                    
-                    <div className="item-time">
-                      {new Date(item.updatedAt).toLocaleTimeString('pt-BR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                      <span className="progress-text">Fila: {items.length}</span>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  // Para outros estágios, mostrar itens individuais
+                  items.map(item => (
+                    <div key={item.trackingId} className="pipeline-item">
+                      <div className="item-info">
+                        <span className="item-name" title={item.fileName}>
+                          {item.fileName.length > 20 ? `${item.fileName.substring(0, 20)}...` : item.fileName}
+                        </span>
+                        <span className="item-source">{item.source}</span>
+                        {item.queuePosition && (
+                          <span className="queue-position">#{item.queuePosition}</span>
+                        )}
+                      </div>
+                      
+                      <div className="item-progress">
+                        <div className="progress-bar">
+                          <div 
+                            className="progress-fill" 
+                            style={{ 
+                              width: `${item.progress}%`,
+                              backgroundColor: color
+                            }}
+                          />
+                        </div>
+                        <span className="progress-text">{Math.round(item.progress)}%</span>
+                      </div>
+                      
+                      <div className="item-time">
+                        {new Date(item.updatedAt).toLocaleTimeString('pt-BR', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
             
@@ -119,36 +158,7 @@ const UnifiedPipelineDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Seção de Concluídos/Falhados */}
-      {(stats.completed > 0 || stats.failed > 0) && (
-        <div className="pipeline-completed">
-          <h3>Recentemente Finalizados</h3>
-          <div className="completed-grid">
-            {getItemsByStage('completed').slice(0, 5).map(item => (
-              <div key={item.trackingId} className="completed-item success">
-                <FiCheckCircle />
-                <span>{item.fileName}</span>
-                <span className="completion-time">
-                  {item.completedAt?.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </span>
-              </div>
-            ))}
-            
-            {getItemsByStage('failed').slice(0, 5).map(item => (
-              <div key={item.trackingId} className="completed-item error">
-                <FiAlertTriangle />
-                <span>{item.fileName}</span>
-                <span className="error-message" title={item.errorMessage}>
-                  {item.errorMessage?.substring(0, 30)}...
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
