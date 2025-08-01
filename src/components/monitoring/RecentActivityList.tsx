@@ -14,7 +14,7 @@ interface RecentActivityListProps {
   isLoading: boolean;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 const getActivityClass = (activity: ActivityLogEntry): string => {
   return `activity-item ${activity.level}`;

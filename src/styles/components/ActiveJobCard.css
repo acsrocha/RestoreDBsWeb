@@ -7,6 +7,18 @@
   padding: 20px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
+  animation: slideInFromTop 0.5s ease-out;
+}
+
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .active-job-card:hover {
@@ -60,6 +72,37 @@
 .time-icon {
   margin-right: 4px;
   color: var(--text-tertiary);
+}
+
+.job-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancel-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent-error);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--accent-error) 10%, transparent);
+  color: var(--accent-error);
+  transform: scale(1.1);
+}
+
+.cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .expand-button {
@@ -153,11 +196,32 @@
 }
 
 .job-stage.complete:not(:last-child)::after {
-  background: linear-gradient(90deg, var(--accent-success) 0%, var(--accent-success) 100%);
+  background: var(--accent-success, #22c55e);
+  animation: progressFlow 0.5s ease-out;
 }
 
 .job-stage.processing:not(:last-child)::after {
-  background: linear-gradient(90deg, var(--accent-processing) 0%, var(--border-primary) 100%);
+  background: linear-gradient(90deg, var(--accent-processing, #0ea5e9) 0%, var(--border-primary, #e2e8f0) 100%);
+  animation: processingFlow 2s ease-in-out infinite;
+}
+
+@keyframes progressFlow {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes processingFlow {
+  0%, 100% {
+    background: linear-gradient(90deg, #0ea5e9 0%, #e2e8f0 100%);
+  }
+  50% {
+    background: linear-gradient(90deg, #0ea5e9 50%, #0ea5e9 100%);
+  }
 }
 
 .stage-icon {
@@ -181,23 +245,40 @@
 }
 
 .stage-icon.processing {
-  background: linear-gradient(135deg, var(--accent-processing), color-mix(in srgb, var(--accent-processing) 80%, white));
-  border: 2px solid var(--accent-processing);
+  background: var(--accent-processing, #0ea5e9);
+  background: linear-gradient(135deg, var(--accent-processing, #0ea5e9), #60a5fa);
+  border: 2px solid var(--accent-processing, #0ea5e9);
   color: white;
   animation: processingPulse 2s infinite;
+}
+
+.processing-spinner {
+  animation: spin 1.5s linear infinite;
+  transform-origin: center;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .stage-icon.complete,
 .stage-icon.completed {
   background: none;
   border: none;
-  color: var(--accent-success);
+  color: var(--accent-success, #22c55e);
   transform: scale(1.2);
 }
 
 .stage-icon.failed {
-  background: linear-gradient(135deg, var(--accent-error), color-mix(in srgb, var(--accent-error) 80%, white));
-  border: 2px solid var(--accent-error);
+  background: var(--accent-error, #ef4444);
+  background: linear-gradient(135deg, var(--accent-error, #ef4444), #f87171);
+  border: 2px solid var(--accent-error, #ef4444);
   color: white;
 }
 
@@ -211,28 +292,33 @@
   line-height: 1.2;
   margin-top: 4px;
   white-space: nowrap;
+  transition: color 0.3s ease;
 }
 
-.job-stage.complete .stage-label {
-  color: var(--accent-success);
+.stage-label.complete {
+  color: var(--accent-success, #22c55e);
 }
 
-.job-stage.processing .stage-label {
-  color: var(--accent-processing);
+.stage-label.processing {
+  color: var(--accent-processing, #0ea5e9);
 }
 
-.job-stage.failed .stage-label {
-  color: var(--accent-error);
+.stage-label.failed {
+  color: var(--accent-error, #ef4444);
+}
+
+.stage-label.pending {
+  color: var(--text-tertiary, #94a3b8);
 }
 
 @keyframes processingPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 var(--accent-processing);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(14, 165, 233, 0);
   }
   50% {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 8px color-mix(in srgb, var(--accent-processing) 20%, transparent);
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 10px rgba(14, 165, 233, 0.3);
   }
 }
 

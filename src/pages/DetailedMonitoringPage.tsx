@@ -111,6 +111,15 @@ const DetailedMonitoringPage: React.FC = () => {
     fetchMonitoringData();
   };
 
+  const handleJobCancelled = (jobId) => {
+    // Remover o job da lista de processamento imediatamente para feedback visual
+    setProcessingJobs(prev => prev.filter(job => job.id !== jobId && job.fileId !== jobId));
+    // Forçar atualização dos dados
+    setTimeout(() => {
+      fetchMonitoringData();
+    }, 1000);
+  };
+
 
 
   const handleJobSelect = (jobId) => {
@@ -262,12 +271,12 @@ const DetailedMonitoringPage: React.FC = () => {
       ) : (
         <div className="jobs-container">
           {/* Jobs em processamento */}
-          {(selectedView === 'all' || selectedView === 'processing') && processingJobs.length > 0 && (
+          {(selectedView === 'all' || selectedView === 'processing') && (processingJobs.length > 0 || stats.processing > 0) && (
             <section className="monitoring-section">
               <h2>
                 <FiActivity className="section-icon" />
                 Arquivos em Processamento
-                <span className="count-badge">{processingJobs.length}</span>
+                <span className="count-badge">{processingJobs.length || stats.processing}</span>
               </h2>
               <div className="active-jobs-grid">
                 {processingJobs
@@ -315,6 +324,7 @@ const DetailedMonitoringPage: React.FC = () => {
                                  finalizationStage.status === 'failed' ? 'failed' : 'pending',
                           steps: finalizationStage.steps
                         }}
+                        onJobCancelled={handleJobCancelled}
                       />
                     );
                   })

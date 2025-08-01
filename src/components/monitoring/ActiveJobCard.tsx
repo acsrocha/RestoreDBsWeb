@@ -1,7 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp, FiLoader } from 'react-icons/fi';
+import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp, FiLoader, FiX } from 'react-icons/fi';
+import { cancelJob } from '../../services/jobCancelApi';
+import { useNotification } from '../../hooks/useNotification';
 import '../../styles/components/ActiveJobCard.css';
 import '../../styles/components/DetailedMonitoringSteps.css';
+import '../../styles/animations/job-card-transition.css';
 
 // Tipos para os estágios de processamento
 type StageStatus = 'pending' | 'start' | 'processing' | 'complete' | 'completed' | 'failed';
@@ -29,6 +32,7 @@ interface ActiveJobProps {
   validationStage: ProcessingStage;
   restoreStage: ProcessingStage;
   finalizationStage: ProcessingStage;
+  onJobCancelled?: (jobId: string) => void;
 }
 
 const ActiveJobCard: React.FC<ActiveJobProps> = ({
@@ -40,12 +44,43 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   downloadStage,
   validationStage,
   restoreStage,
-  finalizationStage
+  finalizationStage,
+  onJobCancelled
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const { showSuccess, showError } = useNotification();
+  
+
   
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const normalizeStatus = (status: StageStatus): string => {
+    if (status === 'complete' || status === 'completed') return 'complete';
+    if (status === 'start' || status === 'processing') return 'processing';
+    return status;
+  };
+
+  const handleCancelJob = async () => {
+    if (!confirm(`Tem certeza que deseja cancelar o processamento de "${fileName}"?`)) {
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      await cancelJob(fileId);
+      showSuccess(`Job "${fileName}" cancelado com sucesso`);
+      if (onJobCancelled) {
+        onJobCancelled(fileId);
+      }
+    } catch (error) {
+      console.error('Erro ao cancelar job:', error);
+      showError(`Erro ao cancelar job: ${error.message || 'Erro desconhecido'}`);
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   // Lógica para o tempo decorrido (otimizada com useEffect e setInterval)
@@ -84,18 +119,20 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   }, [overallProgress, restoreStage.status, validationStage.status, finalizationStage.status]);
 
   const renderStageIcon = (status: StageStatus) => {
-    const finalStatus = (status === 'complete' || status === 'completed') ? 'completed' 
-                      : (status === 'start' || status === 'processing') ? 'processing' 
-                      : status;
+    const normalizedStatus = normalizeStatus(status);
 
-    if (finalStatus === 'completed') {
+    if (normalizedStatus === 'complete') {
       return <FiCheckCircle className="stage-icon complete" />;
     }
-    if (finalStatus === 'failed') {
+    if (normalizedStatus === 'failed') {
       return <FiAlertTriangle className="stage-icon failed" />;
     }
-    if (finalStatus === 'processing') {
-      return <div className="stage-icon processing"><FiLoader className="processing-spinner" /></div>;
+    if (normalizedStatus === 'processing') {
+      return (
+        <div className="stage-icon processing">
+          <FiLoader className="processing-spinner" />
+        </div>
+      );
     }
     return <div className="stage-icon pending"></div>;
   };
@@ -111,8 +148,8 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
   };
   
   const getStageLabel = (stageName: string, status: StageStatus) => {
-    const finalStatus = (status === 'complete' || status === 'completed') ? 'complete' : status;
-    return <span className={`stage-label ${finalStatus}`}>{getStageName(stageName)}</span>
+    const normalizedStatus = normalizeStatus(status);
+    return <span className={`stage-label ${normalizedStatus}`}>{getStageName(stageName)}</span>
   }
 
   const cardClassName = `active-job-card ${isExpanded ? 'expanded' : ''}`.trim();
@@ -131,14 +168,25 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
               {elapsedTime}
             </span>
           </div>
-          <button 
-            className="expand-button" 
-            onClick={toggleExpand} 
-            aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}
-            title={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}
-          >
-            {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
+          <div className="job-actions">
+            <button 
+              className="cancel-button" 
+              onClick={handleCancelJob}
+              disabled={isCancelling}
+              aria-label="Cancelar processamento"
+              title="Cancelar processamento"
+            >
+              {isCancelling ? <FiLoader className="processing-spinner" /> : <FiX />}
+            </button>
+            <button 
+              className="expand-button" 
+              onClick={toggleExpand} 
+              aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}
+              title={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}
+            >
+              {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+            </button>
+          </div>
         </div>
       </div>
       
@@ -156,19 +204,19 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
       </div>
       
       <div className="job-stages">
-        <div className="job-stage">
+        <div className={`job-stage ${normalizeStatus(downloadStage.status)}`}>
           {renderStageIcon(downloadStage.status)}
           {getStageLabel('download', downloadStage.status)}
         </div>
-        <div className="job-stage">
+        <div className={`job-stage ${normalizeStatus(validationStage.status)}`}>
           {renderStageIcon(validationStage.status)}
           {getStageLabel('validation', validationStage.status)}
         </div>
-        <div className="job-stage">
+        <div className={`job-stage ${normalizeStatus(restoreStage.status)}`}>
           {renderStageIcon(restoreStage.status)}
           {getStageLabel('restore', restoreStage.status)}
         </div>
-        <div className="job-stage">
+        <div className={`job-stage ${normalizeStatus(finalizationStage.status)}`}>
           {renderStageIcon(finalizationStage.status)}
           {getStageLabel('finalization', finalizationStage.status)}
         </div>
