@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { fetchUnifiedMonitoringData } from '../services/unifiedMonitoringApi';
 import type { UnifiedMonitoringData, FileProcessingJob } from '../services/unifiedMonitoringApi';
+import { realtimeSync } from '../services/realtimeSync';
+import type { RealtimeEvent } from '../services/realtimeSync';
 
 interface UnifiedTrackingItem {
   trackingId: string;
@@ -13,6 +15,7 @@ interface UnifiedTrackingItem {
   completedAt?: Date;
   errorMessage?: string;
   queuePosition?: number;
+  estimatedTime?: string;
 }
 
 interface UnifiedTrackingContextType {
@@ -30,7 +33,7 @@ interface UnifiedTrackingContextType {
   isLoading: boolean;
   
   // Ações para integração com outras telas
-  startDownload: (fileName: string, source: 'drive' | 'upload') => string;
+  startDownload: (fileName: string, source: 'drive' | 'upload' | 'backend', trackingId?: string) => string;
   updateProgress: (trackingId: string, stage: string, progress: number) => void;
   completeItem: (trackingId: string) => void;
   failItem: (trackingId: string, error: string) => void;
@@ -41,6 +44,74 @@ const UnifiedTrackingContext = createContext<UnifiedTrackingContextType | undefi
 export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<UnifiedTrackingItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Configurar sincronização em tempo real
+  useEffect(() => {
+    realtimeSync.connect();
+    
+    const unsubscribe = realtimeSync.subscribe((event: RealtimeEvent) => {
+      switch (event.type) {
+        case 'download_started':
+          setItems(prev => {
+            const exists = prev.find(item => item.trackingId === event.data.trackingId);
+            if (exists) return prev;
+            
+            return [...prev, {
+              trackingId: event.data.trackingId,
+              fileName: event.data.fileName,
+              source: event.data.source as any,
+              currentStage: 'downloading',
+              progress: 0,
+              startedAt: new Date(),
+              updatedAt: new Date()
+            }];
+          });
+          break;
+          
+        case 'download_progress':
+          setItems(prev => prev.map(item => 
+            item.trackingId === event.data.trackingId
+              ? { 
+                  ...item, 
+                  currentStage: event.data.stage as any,
+                  progress: event.data.progress || 0,
+                  updatedAt: new Date() 
+                }
+              : item
+          ));
+          break;
+          
+        case 'download_completed':
+          setItems(prev => prev.map(item => 
+            item.trackingId === event.data.trackingId
+              ? { 
+                  ...item, 
+                  currentStage: 'completed',
+                  progress: 100,
+                  completedAt: new Date(),
+                  updatedAt: new Date() 
+                }
+              : item
+          ));
+          break;
+          
+        case 'download_failed':
+          setItems(prev => prev.map(item => 
+            item.trackingId === event.data.trackingId
+              ? { 
+                  ...item, 
+                  currentStage: 'failed',
+                  errorMessage: event.data.error,
+                  updatedAt: new Date() 
+                }
+              : item
+          ));
+          break;
+      }
+    });
+    
+    return unsubscribe;
+  }, []);
 
   const syncWithAPIs = useCallback(async () => {
     try {
@@ -67,7 +138,18 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
           });
         });
 
-      setItems(unifiedItems);
+      // Preservar itens manuais (downloads iniciados manualmente)
+      setItems(prev => {
+        const manualItems = prev.filter(item => 
+          item.trackingId.startsWith('drive_') || item.trackingId.startsWith('upload_')
+        );
+        
+        // Mesclar com dados da API, evitando duplicatas
+        const apiTrackingIds = new Set(unifiedItems.map(item => item.trackingId));
+        const filteredManualItems = manualItems.filter(item => !apiTrackingIds.has(item.trackingId));
+        
+        return [...filteredManualItems, ...unifiedItems];
+      });
       
     } catch (error) {
       console.error('Erro ao sincronizar tracking unificado:', error);
@@ -89,10 +171,10 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
     }
   };
 
-  // Sincronizar a cada 2 segundos
+  // Sincronizar a cada 3 segundos para reduzir load
   useEffect(() => {
     syncWithAPIs();
-    const interval = setInterval(syncWithAPIs, 2000);
+    const interval = setInterval(syncWithAPIs, 3000);
     return () => clearInterval(interval);
   }, [syncWithAPIs]);
 
@@ -117,62 +199,29 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
   }, [items]);
 
   // Ações para integração com outras telas
-  const startDownload = useCallback((fileName: string, source: 'drive' | 'upload'): string => {
-    const trackingId = `${source}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const startDownload = useCallback((fileName: string, source: 'drive' | 'upload' | 'backend', customTrackingId?: string): string => {
+    const trackingId = customTrackingId || `${source}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    const newItem: UnifiedTrackingItem = {
-      trackingId,
-      fileName,
-      source,
-      currentStage: 'downloading',
-      progress: 0,
-      startedAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    setItems(prev => [...prev, newItem]);
+    // Emitir evento em tempo real
+    realtimeSync.emitDownloadStarted(trackingId, fileName, source);
+    
     return trackingId;
   }, []);
 
   const updateProgress = useCallback((trackingId: string, stage: string, progress: number) => {
-    setItems(prev => prev.map(item => 
-      item.trackingId === trackingId 
-        ? { 
-            ...item, 
-            currentStage: stage as UnifiedTrackingItem['currentStage'],
-            progress, 
-            updatedAt: new Date() 
-          }
-        : item
-    ));
+    // Emitir evento em tempo real
+    realtimeSync.emitDownloadProgress(trackingId, stage, progress);
   }, []);
 
   const completeItem = useCallback((trackingId: string) => {
-    setItems(prev => prev.map(item => 
-      item.trackingId === trackingId 
-        ? { 
-            ...item, 
-            currentStage: 'completed',
-            progress: 100,
-            completedAt: new Date(),
-            updatedAt: new Date() 
-          }
-        : item
-    ));
+    // Emitir evento em tempo real
+    realtimeSync.emitDownloadCompleted(trackingId);
   }, []);
 
   const failItem = useCallback((trackingId: string, error: string) => {
-    setItems(prev => prev.map(item => 
-      item.trackingId === trackingId 
-        ? { 
-            ...item, 
-            currentStage: 'failed',
-            errorMessage: error,
-            updatedAt: new Date() 
-          }
-        : item
-    ));
-  }, []);
+    // Emitir evento em tempo real
+    realtimeSync.emitDownloadFailed(trackingId, error);
+  }, []); 
 
   const value: UnifiedTrackingContextType = {
     items,

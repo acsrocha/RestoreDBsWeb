@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18"
+  },
+  "scripts": {
+    "install-deps": "npm install zustand@^4.4.7"
+  },
+  "notes": {
+    "zustand": "State management library for centralized store",
+    "migration": "Run 'npm install zustand@^4.4.7' to add required dependencies"
+  }
+}

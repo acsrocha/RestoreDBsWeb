@@ -3,8 +3,9 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import HighlightCard from '../components/common/HighlightCard'; // Ajuste o caminho se necessário
 import RecentActivityList from '../components/monitoring/RecentActivityList';
 import FailedRestoresList from '../components/monitoring/FailedRestoresList';
-import { fetchUnifiedMonitoringData, fetchRecentActivity } from '../services/unifiedMonitoringApi';
+import { fetchUnifiedMonitoringData } from '../services/unifiedMonitoringApi';
 import type { UnifiedMonitoringData, ActivityLogEntry } from '../services/unifiedMonitoringApi';
+import { MonitoringDataSanitizer } from '../utils/dataSanitizer';
 import { useInterval } from '../hooks/useInterval'; // Presume que este hook existe
 import { useLastUpdated } from '../contexts/LastUpdatedContext'; // Presume que este contexto existe
 import { useNotification } from '../hooks/useNotification';
@@ -14,6 +15,7 @@ import { FiCpu, FiArchive, FiAlertTriangle, FiClock, FiList, FiFileText } from '
 import '../styles/components/RecentActivityList.css';
 import '../styles/components/FailedRestoresList.css';
 import '../styles/components/StickyCards.css';
+import DebugPanel from '../components/common/DebugPanel';
 
 const REFRESH_INTERVAL = 3000;
 
@@ -56,12 +58,15 @@ const MonitoringPage: React.FC = () => {
     }
 
     try {
-      const data = await fetchUnifiedMonitoringData();
-      setMonitoringData(data);
+      const rawData = await fetchUnifiedMonitoringData();
+      const sanitizedData = MonitoringDataSanitizer.sanitize(rawData);
+      setMonitoringData(sanitizedData);
+      
       // Usa logs do endpoint principal se existirem
-      if (data.recentActivity) {
-        setRecentActivity(data.recentActivity);
+      if (sanitizedData.recentActivity && Array.isArray(sanitizedData.recentActivity)) {
+        setRecentActivity(sanitizedData.recentActivity);
       }
+      
       setLastActivityTimestamp(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
       setErrorLoading(null);
       signalUpdate();
@@ -69,11 +74,12 @@ const MonitoringPage: React.FC = () => {
       console.error('Falha ao buscar dados unificados:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro inesperado ao carregar dados.';
       setErrorLoading(errorMessage);
+      
       if (!isPollRequest) {
         showError(errorMessage);
-      }
-      if (!isPollRequest && initialLoading) {
+        // Limpar dados antigos em caso de erro crítico
         setMonitoringData(null);
+        setRecentActivity([]);
         setLastActivityTimestamp('Erro');
       }
     } finally {
@@ -128,6 +134,7 @@ const MonitoringPage: React.FC = () => {
 
   return (
     <div className="detailed-monitoring-page">
+      <DebugPanel />
       {/* Stats Dashboard */}
       <div className="stats-dashboard">
         <div className="stat-card processing">

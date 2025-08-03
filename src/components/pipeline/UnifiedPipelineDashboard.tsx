@@ -93,21 +93,37 @@ const UnifiedPipelineDashboard: React.FC = () => {
                   <div className="queue-summary">
                     <div className="queue-info">
                       <span className="queue-text">{items.length} arquivo{items.length > 1 ? 's' : ''} aguardando</span>
-                      <span className="queue-next">
-                        Próximo: {items.find(item => item.queuePosition === 1)?.fileName?.substring(0, 25) || 'N/A'}...
-                      </span>
+                      {(() => {
+                        const nextItem = items.find(item => item.queuePosition === 1);
+                        if (nextItem) {
+                          return (
+                            <span className="queue-next">
+                              Próximo: {nextItem.estimatedTime ? `~${nextItem.estimatedTime}` : nextItem.fileName.substring(0, 25) + '...'}
+                            </span>
+                          );
+                        } else if (items.length > 0) {
+                          return <span className="queue-next">Aguardando novos itens...</span>;
+                        }
+                        return null;
+                      })()}
                     </div>
                     <div className="queue-progress">
                       <div className="progress-bar">
                         <div 
                           className="progress-fill" 
                           style={{ 
-                            width: `${Math.max(10, 100 - (items.length * 10))}%`,
+                            width: `${(() => {
+                              const activeItems = stats.processing + items.length;
+                              return activeItems > 0 ? (stats.processing / activeItems) * 100 : 0;
+                            })()}%`,
                             backgroundColor: color
                           }}
                         />
                       </div>
-                      <span className="progress-text">Fila: {items.length}</span>
+                      <span className="progress-text">{Math.round((() => {
+                        const activeItems = stats.processing + items.length;
+                        return activeItems > 0 ? (stats.processing / activeItems) * 100 : 0;
+                      })())}% da Fila</span>
                     </div>
                   </div>
                 ) : (

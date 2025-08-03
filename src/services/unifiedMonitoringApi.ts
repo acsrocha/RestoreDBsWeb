@@ -41,7 +41,7 @@ export interface FileProcessingJob {
   createdAt: string;
   startedAt?: string;
   completedAt?: string;
-  stagesData?: string;
+  stagesData?: string | object;
   errorMessage?: string;
 }
 

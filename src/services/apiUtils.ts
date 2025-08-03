@@ -9,9 +9,16 @@ export const getServerUrl = () => {
   return '';
 };
 
-export const getApiUrl = (endpoint: string) => {
+export const getApiUrl = (endpoint: string, cacheBust = false) => {
   const serverUrl = getServerUrl();
-  const finalUrl = serverUrl ? `${serverUrl}${endpoint}` : endpoint;
+  let finalUrl = serverUrl ? `${serverUrl}${endpoint}` : endpoint;
+  
+  // Cache busting para evitar dados antigos
+  if (cacheBust) {
+    const separator = finalUrl.includes('?') ? '&' : '?';
+    finalUrl += `${separator}_t=${Date.now()}`;
+  }
+  
   return finalUrl;
 };
 
@@ -51,7 +58,15 @@ export async function handleResponse<T>(response: Response, isJsonExpected = tru
   if (isJsonExpected) {
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.indexOf("application/json") !== -1) {
-        return response.json() as Promise<T>;
+        const data = await response.json() as T;
+        
+        // Validação básica de dados para evitar dados fantasma
+        if (data && typeof data === 'object') {
+          // Adicionar timestamp para cache busting
+          (data as any)._fetchTimestamp = Date.now();
+        }
+        
+        return data;
     } else if (response.status === 200 && response.headers.get('content-length') === '0' ) {
         console.warn(`API Info for ${response.url}: Expected JSON but received ${response.status} with no JSON content.`);
         return {} as Promise<T>;

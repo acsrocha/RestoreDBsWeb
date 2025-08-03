@@ -47,6 +47,27 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
     navigator.clipboard.writeText(text);
     showSuccess(`${label} copiado!`);
   };
+
+  const calculateEstimatedTime = (startedAt: string) => {
+    try {
+      const start = new Date(startedAt);
+      const now = new Date();
+      const elapsed = now.getTime() - start.getTime();
+      
+      // Estimar baseado em tempo médio de 5-15 minutos
+      const avgTimeMs = 10 * 60 * 1000; // 10 minutos
+      const remaining = Math.max(0, avgTimeMs - elapsed);
+      
+      if (remaining === 0) {
+        return 'Finalizando...';
+      }
+      
+      const minutes = Math.ceil(remaining / (60 * 1000));
+      return `~${minutes} min restantes`;
+    } catch {
+      return 'Calculando...';
+    }
+  };
   
   const renderTimelineStep = (stage: JobStage | undefined, name: string) => {
     // Se o estágio não existir, criar um estágio padrão
@@ -130,6 +151,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
               <dt>Concluído em</dt>
               <dd>{formatDate(job.completedAt)}</dd>
             </div>
+            {job.status === 'processing' && job.startedAt && (
+              <div className="metadata-item">
+                <dt>Tempo Estimado</dt>
+                <dd>{calculateEstimatedTime(job.startedAt)}</dd>
+              </div>
+            )}
           </dl>
         </div>
       </div>

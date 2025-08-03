@@ -451,8 +451,8 @@
 
 .active-jobs-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.5rem;
   margin-top: 12px;
 }
 
@@ -493,12 +493,6 @@
   }
 }
 
-@media (max-width: 1200px) {
-  .active-jobs-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
   .detailed-monitoring-page {
     padding: 16px;
@@ -509,13 +503,15 @@
   }
   
   .active-jobs-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .active-jobs-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 

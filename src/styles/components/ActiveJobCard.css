@@ -1,35 +1,68 @@
 /* src/styles/components/ActiveJobCard.css */
+:root {
+  --accent-primary: #01c38e;
+  --accent-processing: #0ea5e9;
+  --accent-success: #22c55e;
+  --accent-error: #ef4444;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e0;
+}
+
 .active-job-card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  box-shadow: var(--shadow-light);
+  background: linear-gradient(135deg, #2a3441 0%, #1e2832 100%);
+  border: 1px solid #3a4553;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
   padding: 20px;
   margin-bottom: 16px;
-  transition: all 0.3s ease;
-  animation: slideInFromTop 0.5s ease-out;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 @keyframes slideInFromTop {
   0% {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-30px) scale(0.9) rotateX(10deg);
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-10px) scale(0.98) rotateX(5deg);
+    filter: blur(2px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0px);
   }
 }
 
-.active-job-card:hover {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-secondary);
-  box-shadow: var(--shadow-medium);
-  transform: translateY(-2px);
-}
+
 
 .active-job-card.expanded {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(79, 70, 229, 0.1);
+}
+
+.active-job-card.processing {
+  animation: cardBreathing 3s ease-in-out infinite;
+}
+
+@keyframes cardBreathing {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: var(--shadow-light), 0 0 0 1px rgba(79, 70, 229, 0.05);
+  }
+  50% {
+    transform: translateY(-1px) scale(1.005);
+    box-shadow: var(--shadow-medium), 0 0 0 1px rgba(79, 70, 229, 0.1), 0 0 20px rgba(79, 70, 229, 0.1);
+  }
 }
 
 .job-header {
@@ -40,7 +73,7 @@
 }
 
 .job-filename {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   margin: 0;
   display: flex;
   align-items: center;
@@ -128,187 +161,337 @@
 }
 
 .progress-bar-container {
-  height: 8px;
-  background-color: #eee;
-  border-radius: 4px;
+  height: 10px;
+  background: linear-gradient(90deg, #1a2027 0%, #0f1419 100%);
+  border-radius: 6px;
   overflow: hidden;
   margin-bottom: 4px;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.progress-bar-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+  border-radius: 6px 6px 0 0;
 }
 
 .progress-bar {
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
 .progress-bar-info {
-  background-color: #4a90e2;
+  background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
 .progress-bar-success {
-  background-color: #4caf50;
+  background: linear-gradient(90deg, #059669 0%, #10b981 50%, #047857 100%);
+  box-shadow: 0 0 8px rgba(5, 150, 105, 0.4);
 }
 
 .progress-bar-error {
-  background-color: #f44336;
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
 }
 
 .progress-text {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .job-stages {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  justify-content: space-between;
   margin: 20px 0;
-  padding: 16px;
-  background: var(--bg-tertiary);
+  padding: 20px;
+  background: linear-gradient(135deg, #1a2027 0%, #0f1419 100%);
   border-radius: 12px;
-  border: 1px solid var(--border-primary);
+  border: 1px solid #3a4553;
+  position: relative;
 }
 
 .job-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 80px;
+  flex: 1;
   position: relative;
-  padding: 8px 4px;
+  padding: 4px;
+  z-index: 2;
 }
 
-.job-stage:not(:last-child)::after {
+.job-stages::before {
   content: '';
   position: absolute;
-  top: 20px;
-  right: -24px;
-  width: 32px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--border-primary) 0%, var(--border-secondary) 100%);
-  border-radius: 2px;
-  z-index: 0;
-  transition: all 0.3s ease;
+  top: 50%;
+  left: 50px;
+  right: 50px;
+  height: 2px;
+  background: #4a5568;
+  border-radius: 1px;
+  z-index: 1;
+  transform: translateY(-50%);
 }
 
-.job-stage.complete:not(:last-child)::after {
-  background: var(--accent-success, #22c55e);
-  animation: progressFlow 0.5s ease-out;
-}
-
-.job-stage.processing:not(:last-child)::after {
-  background: linear-gradient(90deg, var(--accent-processing, #0ea5e9) 0%, var(--border-primary, #e2e8f0) 100%);
-  animation: processingFlow 2s ease-in-out infinite;
+.job-stages::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 1px;
+  z-index: 1;
+  transform: translateY(-50%);
+  width: calc(var(--journey-progress, 0%) * (100% - 100px) / 100);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+  animation: progressFlow 2s ease-in-out infinite;
 }
 
 @keyframes progressFlow {
-  0% {
-    transform: scaleX(0);
-    transform-origin: left;
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
   }
-  100% {
-    transform: scaleX(1);
+  50% {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.9), 0 0 20px rgba(16, 185, 129, 0.3);
   }
 }
 
-@keyframes processingFlow {
-  0%, 100% {
-    background: linear-gradient(90deg, #0ea5e9 0%, #e2e8f0 100%);
-  }
-  50% {
-    background: linear-gradient(90deg, #0ea5e9 50%, #0ea5e9 100%);
-  }
+@keyframes journeyProgress {
+  0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 16px rgba(16, 185, 129, 0.8); }
 }
 
 .stage-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  margin-bottom: 8px;
-  z-index: 1;
+  margin-bottom: 6px;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
+
+
 .stage-icon.pending {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-secondary);
-  color: var(--text-tertiary);
+  background: #374151;
+  border: 2px solid #6b7280;
+  opacity: 0.7;
+}
+
+/* Cores específicas para cada tipo de ícone pendente */
+.stage-icon.pending.download {
+  color: #3b82f6;
+}
+
+.stage-icon.pending.validation {
+  color: #8b5cf6;
+}
+
+.stage-icon.pending.restore {
+  color: #f59e0b;
+}
+
+.stage-icon.pending.finalization {
+  color: #10b981;
 }
 
 .stage-icon.processing {
-  background: var(--accent-processing, #0ea5e9);
-  background: linear-gradient(135deg, var(--accent-processing, #0ea5e9), #60a5fa);
-  border: 2px solid var(--accent-processing, #0ea5e9);
   color: white;
-  animation: processingPulse 2s infinite;
+  transform: scale(1.1);
+  animation: processingPulse 1.5s ease-in-out infinite;
+}
+
+/* Cores específicas para cada tipo de processamento */
+.stage-icon.processing.download {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border: 2px solid #3b82f6;
+}
+
+.stage-icon.processing.validation {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  border: 2px solid #8b5cf6;
+}
+
+.stage-icon.processing.restore {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: 2px solid #f59e0b;
+}
+
+.stage-icon.processing.finalization {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 2px solid #10b981;
+}
+
+@keyframes processingPulse {
+  0%, 100% {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 12px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 0.6);
+  }
 }
 
 .processing-spinner {
-  animation: spin 1.5s linear infinite;
+  animation: spin 1.2s linear infinite;
   transform-origin: center;
   display: inline-block;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .stage-icon.complete,
 .stage-icon.completed {
-  background: none;
-  border: none;
-  color: var(--accent-success, #22c55e);
-  transform: scale(1.2);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 2px solid #10b981;
+  color: white;
+  animation: completionPop 0.6s ease-out, completionGlow 3s ease-in-out infinite 0.6s;
+  position: relative;
+}
+
+@keyframes completionPop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes completionGlow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 8px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 16px rgba(16, 185, 129, 0.8);
+  }
+}
+
+/* Efeito de ondas para ícones completados */
+.stage-icon.complete::after,
+.stage-icon.completed::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid #10b981;
+  border-radius: 50%;
+  opacity: 0;
+  animation: completionRipple 2s ease-out infinite 1s;
+}
+
+@keyframes completionRipple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
 }
 
 .stage-icon.failed {
-  background: var(--accent-error, #ef4444);
-  background: linear-gradient(135deg, var(--accent-error, #ef4444), #f87171);
-  border: 2px solid var(--accent-error, #ef4444);
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: 2px solid #ef4444;
   color: white;
+  animation: errorShake 0.5s ease-in-out;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
 }
 
 .stage-label {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-align: center;
-  color: var(--text-secondary);
+  color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: 1.2;
-  margin-top: 4px;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
+  margin-top: 2px;
   white-space: nowrap;
   transition: color 0.3s ease;
 }
 
 .stage-label.complete {
-  color: var(--accent-success, #22c55e);
+  color: #10b981;
+  animation: labelGlow 2s ease-in-out infinite;
 }
 
 .stage-label.processing {
-  color: var(--accent-processing, #0ea5e9);
+  color: #3b82f6;
+  animation: labelPulse 1.5s ease-in-out infinite;
 }
 
 .stage-label.failed {
-  color: var(--accent-error, #ef4444);
+  color: #ef4444;
+  animation: labelShake 0.5s ease-in-out;
 }
 
 .stage-label.pending {
-  color: var(--text-tertiary, #94a3b8);
+  color: #94a3b8;
+}
+
+@keyframes labelGlow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes labelPulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes labelShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  75% { transform: translateX(1px); }
 }
 
 @keyframes processingPulse {
@@ -558,11 +741,12 @@
   .job-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
   }
   
   .job-filename {
     max-width: 100%;
-    margin-bottom: 8px;
+    font-size: 0.85rem;
   }
   
   .job-meta {
