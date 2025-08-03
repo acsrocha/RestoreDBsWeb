@@ -113,6 +113,21 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
     return unsubscribe;
   }, []);
 
+  const convertJobStatusToStage = (status: string): UnifiedTrackingItem['currentStage'] => {
+    switch (status?.toLowerCase()) {
+      case 'downloading': return 'downloading';
+      case 'extracting': return 'extracting';
+      case 'validating': return 'validating';
+      case 'queued': return 'queued';
+      case 'processing': return 'processing';
+      case 'finalizing': return 'processing';
+      case 'completed': return 'completed';
+      case 'failed': return 'failed';
+      default: 
+        return 'queued';
+    }
+  };
+
   const syncWithAPIs = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -120,23 +135,32 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
       const data = await fetchUnifiedMonitoringData();
       const unifiedItems: UnifiedTrackingItem[] = [];
 
-      // Converter jobs para items unificados
-      [...data.activeJobs, ...data.recentlyCompleted, ...data.recentlyFailed]
-        .forEach((job: FileProcessingJob) => {
-          const stage = convertJobStatusToStage(job.status);
-          
-          unifiedItems.push({
-            trackingId: job.id,
-            fileName: job.fileName,
-            source: job.sourceType === 'google_drive' ? 'drive' : job.sourceType === 'upload' ? 'upload' : 'local',
-            currentStage: stage,
-            progress: job.overallProgress || 0,
-            startedAt: new Date(job.createdAt),
-            updatedAt: new Date(),
-            ...(job.completedAt && { completedAt: new Date(job.completedAt) }),
-            ...(job.errorMessage && { errorMessage: job.errorMessage })
-          });
+      // Converter jobs para items unificados - JOBS ATIVOS, COMPLETOS E FALHADOS
+      const allJobs = [
+        ...(data.activeJobs || []),
+        ...(data.recentlyCompleted || []).slice(0, 10), // Últimos 10 completos
+        ...(data.recentlyFailed || []).slice(0, 5)      // Últimos 5 falhados
+      ];
+
+      allJobs.forEach((job: FileProcessingJob) => {
+        
+        // Se currentStage estiver vazio, usar o status do job
+        const stage = (job.currentStage && job.currentStage.trim()) ? job.currentStage : convertJobStatusToStage(job.status);
+        
+        const finalStage = job.status === 'completed' ? 'completed' : job.status === 'failed' ? 'failed' : stage;
+        
+        unifiedItems.push({
+          trackingId: job.id,
+          fileName: job.fileName,
+          source: job.sourceType === 'google_drive' ? 'drive' : job.sourceType === 'upload' ? 'upload' : 'local',
+          currentStage: finalStage as any,
+          progress: job.overallProgress || 0,
+          startedAt: new Date(job.createdAt),
+          updatedAt: new Date(),
+          ...(job.completedAt && { completedAt: new Date(job.completedAt) }),
+          ...(job.errorMessage && { errorMessage: job.errorMessage })
         });
+      });
 
       // Preservar itens manuais (downloads iniciados manualmente)
       setItems(prev => {
@@ -158,22 +182,14 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, []);
 
-  const convertJobStatusToStage = (status: string): UnifiedTrackingItem['currentStage'] => {
-    switch (status) {
-      case 'downloading': return 'downloading';
-      case 'extracting': return 'extracting';
-      case 'validating': return 'validating';
-      case 'queued': return 'queued';
-      case 'processing': return 'processing';
-      case 'completed': return 'completed';
-      case 'failed': return 'failed';
-      default: return 'queued';
-    }
-  };
-
   // Sincronizar apenas quando necessário - deixar a página controlar o intervalo
   useEffect(() => {
     syncWithAPIs();
+    
+    // Configurar intervalo para sincronização automática
+    const interval = setInterval(syncWithAPIs, 3000); // A cada 3 segundos
+    
+    return () => clearInterval(interval);
   }, [syncWithAPIs]);
 
   // Calcular estatísticas

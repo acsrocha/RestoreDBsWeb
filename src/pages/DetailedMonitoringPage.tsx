@@ -142,6 +142,31 @@ const DetailedMonitoringPage: React.FC = () => {
     if (!job) return null;
     
     // Mapear para o formato esperado pelo JobDetails
+    // Mapear estágios com base no currentStage e overallProgress
+    const mapStageStatus = (stageIndex: number, stageData: any) => {
+      if (stageData && stageData.status) {
+        return stageData.status === 'completed' ? 'success' : 
+               stageData.status === 'failed' ? 'failed' : 
+               stageData.status === 'in_progress' ? 'processing' : 'pending';
+      }
+      
+      // Lógica baseada no progresso geral e estágio atual
+      const currentStage = job.currentStage || '';
+      const progress = job.overallProgress || 0;
+      
+      if (stageIndex === 0) { // Download
+        return progress > 0 ? 'success' : 'pending';
+      } else if (stageIndex === 1) { // Validation
+        return progress >= 25 ? 'success' : progress > 0 ? 'processing' : 'pending';
+      } else if (stageIndex === 2) { // Restore
+        return progress >= 80 ? 'success' : progress >= 50 ? 'processing' : 'pending';
+      } else if (stageIndex === 3) { // Finalization
+        return progress === 100 ? 'success' : progress >= 85 ? 'processing' : 'pending';
+      }
+      
+      return 'pending';
+    };
+    
     return {
       fileId: job.fileId,
       fileName: job.fileName,
@@ -149,26 +174,10 @@ const DetailedMonitoringPage: React.FC = () => {
       startedAt: job.startedAt,
       completedAt: job.completedAt,
       errorMessage: job.error,
-      downloadStage: job.stages?.[0] ? {
-        status: job.stages[0].status === 'completed' ? 'success' : 
-               job.stages[0].status === 'failed' ? 'failed' : 
-               job.stages[0].status === 'in_progress' ? 'processing' : 'pending'
-      } : { status: 'pending' },
-      validationStage: job.stages?.[1] ? {
-        status: job.stages[1].status === 'completed' ? 'success' : 
-               job.stages[1].status === 'failed' ? 'failed' : 
-               job.stages[1].status === 'in_progress' ? 'processing' : 'pending'
-      } : { status: 'pending' },
-      restoreStage: job.stages?.[2] ? {
-        status: job.stages[2].status === 'completed' ? 'success' : 
-               job.stages[2].status === 'failed' ? 'failed' : 
-               job.stages[2].status === 'in_progress' ? 'processing' : 'pending'
-      } : { status: 'pending' },
-      finalizationStage: job.stages?.[3] ? {
-        status: job.stages[3].status === 'completed' ? 'success' : 
-               job.stages[3].status === 'failed' ? 'failed' : 
-               job.stages[3].status === 'in_progress' ? 'processing' : 'pending'
-      } : { status: 'pending' }
+      downloadStage: { status: mapStageStatus(0, job.stages?.[0]) },
+      validationStage: { status: mapStageStatus(1, job.stages?.[1]) },
+      restoreStage: { status: mapStageStatus(2, job.stages?.[2]) },
+      finalizationStage: { status: mapStageStatus(3, job.stages?.[3]) }
     };
   }, [selectedJobId, processingJobs, completedJobs, failedJobs]);
 

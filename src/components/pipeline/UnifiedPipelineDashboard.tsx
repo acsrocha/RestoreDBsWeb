@@ -17,7 +17,9 @@ const UnifiedPipelineDashboard: React.FC = () => {
         'extracting': ['extracting', 'extract', 'extraindo', 'unzipping'],
         'validating': ['validating', 'validate', 'validation', 'validando'],
         'queued': ['queued', 'queue', 'fila', 'waiting'],
-        'processing': ['processing', 'process', 'processando', 'restoring']
+        'processing': ['processing', 'process', 'processando', 'restoring', 'finalizing'],
+        'completed': ['completed', 'complete', 'concluído', 'success'],
+        'failed': ['failed', 'error', 'falhou', 'erro']
       };
       
       return stageMap[targetStage]?.includes(currentStage) || currentStage === targetStage;
@@ -59,8 +61,24 @@ const UnifiedPipelineDashboard: React.FC = () => {
       label: 'Processando', 
       color: '#10b981',
       items: getItemsByStage('processing')
+    },
+    { 
+      stage: 'completed', 
+      icon: FiCheckCircle, 
+      label: 'Concluídos', 
+      color: '#22c55e',
+      items: getItemsByStage('completed')
+    },
+    { 
+      stage: 'failed', 
+      icon: FiAlertTriangle, 
+      label: 'Falharam', 
+      color: '#ef4444',
+      items: getItemsByStage('failed')
     }
   ];
+  
+
 
   return (
     <div className="unified-pipeline-dashboard">
@@ -126,6 +144,57 @@ const UnifiedPipelineDashboard: React.FC = () => {
                       })())}% da Fila</span>
                     </div>
                   </div>
+                ) : stage === 'completed' || stage === 'failed' ? (
+                  // Para jobs completos e falhados, mostrar resumo com últimos itens
+                  <div className="completed-failed-summary">
+                    <div className="summary-info">
+                      <span className="summary-text">
+                        {stage === 'completed' ? 'Concluídos' : 'Falharam'}: {items.length}
+                      </span>
+                      <span className="summary-time">
+                        Último: {items.length > 0 ? new Date(Math.max(...items.map(i => new Date(i.updatedAt).getTime()))).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--'}
+                      </span>
+                    </div>
+                    {items.slice(0, 3).map(item => (
+                      <div key={item.trackingId} className={`pipeline-item ${stage}`}>
+                        <div className="item-info">
+                          <span className="item-name" title={item.fileName}>
+                            {item.fileName.length > 20 ? `${item.fileName.substring(0, 20)}...` : item.fileName}
+                          </span>
+                          <span className="item-source">{item.source}</span>
+                          {item.errorMessage && stage === 'failed' && (
+                            <span className="error-indicator" title={item.errorMessage}>!</span>
+                          )}
+                        </div>
+                        
+                        <div className="item-progress">
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-fill" 
+                              style={{ 
+                                width: `${Math.max(3, item.progress)}%`,
+                                backgroundColor: color,
+                                transition: 'width 0.3s ease'
+                              }}
+                            />
+                          </div>
+                          <span className="progress-text">{Math.round(item.progress)}%</span>
+                        </div>
+                        
+                        <div className="item-time">
+                          {new Date(item.updatedAt).toLocaleTimeString('pt-BR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                    {items.length > 3 && (
+                      <div className="more-items">
+                        +{items.length - 3} mais
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   // Para outros estágios, mostrar itens individuais
                   items.map(item => (
@@ -145,8 +214,9 @@ const UnifiedPipelineDashboard: React.FC = () => {
                           <div 
                             className="progress-fill" 
                             style={{ 
-                              width: `${item.progress}%`,
-                              backgroundColor: color
+                              width: `${Math.max(3, item.progress)}%`,
+                              backgroundColor: color,
+                              transition: 'width 0.3s ease'
                             }}
                           />
                         </div>

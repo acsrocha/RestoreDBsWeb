@@ -114,7 +114,7 @@ const MonitoringPage: React.FC = () => {
   }, [initialLoading, errorLoading, monitoringData, processFilename]);
 
   const queueCount = useMemo(() => 
-    initialLoading && !monitoringData ? 0 : (monitoringData?.stats.queued ?? 0),
+    initialLoading && !monitoringData ? 0 : (monitoringData?.activeJobs?.length ?? 0),
     [initialLoading, monitoringData]
   );
 
@@ -140,7 +140,7 @@ const MonitoringPage: React.FC = () => {
         <div className="stat-card processing">
           <div className="stat-icon"><FiCpu /></div>
           <div className="stat-content">
-            <div className="stat-number">{monitoringData?.stats.processing || 0}</div>
+            <div className="stat-number">{(monitoringData?.stats.processing || 0) + (monitoringData?.stats.downloading || 0) + (monitoringData?.stats.extracting || 0) + (monitoringData?.stats.validating || 0)}</div>
             <div className="stat-label">Em Processamento</div>
             <div className="stat-detail">{displayProcessingFilename}</div>
           </div>
@@ -148,7 +148,7 @@ const MonitoringPage: React.FC = () => {
         <div className="stat-card total">
           <div className="stat-icon"><FiArchive /></div>
           <div className="stat-content">
-            <div className="stat-number">{queueCount}</div>
+            <div className="stat-number">{monitoringData?.stats.queued || 0}</div>
             <div className="stat-label">Arquivos na Fila</div>
           </div>
         </div>
@@ -179,13 +179,14 @@ const MonitoringPage: React.FC = () => {
           <ul className="queue-list">
             {initialLoading && !monitoringData ? (
               <li className="empty-list"><em>Carregando fila...</em></li>
-            ) : monitoringData?.queuedFiles && monitoringData.queuedFiles.length > 0 ? (
-              monitoringData.queuedFiles.map((file: string, index: number) => {
-                const fileName = file.split(/[\\/]/).pop();
+            ) : monitoringData?.activeJobs && monitoringData.activeJobs.length > 0 ? (
+              monitoringData.activeJobs.map((job, index) => {
+                const fileName = job.fileName;
+                const statusText = job.currentStage || job.status || 'Processando';
                 return (
-                  <li key={file || index} title={`Caminho completo: ${file}`}>
+                  <li key={job.id || index} title={`Status: ${statusText} - Progresso: ${job.overallProgress}%`}>
                     <FiFileText style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    {fileName || 'Nome inválido'}
+                    {fileName} ({statusText} - {job.overallProgress}%)
                   </li>
                 );
               })

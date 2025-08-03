@@ -79,6 +79,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
 
     switch (safeStage.status) {
       case 'success':
+      case 'complete':
+      case 'completed':
         icon = <FiCheckCircle />;
         statusText = 'Concluído com sucesso';
         break;
@@ -87,6 +89,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
         statusText = 'Falhou';
         break;
       case 'processing':
+      case 'in_progress':
         icon = <div className="loading-spinner" style={{ width: 16, height: 16 }}></div>;
         statusText = 'Em andamento...';
         break;
@@ -98,12 +101,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
     }
 
     return (
-      <li className={`timeline-step status-${safeStage.status}`}>
+      <li className={`timeline-step status-${safeStage.status === 'complete' || safeStage.status === 'completed' ? 'success' : safeStage.status === 'in_progress' ? 'processing' : safeStage.status}`}>
         <div className={iconClass}>{icon}</div>
         <div className="timeline-content">
           <h4 className="stage-name">{name}</h4>
           <p className="stage-status">{statusText}</p>
-          {safeStage.status === 'failed' && safeStage.details && (
+          {(safeStage.status === 'failed') && safeStage.details && (
             <pre className="stage-error-details">{safeStage.details}</pre>
           )}
         </div>
