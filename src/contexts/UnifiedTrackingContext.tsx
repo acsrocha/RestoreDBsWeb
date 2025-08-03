@@ -171,11 +171,9 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
     }
   };
 
-  // Sincronizar a cada 3 segundos para reduzir load
+  // Sincronizar apenas quando necessário - deixar a página controlar o intervalo
   useEffect(() => {
     syncWithAPIs();
-    const interval = setInterval(syncWithAPIs, 3000);
-    return () => clearInterval(interval);
   }, [syncWithAPIs]);
 
   // Calcular estatísticas

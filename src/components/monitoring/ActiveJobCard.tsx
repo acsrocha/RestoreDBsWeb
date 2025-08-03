@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { FiClock, FiHardDrive, FiCheckCircle, FiAlertTriangle, FiChevronDown, FiChevronUp, FiLoader, FiX, FiDownload, FiShield, FiDatabase, FiCheck } from 'react-icons/fi';
 import { monitoringService } from '../../services/monitoringService';
 import { useMonitoringStore } from '../../store/monitoringStore';
@@ -120,28 +120,7 @@ const ActiveJobCard: React.FC<ActiveJobProps> = ({
     }
   };
 
-  // Lógica para o tempo decorrido (otimizada com useEffect e setInterval)
-  const [elapsedTime, setElapsedTime] = useState('0s');
-  useEffect(() => {
-      const interval = setInterval(() => {
-          if (!startedAt) {
-              setElapsedTime('N/A');
-              return;
-          }
-          const startTime = new Date(startedAt).getTime();
-          const now = new Date().getTime();
-          const elapsed = now - startTime;
-
-          const seconds = Math.floor((elapsed / 1000) % 60);
-          const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
-          const hours = Math.floor(elapsed / (1000 * 60 * 60));
-
-          if (hours > 0) setElapsedTime(`${hours}h ${minutes}m`);
-          else if (minutes > 0) setElapsedTime(`${minutes}m ${seconds}s`);
-          else setElapsedTime(`${seconds}s`);
-      }, 1000);
-      return () => clearInterval(interval);
-  }, [startedAt]);
+  const elapsedTime = useElapsedTime(startedAt);
 
 
   const progressBarColor = useMemo(() => {

@@ -47,8 +47,9 @@ const DetailedMonitoringPage: React.FC = () => {
     if (isPaused) return;
     
     try {
-      const data = await fetchUnifiedMonitoringData();
-      const allJobs = [...data.activeJobs, ...data.recentlyCompleted, ...data.recentlyFailed];
+      const response = await fetchUnifiedMonitoringData();
+      const data = response.data || response; // Suportar tanto nova quanto antiga estrutura
+      const allJobs = [...(data.activeJobs || []), ...(data.recentlyCompleted || []), ...(data.recentlyFailed || [])];
       
       // Identificar IDs de jobs que estavam em processamento na renderização anterior
       const previouslyProcessingIds = new Set(processingJobs.map(j => j.fileId));
@@ -73,16 +74,16 @@ const DetailedMonitoringPage: React.FC = () => {
       }
 
       // ATUALIZAÇÃO DAS LISTAS:
-      const active = data.activeJobs;
-      const completed = data.recentlyCompleted;
-      const failed = data.recentlyFailed;
+      const active = data.activeJobs || [];
+      const completed = data.recentlyCompleted || [];
+      const failed = data.recentlyFailed || [];
       
       setProcessingJobs(active);
       setCompletedJobs(completed);
       setFailedJobs(failed);
       setLastUpdated(new Date());
       
-      setStats(data.stats);
+      setStats(data.stats || { total: 0, processing: 0, completed: 0, failed: 0 });
       
       setError(null);
     } catch (err) {
@@ -91,7 +92,7 @@ const DetailedMonitoringPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isPaused, processingJobs]);
+  }, [isPaused]);
 
   // Carregar dados iniciais
   useEffect(() => {

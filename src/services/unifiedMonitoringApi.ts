@@ -52,7 +52,14 @@ export const fetchUnifiedMonitoringData = async (): Promise<UnifiedMonitoringDat
       headers: buildHeaders()
     });
     
-    return handleResponse<UnifiedMonitoringData>(response);
+    const result = await handleResponse<any>(response);
+    
+    // Suportar tanto estrutura nova (CacheBusterResponse) quanto antiga
+    if (result.data && result.timestamp) {
+      return result.data;
+    }
+    
+    return result;
   } catch (error) {
     console.error('Erro ao buscar dados unificados de monitoramento:', error);
     throw error;
