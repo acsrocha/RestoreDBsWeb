@@ -114,7 +114,7 @@ const MonitoringPage: React.FC = () => {
   }, [initialLoading, errorLoading, monitoringData, processFilename]);
 
   const queueCount = useMemo(() => 
-    initialLoading && !monitoringData ? 0 : (monitoringData?.activeJobs?.length ?? 0),
+    initialLoading && !monitoringData ? 0 : (monitoringData?.activeJobs?.filter(job => job.status === 'queued')?.length ?? 0),
     [initialLoading, monitoringData]
   );
 
@@ -140,14 +140,7 @@ const MonitoringPage: React.FC = () => {
         <div className="stat-card processing">
           <div className="stat-icon"><FiCpu /></div>
           <div className="stat-content">
-            <div className="stat-number">{(() => {
-              const processingCount = (monitoringData?.stats.processing || 0) + 
-                                    (monitoringData?.stats.downloading || 0) + 
-                                    (monitoringData?.stats.extracting || 0) + 
-                                    (monitoringData?.stats.validating || 0);
-              // Se há jobs ativos mas stats zerados, contar pelo menos 1 se currentProcessing existe
-              return processingCount > 0 ? processingCount : (monitoringData?.currentProcessing ? 1 : 0);
-            })()}</div>
+            <div className="stat-number">{monitoringData?.stats.processing || 0}</div>
             <div className="stat-label">Em Processamento</div>
             <div className="stat-detail">{displayProcessingFilename}</div>
           </div>
@@ -186,8 +179,8 @@ const MonitoringPage: React.FC = () => {
           <ul className="queue-list">
             {initialLoading && !monitoringData ? (
               <li className="empty-list"><em>Carregando fila...</em></li>
-            ) : monitoringData?.activeJobs && monitoringData.activeJobs.length > 0 ? (
-              monitoringData.activeJobs.map((job, index) => {
+            ) : monitoringData?.activeJobs && monitoringData.activeJobs.filter(job => job.status === 'queued').length > 0 ? (
+              monitoringData.activeJobs.filter(job => job.status === 'queued').map((job, index) => {
                 const fileName = job.fileName;
                 const statusText = job.currentStage || job.status || 'Processando';
                 return (
