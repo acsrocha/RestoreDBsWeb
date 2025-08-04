@@ -107,6 +107,11 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
               : item
           ));
           break;
+          
+        case 'force_refresh':
+          // Forçar sincronização imediata quando receber evento de refresh
+          syncWithAPIs();
+          break;
       }
     });
     
@@ -187,7 +192,7 @@ export const UnifiedTrackingProvider: React.FC<{ children: React.ReactNode }> = 
     syncWithAPIs();
     
     // Configurar intervalo para sincronização automática
-    const interval = setInterval(syncWithAPIs, 3000); // A cada 3 segundos
+    const interval = setInterval(syncWithAPIs, 1500); // A cada 1.5 segundos para melhor responsividade
     
     return () => clearInterval(interval);
   }, [syncWithAPIs]);

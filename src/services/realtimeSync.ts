@@ -4,7 +4,7 @@
  */
 
 interface RealtimeEvent {
-  type: 'download_started' | 'download_progress' | 'download_completed' | 'download_failed';
+  type: 'download_started' | 'download_progress' | 'download_completed' | 'download_failed' | 'force_refresh';
   data: {
     trackingId: string;
     fileName: string;
